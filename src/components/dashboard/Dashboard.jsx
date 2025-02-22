@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Table, theme } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
+import { useMediaQuery } from 'react-responsive';
 function getItem(label, key, icon, children) {
   return {
     key,
@@ -35,6 +36,7 @@ const items = [
 ];
 const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: 768 });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -160,6 +162,8 @@ const Dashboard = () => {
               minHeight: 360,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
+              flexGrow: 1,
+              overflowX: 'auto',
             }}
           >
             <Table
@@ -168,7 +172,6 @@ const Dashboard = () => {
                   type: 'checkbox',
               }}
               rowKey={(record) => record.key}
-              bordered
               columns={columns}
               dataSource={data}
               pagination={true}
