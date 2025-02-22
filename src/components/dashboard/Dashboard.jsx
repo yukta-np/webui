@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Table, theme } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
-import { useMediaQuery } from 'react-responsive';
+
 function getItem(label, key, icon, children) {
   return {
     key,
@@ -46,6 +46,7 @@ const Dashboard = () => {
       title: 'Task ID',
       dataIndex: 'key',
       key: 'key',
+      sorter: true,
     },
     {
       title: 'Title',
