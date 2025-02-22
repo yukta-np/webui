@@ -45,7 +45,7 @@ const Dashboard = () => {
       title: 'Task ID',
       dataIndex: 'key',
       key: 'key',
-      sorter: true,
+      sorter: (a, b) => a.key - b.key,
     },
     {
       title: 'Title',
@@ -75,15 +75,13 @@ const Dashboard = () => {
     {
       title: 'Action',
       key: 'action',
-      render: () => (
-        <a href="javascript:;">View</a>
-      ),
-    }
+      render: () => <a href="javascript:;">View</a>,
+    },
   ];
 
   const data = [
     {
-      key: '1',
+      key: 1,
       title: 'Fix login bug',
       status: 'In Progress',
       priority: 'High',
@@ -91,7 +89,7 @@ const Dashboard = () => {
       dueDate: '2025-02-28',
     },
     {
-      key: '2',
+      key: 2,
       title: 'Design new UI',
       status: 'Pending',
       priority: 'Medium',
@@ -99,7 +97,7 @@ const Dashboard = () => {
       dueDate: '2025-03-05',
     },
     {
-      key: '3',
+      key: 3,
       title: 'Write API documentation',
       status: 'Completed',
       priority: 'Low',
@@ -107,7 +105,7 @@ const Dashboard = () => {
       dueDate: '2025-02-20',
     },
     {
-      key: '4',
+      key: 4,
       title: 'Implement payment gateway',
       status: 'In Progress',
       priority: 'High',
@@ -169,7 +167,7 @@ const Dashboard = () => {
             <Table
               selections={true}
               rowSelection={{
-                  type: 'checkbox',
+                type: 'checkbox',
               }}
               rowKey={(record) => record.key}
               columns={columns}
