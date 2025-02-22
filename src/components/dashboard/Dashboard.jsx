@@ -36,7 +36,6 @@ const items = [
 ];
 const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const isMobile = useMediaQuery({ maxWidth: 768 });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
