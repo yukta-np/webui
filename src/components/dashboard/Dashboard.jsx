@@ -6,7 +6,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Layout, Menu, Table, theme } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -38,6 +38,81 @@ const Dashboard = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const columns = [
+    {
+      title: 'Task ID',
+      dataIndex: 'key',
+      key: 'key',
+    },
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: 'Priority',
+      dataIndex: 'priority',
+      key: 'priority',
+    },
+    {
+      title: 'Assigned To',
+      dataIndex: 'assignedTo',
+      key: 'assignedTo',
+    },
+    {
+      title: 'Due Date',
+      dataIndex: 'dueDate',
+      key: 'dueDate',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: () => (
+        <a href="javascript:;">View</a>
+      ),
+    }
+  ];
+
+  const data = [
+    {
+      key: '1',
+      title: 'Fix login bug',
+      status: 'In Progress',
+      priority: 'High',
+      assignedTo: 'John Doe',
+      dueDate: '2025-02-28',
+    },
+    {
+      key: '2',
+      title: 'Design new UI',
+      status: 'Pending',
+      priority: 'Medium',
+      assignedTo: 'Jane Smith',
+      dueDate: '2025-03-05',
+    },
+    {
+      key: '3',
+      title: 'Write API documentation',
+      status: 'Completed',
+      priority: 'Low',
+      assignedTo: 'Emily Davis',
+      dueDate: '2025-02-20',
+    },
+    {
+      key: '4',
+      title: 'Implement payment gateway',
+      status: 'In Progress',
+      priority: 'High',
+      assignedTo: 'Michael Brown',
+      dueDate: '2025-03-10',
+    },
+  ];
   return (
     <Layout
       style={{
@@ -87,7 +162,17 @@ const Dashboard = () => {
               borderRadius: borderRadiusLG,
             }}
           >
-            Bill is a cat.
+            <Table
+              selections={true}
+              rowSelection={{
+                  type: 'checkbox',
+              }}
+              rowKey={(record) => record.key}
+              bordered
+              columns={columns}
+              dataSource={data}
+              pagination={true}
+            />
           </div>
         </Content>
         <Footer
