@@ -15,3 +15,29 @@ export const constants = {
       organisationsUrl: `${URL}/organisations`,
    }
 };
+
+// export const ROLES = {
+//    SYSTADMIN: 'SYSTADMIN',
+
+//    PRINCIPAL: 'PRINCIPAL',
+//    HOD: 'HOD',
+//    TEACHER: 'TEACHER',
+//    STAFF: 'STAFF',
+
+//    PARENT: 'PARENT',
+//    STUDENT: 'STUDENT',
+// }
+export const ROLES = {
+   // SYSTEM ADMIN
+   SYSTADMIN: 'SYSTADMIN',
+
+   // ACADEMIC STAFF
+   ORG_ADMIN: 'ORGADMIN',
+   ORG_MANAGER: 'ORGMANAGER',
+   TEACHER: 'TEACHER',
+   STAFF: 'STAFF',
+
+   // STUDENT
+   PARENT: 'PARENT',
+   STUDENT: 'STUDENT',
+}

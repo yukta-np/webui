@@ -7,3 +7,4 @@ export const fetcher = async (url, options = {}) => {
    return await fetch(url, { ...options, headers })
       .then(res => res.json());
 }
+

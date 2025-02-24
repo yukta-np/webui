@@ -181,7 +181,7 @@ const Dashboard = () => {
             textAlign: 'center',
           }}
         >
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+          ©{new Date().getFullYear()} Yukta
         </Footer>
       </Layout>
     </Layout>
