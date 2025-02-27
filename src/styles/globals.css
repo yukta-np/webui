@@ -3,3 +3,19 @@
   margin: 0;
   padding: 0
 }
+
+.custom-search .ant-input {
+  background: transparent !important;
+  border-radius: 8px !important;
+}
+
+.user-hover:hover {
+  background: rgba(0, 0, 0, 0.025);
+}
+
+@media (max-width: 575px) {
+  .custom-search .ant-input-affix-wrapper {
+    padding: 0 8px !important;
+  }
+}
+
