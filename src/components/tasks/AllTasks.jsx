@@ -309,6 +309,27 @@ const AllTasks = () => {
                 <Form.Item label="Due date" name="dueDate">
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
+
+                <Form.Item label="Catagory" name="catagory">
+                  <Select defaultValue="to do">
+                    <Select.Option value="to do">to do</Select.Option>
+                    <Select.Option value="in progress">
+                      in progress
+                    </Select.Option>
+                    <Select.Option value="completed">completed</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item label="Priority" name="priority">
+                  <Select defaultValue="to do">
+                    <Select.Option value="to do">to do</Select.Option>
+                    <Select.Option value="in progress">
+                      in progress
+                    </Select.Option>
+                    <Select.Option value="completed">completed</Select.Option>
+                  </Select>
+                </Form.Item>
+
               </Col>
             </Row>
           </Form>
