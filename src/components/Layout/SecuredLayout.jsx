@@ -1,6 +1,16 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
-import { DesktopOutlined } from '@ant-design/icons';
+import {
+  PieChartOutlined,
+  CalendarOutlined,
+  CheckCircleOutlined,
+  TeamOutlined,
+  UnorderedListOutlined,
+  FormOutlined,
+  FileTextOutlined,
+  NotificationOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
 import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
 import { Layout, Menu } from 'antd';
 import Link from 'next/link';
@@ -19,71 +29,73 @@ const SecuredLayout = (props) => {
     {
       label: <Link href="/dashboard">Dashboard</Link>,
       key: 'dashboard',
-      icon: <DesktopOutlined />,
+      icon: <PieChartOutlined />,
     },
     {
       label: <Link href="/routine">Routine</Link>,
       key: 'routine',
-      icon: <DesktopOutlined />,
+      icon: <CalendarOutlined />,
     },
     {
       label: 'Tasks',
       key: 'tasks',
-      icon: <DesktopOutlined />,
+      icon: <CheckCircleOutlined />,
       children: [
         {
           label: <Link href="/my-tasks">My Tasks</Link>,
           key: 'my-tasks',
-          icon: <DesktopOutlined />,
+          icon: <CheckCircleOutlined />,
         },
         {
-          label: <Link href="/my-tasks">My Team's Tasks</Link>,
+          label: <Link href="/my-team-tasks">My Team's Tasks</Link>,
           key: 'my-team-tasks',
-          icon: <DesktopOutlined />,
+          icon: <TeamOutlined />,
         },
         {
           label: <Link href="/all-tasks">All Tasks</Link>,
           key: 'all-tasks',
-          icon: <DesktopOutlined />,
+          icon: <UnorderedListOutlined />,
         },
       ],
     },
     {
       label: 'Leave Request',
       key: 'leave-request',
-      icon: <DesktopOutlined />,
+      icon: <FormOutlined />,
       children: [
         {
           label: <Link href="/my-leave-request">My Leave Request</Link>,
           key: 'my-leave-request',
-          icon: <DesktopOutlined />,
+          icon: <FormOutlined />,
         },
         {
-          label: <Link href="/my-leave-request">My Team's Leave Request</Link>,
+          label: (
+            <Link href="/my-team-leave-request">My Team's Leave Request</Link>
+          ),
           key: 'my-team-leave-request',
-          icon: <DesktopOutlined />,
+          icon: <TeamOutlined />,
         },
       ],
     },
     {
       label: <Link href="/documents">Documents</Link>,
       key: 'documents',
-      icon: <DesktopOutlined />,
+      icon: <FileTextOutlined />,
     },
     {
       label: <Link href="/announcements">Announcements</Link>,
       key: 'announcements',
-      icon: <DesktopOutlined />,
+      icon: <NotificationOutlined />,
     },
     {
       label: <Link href="/calender">Calender</Link>,
       key: 'calender',
-      icon: <DesktopOutlined />,
+      icon: <CalendarOutlined />,
     },
     {
       label: <Link href="/settings">Settings</Link>,
       key: 'settings',
-      icon: <DesktopOutlined />,
+      icon: <SettingOutlined />,
     },
   ];
 
