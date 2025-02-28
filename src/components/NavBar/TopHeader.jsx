@@ -1,6 +1,11 @@
 import React from 'react';
 import { Layout, Input, Space, Avatar, Grid, theme, Badge } from 'antd';
-import { BellOutlined, NotificationOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  BellOutlined,
+  NotificationOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 
 const { Header } = Layout;
 const { Search } = Input;
@@ -62,63 +67,64 @@ const TopHeader = () => {
         style={{
           marginLeft: 'auto',
           paddingLeft: screens.xs ? '8px' : '16px',
+          justifyContent: 'space-between',
+          gap: '40px',
         }}
       >
-        <Space
-        className='mr-6 flex flex-row '>
-          <Badge
-            count={5}
+        <Badge
+          count={5}
+          style={{
+            marginTop: '24px',
+            boxShadow: `0 0 0 2px ${colorBgContainer}`,
+            cursor: 'pointer',
+          }}
+        >
+          <BellOutlined
             style={{
               marginTop: '24px',
-              boxShadow: `0 0 0 2px ${colorBgContainer}`,
-              cursor: 'pointer',
-            }}
-          >
-            <BellOutlined
-              style={{
-                marginTop: '24px',
-                fontSize: screens.xs ? '20px' : '24px',
-                color: colorTextSecondary,
-                transition: 'color 0.3s',
-                ':hover': { color: colorPrimary },
-                gap: '8px',
-              }}
-            />
-          </Badge>
-
-          <Badge
-            count={5}
-            style={{
-              marginTop: '24px',
-              boxShadow: `0 0 0 2px ${colorBgContainer}`,
-              cursor: 'pointer',
-            }}
-          >
-            <NotificationOutlined
-              style={{
-                marginTop: '24px',
-                fontSize: screens.xs ? '20px' : '24px',
-                color: colorTextSecondary,
-                transition: 'color 0.3s',
-                ':hover': { color: colorPrimary },
-                gap: '8px',
-              }}
-            />
-          </Badge>
-        </Space>
-
-        {/* avatar */}
-        <Space>
-          <Avatar
-            size="large"
-            icon={<UserOutlined />}
-            style={{
-              backgroundColor: colorBgContainer,
+              fontSize: screens.xs ? '20px' : '24px',
               color: colorTextSecondary,
-              cursor: 'pointer',
+              transition: 'color 0.3s',
+              ':hover': { color: colorPrimary },
             }}
           />
-          <Space direction="vertical">Admin</Space>
+        </Badge>
+
+        <Badge
+          count={5}
+          style={{
+            marginTop: '24px',
+            boxShadow: `0 0 0 2px ${colorBgContainer}`,
+            cursor: 'pointer',
+          }}
+        >
+          <NotificationOutlined
+            style={{
+              marginTop: '24px',
+              fontSize: screens.xs ? '20px' : '24px',
+              color: colorTextSecondary,
+              transition: 'color 0.3s',
+              ':hover': { color: colorPrimary },
+            }}
+          />
+        </Badge>
+      </Space>
+
+      {/* avatar */}
+      <Space>
+        <Space wrap size={24}>
+          <Avatar
+            icon={<UserOutlined />}
+            style={{
+              backgroundColor: colorPrimary,
+              color: colorBgContainer,
+              cursor: 'pointer',
+              marginLeft: '30px',
+            }}
+          />
+        </Space>
+        <Space direction="vertical">
+          <span>Abishek Ghimire</span>
         </Space>
       </Space>
     </Header>
