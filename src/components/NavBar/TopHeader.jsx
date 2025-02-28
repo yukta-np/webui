@@ -82,7 +82,7 @@ const TopHeader = () => {
           <BellOutlined
             style={{
               marginTop: '24px',
-              fontSize: screens.xs ? '20px' : '24px',
+              fontSize: screens.xs ? '16px' : '20px',
               color: colorTextSecondary,
               transition: 'color 0.3s',
               ':hover': { color: colorPrimary },
@@ -101,7 +101,7 @@ const TopHeader = () => {
           <NotificationOutlined
             style={{
               marginTop: '24px',
-              fontSize: screens.xs ? '20px' : '24px',
+              fontSize: screens.xs ? '16px' : '20px',
               color: colorTextSecondary,
               transition: 'color 0.3s',
               ':hover': { color: colorPrimary },
@@ -111,21 +111,34 @@ const TopHeader = () => {
       </Space>
 
       {/* avatar */}
-      <Space>
-        <Space wrap size={24}>
-          <Avatar
-            icon={<UserOutlined />}
+         <Space
+        align="center"
+        style={{
+          marginRight: '30px',
+        }}
+      >
+        <Avatar
+          icon={<UserOutlined />}
+          style={{
+            backgroundColor: colorPrimary,
+            color: colorBgContainer,
+            cursor: 'pointer',
+          }}
+        />
+
+        <div style={{ lineHeight: '1.2' }}>
+          <p style={{ margin: 0, padding: 0 }}>Abishek Ghimire</p>
+          <p
             style={{
-              backgroundColor: colorPrimary,
-              color: colorBgContainer,
-              cursor: 'pointer',
-              marginLeft: '30px',
+              marginTop: '2px',
+              padding: 0,
+              fontSize: '10px',
+              color: 'gray',
             }}
-          />
-        </Space>
-        <Space direction="vertical">
-          <span>Abishek Ghimire</span>
-        </Space>
+          >
+            SYSTADMIN
+          </p>
+        </div>
       </Space>
     </Header>
   );

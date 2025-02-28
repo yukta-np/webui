@@ -2,6 +2,8 @@ export const API_URL = 'http://localhost:3999';
 export const PREFIX = 'v0';
 export const URL = `${API_URL}/${PREFIX}`;
 
+export const COOKIE_SIDEBER_COLLAPSED = 'yukta.ui.sidebar.collapsed';
+
 export const constants = {
    urls: {
       loginUrl: `${URL}/auth/login`,
