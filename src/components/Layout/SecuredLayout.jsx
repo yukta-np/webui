@@ -10,20 +10,25 @@ import {
   FileTextOutlined,
   NotificationOutlined,
   SettingOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
 import { Footer } from 'antd/es/layout/layout';
 import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
+import useWindowSize from '@/hooks/useWindowSize';
+
 
 const SecuredLayout = (props) => {
-  const [collapsed, setCollapsed] = useState();
-  const [loggedUser, setLoggedUser] = useState();
+  const [collapsed, setCollapsed] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
   const cookies = new Cookies();
+  const size = useWindowSize();
 
   const items = [
     {
@@ -108,43 +113,68 @@ const SecuredLayout = (props) => {
     setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
   }, []);
 
-  const orgSidebar = () => {
-    let filteredItems = items;
-
-    return (
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={onCollapse}
-        zeroWidthTriggerStyle={{ display: collapsed ? 'none' : undefined }}
-      >
-        <div
-          className="logo bg-white p-2 flex items-center justify-center"
-          style={{ height: 64, display: 'flex', justifyContent: 'center' }}
-        >
-          <Link href="/">
-            <img
-              src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
-              height={44}
-              style={{ marginTop: '8px', transition: 'width 0.3s' }}
-              alt="Yukta"
-            />
-          </Link>
-        </div>
-        <Menu
-          theme="dark"
-          defaultSelectedKeys={[router.route]}
-          mode="inline"
-          items={filteredItems}
-        />
-      </Sider>
-    );
+  const toggleDrawer = () => {
+    setDrawerVisible(!drawerVisible);
   };
+
+  const orgSidebar = () => (
+    <>
+      {size.width > 768 ? (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={onCollapse}
+          breakpoint="md"
+          collapsedWidth="80"
+        >
+          <div className="logo bg-white p-2 flex items-center justify-center">
+            <Link href="/">
+              <img
+                src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
+                height={44}
+                style={{ marginTop: '8px', transition: 'width 0.3s' }}
+                alt="Yukta"
+              />
+            </Link>
+          </div>
+          <Menu
+            theme="dark"
+            defaultSelectedKeys={[router.route]}
+            mode="inline"
+            items={items}
+          />
+        </Sider>
+      ) : (
+        <>
+          <Button
+            className="menu-button"
+            type="primary"
+            onClick={toggleDrawer}
+            icon={drawerVisible ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          />
+          <Drawer
+            title="Menu"
+            placement="left"
+            closable={true}
+            onClose={toggleDrawer}
+            open={drawerVisible}
+          >
+            <Menu
+              mode="inline"
+              defaultSelectedKeys={[router.route]}
+              items={items}
+              onClick={() => setDrawerVisible(false)}
+            />
+          </Drawer>
+        </>
+      )}
+    </>
+  );
 
   const footer = (
     <Layout className="site-layout">
       <TopHeader />
-      {props.children}
+      <div className="content-container">{props.children}</div>
       <Footer style={{ textAlign: 'center' }}>
         ©{new Date().getFullYear()} Yukta
       </Footer>
