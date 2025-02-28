@@ -74,40 +74,40 @@ const AllTasks = () => {
 
   const columns = [
     {
-      title: 'task id',
+      title: 'Task ID',
       dataIndex: 'key',
       key: 'key',
       sorter: (a, b) => a.key - b.key,
     },
     {
-      title: 'title',
+      title: 'Title',
       dataIndex: 'title',
       key: 'title',
     },
     {
-      title: 'status',
+      title: 'Status',
       dataIndex: 'status',
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
-      title: 'priority',
+      title: 'Priority',
       dataIndex: 'priority',
       key: 'priority',
       sorter: (a, b) => a.priority.localeCompare(b.priority),
     },
     {
-      title: 'assigned to',
+      title: 'Assigned to',
       dataIndex: 'assignedTo',
       key: 'assignedTo',
     },
     {
-      title: 'created by',
+      title: 'Created by',
       dataIndex: 'createdBy',
       key: 'createdBy',
     },
     {
-      title: 'due date',
+      title: 'Due date',
       dataIndex: 'dueDate',
       key: 'dueDate',
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
@@ -192,9 +192,9 @@ const AllTasks = () => {
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0 }}>tasks</h2>
+          <h2 style={{ margin: 0 }}>Tasks</h2>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            add task
+            Add Task
           </Button>
         </div>
 
@@ -257,7 +257,7 @@ const AllTasks = () => {
             <Row gutter={24}>
               <Col span={18}>
                 <Form.Item
-                  label="title"
+                  label="Title"
                   name="title"
                   rules={[{ required: true, message: 'please enter a title' }]}
                 >
@@ -265,21 +265,21 @@ const AllTasks = () => {
                 </Form.Item>
 
                 <Form.Item
-                  label="description"
+                  label="Description"
                   name="description"
                   rules={[
                     { required: true, message: 'please enter a description' },
                   ]}
                 >
                   <Tabs activeKey={activeTab} onChange={setActiveTab}>
-                    <TabPane tab="write" key="write">
+                    <TabPane tab="Write" key="write">
                       <SunEditor
                         setOptions={editorOptions}
                         onChange={handleEditorChange}
                         setContents={task.description}
                       />
                     </TabPane>
-                    <TabPane tab="preview" key="preview">
+                    <TabPane tab="Preview" key="preview">
                       <PreviewSection
                         content={form.getFieldValue('description') || ''}
                       />
@@ -289,7 +289,7 @@ const AllTasks = () => {
               </Col>
 
               <Col span={6}>
-                <Form.Item label="status" name="status">
+                <Form.Item label="Status" name="status">
                   <Select defaultValue="to do">
                     <Select.Option value="to do">to do</Select.Option>
                     <Select.Option value="in progress">
@@ -299,14 +299,14 @@ const AllTasks = () => {
                   </Select>
                 </Form.Item>
 
-                <Form.Item label="assign to" name="assignee">
+                <Form.Item label="Assign to" name="assignee">
                   <Select defaultValue="john doe">
                     <Select.Option value="john doe">john doe</Select.Option>
                     <Select.Option value="jane smith">jane smith</Select.Option>
                   </Select>
                 </Form.Item>
 
-                <Form.Item label="due date" name="dueDate">
+                <Form.Item label="Due date" name="dueDate">
                   <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
