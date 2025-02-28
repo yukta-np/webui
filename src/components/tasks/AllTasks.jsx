@@ -11,6 +11,7 @@ import {
 } from 'antd';
 import Sidebar from '../sidebar/Sidebar';
 import TopHeader from '../NavBar/TopHeader';
+import AddTask from '../popup/AddTask';
 const { Content, Footer } = Layout;
 const { RangePicker } = DatePicker;
 
@@ -160,9 +161,7 @@ const AllTasks = () => {
               }}
             >
               <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
-              <Button type="primary" size={size}>
-                Add Task
-              </Button>
+              <AddTask />
             </div>
             <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
               <Space
