@@ -5,8 +5,7 @@ import TopHeader from '../NavBar/TopHeader';
 const Dashboard = () => {
   return (
     <>
-      <TopHeader />
-      <Sidebar />
+    haha
     </>
   );
 };

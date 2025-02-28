@@ -30,7 +30,7 @@ const SecuredLayout = (props) => {
       label: 'Tasks',
       key: 'tasks',
       icon: <DesktopOutlined />,
-      childern: [
+      children: [
         {
           label: <Link href="/my-tasks">My Tasks</Link>,
           key: 'my-tasks',
@@ -49,10 +49,10 @@ const SecuredLayout = (props) => {
       ],
     },
     {
-      label: <Link href="/leave-request">Leave Request</Link>,
+      label: 'Leave Request',
       key: 'leave-request',
       icon: <DesktopOutlined />,
-      childern: [
+      children: [
         {
           label: <Link href="/my-leave-request">My Leave Request</Link>,
           key: 'my-leave-request',
@@ -99,10 +99,15 @@ const SecuredLayout = (props) => {
     let filteredItems = items;
 
     return (
-      <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} zeroWidthTriggerStyle={{ display: collapsed ? 'none' : undefined }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={onCollapse}
+        zeroWidthTriggerStyle={{ display: collapsed ? 'none' : undefined }}
+      >
         <div className="logo bg-white ">
           <Link href="/">
-            <img src="/next.png" height={70} alt="Yukta"  />
+            <img src="/next.png" height={70} alt="Yukta" />
           </Link>
         </div>
         <Menu

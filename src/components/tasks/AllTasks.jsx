@@ -121,309 +121,272 @@ const AllTasks = () => {
     },
   ];
   return (
-    <Layout
+    <Content
       style={{
-        minHeight: '100vh',
+        margin: '0 16px',
       }}
     >
-      <Sidebar />
-      <Layout>
-        <TopHeader />
-        <Content
+      <Breadcrumb
+        style={{
+          margin: '16px 0',
+        }}
+      >
+        <Breadcrumb.Item>Home</Breadcrumb.Item>
+        <Breadcrumb.Item>Tasks</Breadcrumb.Item>
+      </Breadcrumb>
+      <div
+        style={{
+          padding: 24,
+          minHeight: 360,
+          background: colorBgContainer,
+          borderRadius: borderRadiusLG,
+          flexGrow: 1,
+          overflowX: 'auto',
+        }}
+      >
+        <div
           style={{
-            margin: '0 16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
           }}
         >
-          <Breadcrumb
-            style={{
-              margin: '16px 0',
-            }}
-          >
-            <Breadcrumb.Item>Home</Breadcrumb.Item>
-            <Breadcrumb.Item>Tasks</Breadcrumb.Item>
-          </Breadcrumb>
-          <div
-            style={{
-              padding: 24,
-              minHeight: 360,
-              background: colorBgContainer,
-              borderRadius: borderRadiusLG,
-              flexGrow: 1,
-              overflowX: 'auto',
-            }}
-          >
-            <div
+          <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
+          <AddTask />
+        </div>
+        <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>Date Range</p>
+            <RangePicker style={{ width: 385 }} />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Creator </p>
+            <Select
+              showSearch
               style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px',
+                width: 200,
               }}
-            >
-              <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
-              <AddTask />
-            </div>
-            <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
-              <Space
-                direction="vertical"
-                size={12}
-                style={{ marginBottom: 16 }}
-              >
-                <p>Date Range</p>
-                <RangePicker style={{ width: 385 }} />
-              </Space>
-              <Space
-                direction="vertical"
-                size={12}
-                style={{ marginBottom: 16 }}
-              >
-                <p>By Creator </p>
-                <Select
-                  showSearch
-                  style={{
-                    width: 200,
-                  }}
-                  optionFilterProp="label"
-                  filterSort={(optionA, optionB) =>
-                    (optionA?.label ?? '')
-                      .toLowerCase()
-                      .localeCompare((optionB?.label ?? '').toLowerCase())
-                  }
-                  options={[
-                    {
-                      value: '1',
-                      label: 'Not Identified',
-                    },
-                    {
-                      value: '2',
-                      label: 'Closed',
-                    },
-                    {
-                      value: '3',
-                      label: 'Communicated',
-                    },
-                    {
-                      value: '4',
-                      label: 'Identified',
-                    },
-                    {
-                      value: '5',
-                      label: 'Resolved',
-                    },
-                    {
-                      value: '6',
-                      label: 'Cancelled',
-                    },
-                    {
-                      value: '7',
-                      label: 'Duplicate',
-                    },
-                    {
-                      value: '8',
-                      label: 'Invalid',
-                    },
-                    {
-                      value: '9',
-                      label: "Won't Fix",
-                    },
-                  ]}
-                />
-              </Space>
-              <Space
-                direction="vertical"
-                size={12}
-                style={{ marginBottom: 16 }}
-              >
-                <p>By Assignee</p>
-                <Select
-                  showSearch
-                  style={{
-                    width: 200,
-                  }}
-                  optionFilterProp="label"
-                  filterSort={(optionA, optionB) =>
-                    (optionA?.label ?? '')
-                      .toLowerCase()
-                      .localeCompare((optionB?.label ?? '').toLowerCase())
-                  }
-                  options={[
-                    {
-                      value: '1',
-                      label: 'Not Identified',
-                    },
-                    {
-                      value: '2',
-                      label: 'Closed',
-                    },
-                    {
-                      value: '3',
-                      label: 'Communicated',
-                    },
-                    {
-                      value: '4',
-                      label: 'Identified',
-                    },
-                    {
-                      value: '5',
-                      label: 'Resolved',
-                    },
-                    {
-                      value: '6',
-                      label: 'Cancelled',
-                    },
-                    {
-                      value: '7',
-                      label: 'Duplicate',
-                    },
-                    {
-                      value: '8',
-                      label: 'Invalid',
-                    },
-                    {
-                      value: '9',
-                      label: "Won't Fix",
-                    },
-                  ]}
-                />
-              </Space>
-              <Space
-                direction="vertical"
-                size={12}
-                style={{ marginBottom: 16 }}
-              >
-                <p>By Status </p>
-                <Select
-                  showSearch
-                  style={{
-                    width: 200,
-                  }}
-                  optionFilterProp="label"
-                  filterSort={(optionA, optionB) =>
-                    (optionA?.label ?? '')
-                      .toLowerCase()
-                      .localeCompare((optionB?.label ?? '').toLowerCase())
-                  }
-                  options={[
-                    {
-                      value: '1',
-                      label: 'Not Identified',
-                    },
-                    {
-                      value: '2',
-                      label: 'Closed',
-                    },
-                    {
-                      value: '3',
-                      label: 'Communicated',
-                    },
-                    {
-                      value: '4',
-                      label: 'Identified',
-                    },
-                    {
-                      value: '5',
-                      label: 'Resolved',
-                    },
-                    {
-                      value: '6',
-                      label: 'Cancelled',
-                    },
-                    {
-                      value: '7',
-                      label: 'Duplicate',
-                    },
-                    {
-                      value: '8',
-                      label: 'Invalid',
-                    },
-                    {
-                      value: '9',
-                      label: "Won't Fix",
-                    },
-                  ]}
-                />
-              </Space>
-              <Space
-                direction="vertical"
-                size={12}
-                style={{ marginBottom: 16 }}
-              >
-                <p>Archived </p>
-                <Select
-                  showSearch
-                  style={{
-                    width: 150,
-                  }}
-                  optionFilterProp="label"
-                  filterSort={(optionA, optionB) =>
-                    (optionA?.label ?? '')
-                      .toLowerCase()
-                      .localeCompare((optionB?.label ?? '').toLowerCase())
-                  }
-                  options={[
-                    {
-                      value: '1',
-                      label: 'Not Identified',
-                    },
-                    {
-                      value: '2',
-                      label: 'Closed',
-                    },
-                    {
-                      value: '3',
-                      label: 'Communicated',
-                    },
-                    {
-                      value: '4',
-                      label: 'Identified',
-                    },
-                    {
-                      value: '5',
-                      label: 'Resolved',
-                    },
-                    {
-                      value: '6',
-                      label: 'Cancelled',
-                    },
-                    {
-                      value: '7',
-                      label: 'Duplicate',
-                    },
-                    {
-                      value: '8',
-                      label: 'Invalid',
-                    },
-                    {
-                      value: '9',
-                      label: "Won't Fix",
-                    },
-                  ]}
-                />
-              </Space>
-            </Space>
-            <Table
-              rowSelection={{
-                type: 'checkbox',
-              }}
-              rowKey={(record) => record.key}
-              columns={columns}
-              dataSource={data}
-              pagination={{
-                showSizeChanger: true,
-                onShowSizeChange: onShowSizeChange,
-              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
             />
-          </div>
-        </Content>
-        <Footer
-          style={{
-            textAlign: 'center',
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Assignee</p>
+            <Select
+              showSearch
+              style={{
+                width: 200,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Status </p>
+            <Select
+              showSearch
+              style={{
+                width: 200,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>Archived </p>
+            <Select
+              showSearch
+              style={{
+                width: 150,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+        </Space>
+        <Table
+          rowSelection={{
+            type: 'checkbox',
           }}
-        >
-          {new Date().getFullYear()} ©Yukta
-        </Footer>
-      </Layout>
-    </Layout>
+          rowKey={(record) => record.key}
+          columns={columns}
+          dataSource={data}
+          pagination={{
+            showSizeChanger: true,
+            onShowSizeChange: onShowSizeChange,
+          }}
+        />
+      </div>
+    </Content>
   );
 };
 export default AllTasks;
