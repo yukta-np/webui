@@ -13,116 +13,119 @@ import {
   Input,
   Row,
   Col,
+  Tabs,
 } from 'antd';
 
 const { Content } = Layout;
 const { RangePicker } = DatePicker;
+const { TabPane } = Tabs;
 import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
-import 'suneditor/dist/css/suneditor.min.css'; // Import SunEditor styles
+import 'suneditor/dist/css/suneditor.min.css';
 
 const AllTasks = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const [size, setSize] = useState('medium');
-  const [open, setOpen] = useState(false);
-  const [openResponsive, setOpenResponsive] = useState(false);
-
+  const [activeTab, setActiveTab] = useState('write');
   const [form] = Form.useForm();
-  const [requiredMark, setRequiredMarkType] = useState('optional');
-  const onRequiredTypeChange = ({ requiredMarkValue }) => {
-    setRequiredMarkType(requiredMarkValue);
-  };
-  const onShowSizeChange = (current, pageSize) => {
-    console.log(current, pageSize);
-  };
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [task, setTask] = useState({
+  const [task] = useState({
     creatorId: 1,
     taskStatus: 1,
     assigneeId: 2,
-    title: 'Sample Task',
-    description: 'This is a description of the task.',
+    title: 'sample task',
+    description: '<p>this is a description of the task.</p>',
   });
 
   const handleEditorChange = (content) => {
-    setTask({ ...task, description: content });
+    form.setFieldsValue({ description: content });
   };
 
-  const showModal = () => {
-    setIsModalVisible(true);
-    form.resetFields();
+  const filterSort = (optionA, optionB) => {
+    const labelA = String(optionA?.label || '').toLowerCase();
+    const labelB = String(optionB?.label || '').toLowerCase();
+    return labelA.localeCompare(labelB);
   };
 
-  const hideModal = () => {
-    setIsModalVisible(false);
+  const editorOptions = {
+    buttonList: [
+      ['undo', 'redo'],
+      ['font', 'fontSize', 'formatBlock'],
+      ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript'],
+      ['fontColor', 'hiliteColor', 'textStyle'],
+      ['removeFormat'],
+      ['outdent', 'indent', 'align', 'horizontalRule', 'list', 'table'],
+      ['link', 'image'],
+      ['fullScreen', 'showBlocks', 'codeView'],
+      ['preview', 'print'],
+    ],
+    minHeight: '300px',
+    defaultTag: 'div',
   };
 
-  const onSubmit = (values) => {
-    console.log('Form Values:', values);
-    console.log('SunEditor Content:', task.description);
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsModalVisible(false);
-    }, 1000);
-  };
+  const PreviewSection = ({ content }) => (
+    <div
+      className="preview-content"
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  );
+
   const columns = [
     {
-      title: 'Task ID',
+      title: 'task id',
       dataIndex: 'key',
       key: 'key',
+      sorter: (a, b) => a.key - b.key,
     },
     {
-      title: 'Title',
+      title: 'title',
       dataIndex: 'title',
       key: 'title',
     },
     {
-      title: 'Status',
+      title: 'status',
       dataIndex: 'status',
       key: 'status',
-      sorter: (a, b) => a.key - b.key,
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
-      title: 'Priority',
+      title: 'priority',
       dataIndex: 'priority',
       key: 'priority',
-      sorter: (a, b) => a.key - b.key,
+      sorter: (a, b) => a.priority.localeCompare(b.priority),
     },
     {
-      title: 'Assigned To',
+      title: 'assigned to',
       dataIndex: 'assignedTo',
       key: 'assignedTo',
     },
     {
-      title: 'Created By',
+      title: 'created by',
       dataIndex: 'createdBy',
       key: 'createdBy',
     },
     {
-      title: 'Due Date',
+      title: 'due date',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      sorter: (a, b) => a.key - b.key,
+      sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
     },
     {
-      title: 'Action',
+      title: 'action',
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <a href="javascript:;" onClick={() => console.log(record.key)}>
-            View
-          </a>
-          <a href="javascript:;" onClick={() => console.log(record.key)}>
-            Edit
-          </a>
-          <a href="javascript:;" onClick={() => console.log(record.key)}>
-            Delete
-          </a>
+          <Button type="link" onClick={() => console.log(record.key)}>
+            view
+          </Button>
+          <Button type="link" onClick={() => console.log(record.key)}>
+            edit
+          </Button>
+          <Button type="link" danger onClick={() => console.log(record.key)}>
+            delete
+          </Button>
         </Space>
       ),
     },
@@ -131,410 +134,180 @@ const AllTasks = () => {
   const data = [
     {
       key: 1,
-      title: 'Fix login bug',
-      status: 'In Progress',
-      priority: 'High',
+      title: 'fix login bug',
+      status: 'in progress',
+      priority: 'high',
       assignedTo: 'John Doe',
       createdBy: 'John Doe',
       dueDate: '2025-02-28',
     },
     {
       key: 2,
-      title: 'Design new UI',
-      status: 'Pending',
-      priority: 'Medium',
+      title: 'design new ui',
+      status: 'pending',
+      priority: 'medium',
       assignedTo: 'Jane Smith',
       createdBy: 'John Doe',
       dueDate: '2025-03-05',
     },
     {
       key: 3,
-      title: 'Write API documentation',
-      status: 'Completed',
-      priority: 'Low',
+      title: 'write api documentation',
+      status: 'completed',
+      priority: 'low',
       assignedTo: 'Emily Davis',
       createdBy: 'John Doe',
       dueDate: '2025-02-20',
     },
     {
       key: 4,
-      title: 'Implement payment gateway',
-      status: 'In Progress',
-      priority: 'High',
+      title: 'implement payment gateway',
+      status: 'in progress',
+      priority: 'high',
       assignedTo: 'Michael Brown',
       createdBy: 'John Doe',
-
       dueDate: '2025-03-10',
     },
   ];
+
   return (
-    <Content
-      style={{
-        margin: '0 16px',
-      }}
-    >
-      <Breadcrumb
-        style={{
-          margin: '16px 0',
-        }}
-      >
-        <Breadcrumb.Item>Home</Breadcrumb.Item>
-        <Breadcrumb.Item>Tasks</Breadcrumb.Item>
+    <Content style={{ margin: '0 16px' }}>
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>home</Breadcrumb.Item>
+        <Breadcrumb.Item>tasks</Breadcrumb.Item>
       </Breadcrumb>
+
       <div
         style={{
           padding: 24,
           minHeight: 360,
           background: colorBgContainer,
           borderRadius: borderRadiusLG,
-          flexGrow: 1,
-          overflowX: 'auto',
         }}
       >
         <div
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '16px',
+            marginBottom: 16,
           }}
         >
-          <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
-          {/* <AddTask /> */}
-          <Button type="primary" onClick={showModal}>
-            Add Task
+          <h2 style={{ margin: 0 }}>tasks</h2>
+          <Button type="primary" onClick={() => setIsModalVisible(true)}>
+            add task
           </Button>
         </div>
-        <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>Date Range</p>
+
+        <Space wrap style={{ marginBottom: 24, gap: '16px' }}>
+          <Space direction="vertical" size={8}>
+            <span>date range</span>
             <RangePicker style={{ width: 385 }} />
           </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Creator </p>
-            <Select
-              showSearch
-              style={{
-                width: 200,
-              }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                {
-                  value: '1',
-                  label: 'Not Identified',
-                },
-                {
-                  value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
-                },
-              ]}
-            />
-          </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Assignee</p>
-            <Select
-              showSearch
-              style={{
-                width: 200,
-              }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                {
-                  value: '1',
-                  label: 'Not Identified',
-                },
-                {
-                  value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
-                },
-              ]}
-            />
-          </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Status </p>
-            <Select
-              showSearch
-              style={{
-                width: 200,
-              }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                {
-                  value: '1',
-                  label: 'Not Identified',
-                },
-                {
-                  value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
-                },
-              ]}
-            />
-          </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>Archived </p>
-            <Select
-              showSearch
-              style={{
-                width: 150,
-              }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                {
-                  value: '1',
-                  label: 'Not Identified',
-                },
-                {
-                  value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
-                },
-              ]}
-            />
-          </Space>
+          {['creator', 'assignee', 'status', 'archived'].map((filter) => (
+            <Space key={filter} direction="vertical" size={8}>
+              <span>by {filter}</span>
+              <Select
+                showSearch
+                style={{ width: 200 }}
+                optionFilterProp="label"
+                filterSort={filterSort}
+                options={[
+                  { value: '1', label: 'not identified' },
+                  { value: '2', label: 'closed' },
+                  { value: '3', label: 'communicated' },
+                  { value: '4', label: 'identified' },
+                  { value: '5', label: 'resolved' },
+                  { value: '6', label: 'cancelled' },
+                ]}
+              />
+            </Space>
+          ))}
         </Space>
+
         <Table
-          rowSelection={{
-            type: 'checkbox',
-          }}
-          rowKey={(record) => record.key}
           columns={columns}
           dataSource={data}
           pagination={{
+            pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
-            onShowSizeChange: onShowSizeChange,
           }}
+          rowKey="key"
         />
+
         <Modal
-          title="Task"
+          title="task details"
           open={isModalVisible}
-          onOk={form.submit}
-          onCancel={hideModal}
+          onCancel={() => setIsModalVisible(false)}
+          onOk={() => form.submit()}
           width={1000}
           confirmLoading={isProcessing}
-          style={{ top: 20 }}
         >
-          <Form layout={'vertical'} onFinish={onSubmit} form={form}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={(values) => {
+              console.log('Form values:', values);
+              setIsProcessing(true);
+              setTimeout(() => {
+                setIsProcessing(false);
+                setIsModalVisible(false);
+              }, 1000);
+            }}
+          >
             <Row gutter={24}>
               <Col span={18}>
-                <Row gutter={8}>
-                  <Col span={24}>
-                    <Form.Item
-                      label="Title"
-                      name="title"
-                      initialValue={task.title}
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Please enter the title',
-                        },
-                      ]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      label="Description"
-                      required
-                      name="description"
-                      tooltip="This is a required field"
-                      rules={[
-                        { required: true, message: 'Description is required' },
-                      ]}
-                    >
-                      {/* Render SunEditor only on the client-side */}
+                <Form.Item
+                  label="title"
+                  name="title"
+                  rules={[{ required: true, message: 'please enter a title' }]}
+                >
+                  <Input placeholder="enter task title" />
+                </Form.Item>
+
+                <Form.Item
+                  label="description"
+                  name="description"
+                  rules={[
+                    { required: true, message: 'please enter a description' },
+                  ]}
+                >
+                  <Tabs activeKey={activeTab} onChange={setActiveTab}>
+                    <TabPane tab="write" key="write">
                       <SunEditor
-                        value={task.description}
+                        setOptions={editorOptions}
                         onChange={handleEditorChange}
-                        height="250px"
-                        setOptions={{
-                          buttonList: [
-                            [
-                              'formatBlock',
-                              'bold',
-                              'underline',
-                              'italic',
-                              'strike',
-                              'fontColor',
-                              'hiliteColor',
-                              'list',
-                              'table',
-                              'link',
-                            ],
-                            ['fullScreen'],
-                          ],
-                        }}
+                        setContents={task.description}
                       />
-                    </Form.Item>
-                  </Col>
-                </Row>
+                    </TabPane>
+                    <TabPane tab="preview" key="preview">
+                      <PreviewSection
+                        content={form.getFieldValue('description') || ''}
+                      />
+                    </TabPane>
+                  </Tabs>
+                </Form.Item>
               </Col>
+
               <Col span={6}>
-                <Row gutter={8}>
-                  <Col span={24}>
-                    <Form.Item label="Status" name="taskStatus">
-                      <Select defaultValue={task.taskStatus}>
-                        <Select.Option value={1}>To Do</Select.Option>
-                        <Select.Option value={2}>In Progress</Select.Option>
-                        <Select.Option value={3}>Completed</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                <Form.Item label="status" name="status">
+                  <Select defaultValue="to do">
+                    <Select.Option value="to do">to do</Select.Option>
+                    <Select.Option value="in progress">
+                      in progress
+                    </Select.Option>
+                    <Select.Option value="completed">completed</Select.Option>
+                  </Select>
+                </Form.Item>
 
-                  <Col span={24}>
-                    <Form.Item label="Assign To" name="assigneeId">
-                      <Select defaultValue={task.assigneeId}>
-                        <Select.Option value={1}>John Doe</Select.Option>
-                        <Select.Option value={2}>Jane Doe</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                <Form.Item label="assign to" name="assignee">
+                  <Select defaultValue="john doe">
+                    <Select.Option value="john doe">john doe</Select.Option>
+                    <Select.Option value="jane smith">jane smith</Select.Option>
+                  </Select>
+                </Form.Item>
 
-                  <Col span={24}>
-                    <Form.Item label="Due Date" name="dueDate">
-                      <DatePicker style={{ width: '100%' }} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Col>
-            </Row>
-
-            {/* Optional: File Upload */}
-            <Row gutter={24}>
-              <Col span={24}>
-                <Form.Item label="File Upload">
-                  {/* Add your upload component here if needed */}
+                <Form.Item label="due date" name="dueDate">
+                  <DatePicker style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -544,4 +317,5 @@ const AllTasks = () => {
     </Content>
   );
 };
+
 export default AllTasks;
