@@ -8,6 +8,8 @@ import {
   Space,
   DatePicker,
   Select,
+  Modal,
+  Form,
 } from 'antd';
 import Sidebar from '../sidebar/Sidebar';
 import TopHeader from '../NavBar/TopHeader';
@@ -20,6 +22,14 @@ const AllTasks = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [size, setSize] = useState('medium');
+  const [open, setOpen] = useState(false);
+  const [openResponsive, setOpenResponsive] = useState(false);
+
+  const [form] = Form.useForm();
+  const [requiredMark, setRequiredMarkType] = useState('optional');
+  const onRequiredTypeChange = ({ requiredMarkValue }) => {
+    setRequiredMarkType(requiredMarkValue);
+  };
   const onShowSizeChange = (current, pageSize) => {
     console.log(current, pageSize);
   };
@@ -153,7 +163,10 @@ const AllTasks = () => {
           }}
         >
           <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
-          <AddTask />
+          {/* <AddTask /> */}
+          <Button type="primary" onClick={() => setOpenResponsive(true)}>
+            Add Task
+          </Button>
         </div>
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
@@ -385,6 +398,56 @@ const AllTasks = () => {
             onShowSizeChange: onShowSizeChange,
           }}
         />
+        <Modal
+          title="Task Form"
+          centered
+          open={openResponsive}
+          onOk={() => setOpenResponsive(false)}
+          onCancel={() => setOpenResponsive(false)}
+          width={{
+            xs: '90%',
+            sm: '80%',
+            md: '70%',
+            lg: '60%',
+            xl: '50%',
+            xxl: '40%',
+          }}
+        >
+          {/* input form goes here */}
+          <Space>
+            {/* Left side */}
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={{
+                requiredMarkValue: requiredMark,
+              }}
+              onValuesChange={onRequiredTypeChange}
+              requiredMark={
+                requiredMark === 'customize'
+                  ? customizeRequiredMark
+                  : requiredMark
+              }
+            >
+              <Form.Item
+                label="Title"
+                name="title"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input the title of the task!',
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Form>
+            <Space></Space>
+
+            {/* Right side */}
+            <Space></Space>
+          </Space>
+        </Modal>
       </div>
     </Content>
   );
