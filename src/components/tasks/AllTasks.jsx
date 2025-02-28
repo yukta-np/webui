@@ -14,10 +14,8 @@ import {
   Row,
   Col,
 } from 'antd';
-import Sidebar from '../sidebar/Sidebar';
-import TopHeader from '../navbar/TopHeader';
-import AddTask from '../popup/AddTask';
-const { Content, Footer } = Layout;
+
+const { Content } = Layout;
 const { RangePicker } = DatePicker;
 import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
