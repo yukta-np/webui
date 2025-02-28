@@ -95,6 +95,7 @@ const SecuredLayout = (props) => {
   useEffect(() => {
     setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
   }, []);
+  
   const orgSidebar = () => {
     let filteredItems = items;
 
@@ -105,9 +106,16 @@ const SecuredLayout = (props) => {
         onCollapse={onCollapse}
         zeroWidthTriggerStyle={{ display: collapsed ? 'none' : undefined }}
       >
-        <div className="logo bg-white ">
+        <div
+          className="logo bg-white p-2 flex items-center justify-center"
+          style={{ height: 64, display: 'flex', justifyContent: 'center' }}
+        >
           <Link href="/">
-            <img src="/next.png" height={70} alt="Yukta" />
+            <img
+              src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
+              height={44}
+              alt="Yukta"
+            />
           </Link>
         </div>
         <Menu
@@ -139,3 +147,4 @@ const SecuredLayout = (props) => {
 };
 
 export default SecuredLayout;
+
