@@ -10,12 +10,18 @@ import {
   Select,
   Modal,
   Form,
+  Input,
+  Row,
+  Col,
 } from 'antd';
 import Sidebar from '../sidebar/Sidebar';
-import TopHeader from '../NavBar/TopHeader';
+import TopHeader from '../navbar/TopHeader';
 import AddTask from '../popup/AddTask';
 const { Content, Footer } = Layout;
 const { RangePicker } = DatePicker;
+import dynamic from 'next/dynamic';
+const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
+import 'suneditor/dist/css/suneditor.min.css'; // Import SunEditor styles
 
 const AllTasks = () => {
   const {
@@ -32,6 +38,39 @@ const AllTasks = () => {
   };
   const onShowSizeChange = (current, pageSize) => {
     console.log(current, pageSize);
+  };
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [task, setTask] = useState({
+    creatorId: 1,
+    taskStatus: 1,
+    assigneeId: 2,
+    title: 'Sample Task',
+    description: 'This is a description of the task.',
+  });
+
+  const handleEditorChange = (content) => {
+    setTask({ ...task, description: content });
+  };
+
+  const showModal = () => {
+    setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  const hideModal = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSubmit = (values) => {
+    console.log('Form Values:', values);
+    console.log('SunEditor Content:', task.description);
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setIsModalVisible(false);
+    }, 1000);
   };
   const columns = [
     {
@@ -164,7 +203,7 @@ const AllTasks = () => {
         >
           <p style={{ fontSize: '25px', margin: 0 }}>Tasks</p>
           {/* <AddTask /> */}
-          <Button type="primary" onClick={() => setOpenResponsive(true)}>
+          <Button type="primary" onClick={showModal}>
             Add Task
           </Button>
         </div>
@@ -399,54 +438,109 @@ const AllTasks = () => {
           }}
         />
         <Modal
-          title="Task Form"
-          centered
-          open={openResponsive}
-          onOk={() => setOpenResponsive(false)}
-          onCancel={() => setOpenResponsive(false)}
-          width={{
-            xs: '90%',
-            sm: '80%',
-            md: '70%',
-            lg: '60%',
-            xl: '50%',
-            xxl: '40%',
-          }}
+          title="Task"
+          open={isModalVisible}
+          onOk={form.submit}
+          onCancel={hideModal}
+          width={1000}
+          confirmLoading={isProcessing}
+          style={{ top: 20 }}
         >
-          {/* input form goes here */}
-          <Space>
-            {/* Left side */}
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={{
-                requiredMarkValue: requiredMark,
-              }}
-              onValuesChange={onRequiredTypeChange}
-              requiredMark={
-                requiredMark === 'customize'
-                  ? customizeRequiredMark
-                  : requiredMark
-              }
-            >
-              <Form.Item
-                label="Title"
-                name="title"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input the title of the task!',
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-            </Form>
-            <Space></Space>
+          <Form layout={'vertical'} onFinish={onSubmit} form={form}>
+            <Row gutter={24}>
+              <Col span={18}>
+                <Row gutter={8}>
+                  <Col span={24}>
+                    <Form.Item
+                      label="Title"
+                      name="title"
+                      initialValue={task.title}
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please enter the title',
+                        },
+                      ]}
+                    >
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col span={24}>
+                    <Form.Item
+                      label="Description"
+                      required
+                      name="description"
+                      tooltip="This is a required field"
+                      rules={[
+                        { required: true, message: 'Description is required' },
+                      ]}
+                    >
+                      {/* Render SunEditor only on the client-side */}
+                      <SunEditor
+                        value={task.description}
+                        onChange={handleEditorChange}
+                        height="250px"
+                        setOptions={{
+                          buttonList: [
+                            [
+                              'formatBlock',
+                              'bold',
+                              'underline',
+                              'italic',
+                              'strike',
+                              'fontColor',
+                              'hiliteColor',
+                              'list',
+                              'table',
+                              'link',
+                            ],
+                            ['fullScreen'],
+                          ],
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={6}>
+                <Row gutter={8}>
+                  <Col span={24}>
+                    <Form.Item label="Status" name="taskStatus">
+                      <Select defaultValue={task.taskStatus}>
+                        <Select.Option value={1}>To Do</Select.Option>
+                        <Select.Option value={2}>In Progress</Select.Option>
+                        <Select.Option value={3}>Completed</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
 
-            {/* Right side */}
-            <Space></Space>
-          </Space>
+                  <Col span={24}>
+                    <Form.Item label="Assign To" name="assigneeId">
+                      <Select defaultValue={task.assigneeId}>
+                        <Select.Option value={1}>John Doe</Select.Option>
+                        <Select.Option value={2}>Jane Doe</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={24}>
+                    <Form.Item label="Due Date" name="dueDate">
+                      <DatePicker style={{ width: '100%' }} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            {/* Optional: File Upload */}
+            <Row gutter={24}>
+              <Col span={24}>
+                <Form.Item label="File Upload">
+                  {/* Add your upload component here if needed */}
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
         </Modal>
       </div>
     </Content>

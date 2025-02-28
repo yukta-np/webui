@@ -15,7 +15,7 @@ import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
 import { Layout, Menu } from 'antd';
 import Link from 'next/link';
 import { Footer } from 'antd/es/layout/layout';
-import TopHeader from '../NavBar/TopHeader';
+import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 

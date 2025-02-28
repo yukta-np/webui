@@ -1,13 +1,9 @@
 import React from 'react';
 import Sidebar from '../sidebar/Sidebar';
-import TopHeader from '../NavBar/TopHeader';
+import TopHeader from '../navbar/TopHeader';
 
 const Dashboard = () => {
-  return (
-    <>
-    haha
-    </>
-  );
+  return <>haha</>;
 };
 
 export default Dashboard;
