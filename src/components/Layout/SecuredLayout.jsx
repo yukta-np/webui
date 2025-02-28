@@ -95,7 +95,7 @@ const SecuredLayout = (props) => {
   useEffect(() => {
     setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
   }, []);
-  
+
   const orgSidebar = () => {
     let filteredItems = items;
 
@@ -114,6 +114,7 @@ const SecuredLayout = (props) => {
             <img
               src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
               height={44}
+              style={{ marginTop: '8px', transition: 'width 0.3s' }}
               alt="Yukta"
             />
           </Link>
@@ -147,4 +148,3 @@ const SecuredLayout = (props) => {
 };
 
 export default SecuredLayout;
-
