@@ -1,16 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import {
-   DesktopOutlined,
-   FileOutlined,
-   PieChartOutlined,
-   TeamOutlined,
-   UserOutlined,
+  DashboardOutlined,
+  ScheduleOutlined,
+  CheckSquareOutlined,
+  CalendarOutlined,
+  FolderOpenOutlined,
+  NotificationOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
-
-
 
 function getItem(label, key, icon, children) {
   return {
@@ -20,22 +20,23 @@ function getItem(label, key, icon, children) {
     label,
   };
 }
+
 const items = [
-  getItem('Dashboard', '1', <PieChartOutlined />),
-  getItem('Routine', '2', <DesktopOutlined />),
-  getItem('Tasks', '3', <UserOutlined />, [
+  getItem('Dashboard', '1', <DashboardOutlined />),
+  getItem('Routine', '2', <ScheduleOutlined />),
+  getItem('Tasks', '3', <CheckSquareOutlined />, [
     getItem('My Tasks', '4'),
     getItem("My Team's Tasks", '5'),
     getItem('All Tasks', '6'),
   ]),
-  getItem('Leave Request', '7', <TeamOutlined />, [
+  getItem('Leave Request', '7', <CalendarOutlined />, [
     getItem('My Leave Request', '8'),
     getItem("My Team's Leave Request", '9'),
   ]),
-  getItem('Documents', '10', <FileOutlined />),
-  getItem('Announcements', '11', <FileOutlined />),
-  getItem('Calender', '12', <FileOutlined />),
-  getItem('Settings', '13', <FileOutlined />),
+  getItem('Documents', '10', <FolderOpenOutlined />),
+  getItem('Announcements', '11', <NotificationOutlined />),
+  getItem('Calendar', '12', <CalendarOutlined />),
+  getItem('Settings', '13', <SettingOutlined />),
 ];
 
 const Sidebar = () => {
@@ -48,7 +49,6 @@ const Sidebar = () => {
       collapsible
       collapsed={collapsed}
       onCollapse={(value) => setCollapsed(value)}
-      
     >
       <div className="demo-logo-vertical" />
       <Menu
@@ -59,6 +59,6 @@ const Sidebar = () => {
       />
     </Sider>
   );
-}
+};
 
-export default Sidebar
+export default Sidebar;
