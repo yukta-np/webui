@@ -69,6 +69,7 @@ const TopHeader = () => {
           paddingLeft: screens.xs ? '8px' : '16px',
           justifyContent: 'space-between',
           gap: '40px',
+          marginRight: '40px',
         }}
       >
         <Badge
@@ -111,7 +112,7 @@ const TopHeader = () => {
       </Space>
 
       {/* avatar */}
-         <Space
+      <Space
         align="center"
         style={{
           marginRight: '30px',
