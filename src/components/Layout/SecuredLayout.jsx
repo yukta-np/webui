@@ -68,16 +68,19 @@ const SecuredLayout = (props) => {
       icon: <FormOutlined />,
       children: [
         {
-          label: <Link href="/my-leave-request">My Leave Request</Link>,
+          label: <Link href="/leave-request/my-leave">My Request</Link>,
           key: 'my-leave-request',
           icon: <FormOutlined />,
         },
         {
-          label: (
-            <Link href="/my-team-leave-request">My Team's Leave Request</Link>
-          ),
+          label: <Link href="/leave-request/team-leave">Team's Request</Link>,
           key: 'my-team-leave-request',
           icon: <TeamOutlined />,
+        },
+        {
+          label: <Link href="/leave-request">All Request</Link>,
+          key: 'all-leave-request',
+          icon: <UnorderedListOutlined />,
         },
       ],
     },
