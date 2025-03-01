@@ -18,16 +18,19 @@ import {
   Menu,
   Grid,
   Tag,
+  Mentions,
 } from 'antd';
 import {
   MoreOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  MessageOutlined,
   InboxOutlined,
   FileImageOutlined,
 } from '@ant-design/icons';
+
+import { FaCommentAlt, FaEdit } from 'react-icons/fa';
+import { RiDeleteBin6Fill } from 'react-icons/ri';
 
 import { Upload } from 'antd';
 const { Dragger } = Upload;
@@ -39,6 +42,7 @@ const { TabPane } = Tabs;
 import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
+import CommentSection from '@/components/comment/CommentSection';
 
 const TaskList = ({
   isAllTask = false,
@@ -46,7 +50,6 @@ const TaskList = ({
   isMyTeamTask = false,
 }) => {
   const screens = useBreakpoint();
-  console.log({ isAllTask, isMyTask, isMyTeamTask });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -165,20 +168,20 @@ const TaskList = ({
           <Space size="middle">
             <Button
               type="link"
-              icon={<MessageOutlined />}
-              onClick={() => console.log(record.key)}
+              icon={<FaCommentAlt />}
+              onClick={showCommentModal}
             />
             {!isMyTask && (
               <>
                 <Button
                   type="link"
-                  icon={<EditOutlined />}
+                  icon={<FaEdit />}
                   onClick={() => console.log(record.key)}
                 />
                 <Button
                   type="link"
                   danger
-                  icon={<DeleteOutlined />}
+                  icon={<RiDeleteBin6Fill />}
                   onClick={() => console.log(record.key)}
                 />
               </>
@@ -253,6 +256,70 @@ const TaskList = ({
       dueDate: '2025-03-10',
     },
   ];
+
+  //For comments
+
+  const [comments, setComments] = useState([
+    {
+      id: 1,
+      author: 'John Doe',
+      content: 'This is a comment about the task.',
+      date: '2025-03-01 10:00 AM',
+    },
+    {
+      id: 2,
+      author: 'Jane Smith',
+      content: 'I have some updates on this task. Please review.',
+      date: '2025-03-02 11:00 AM',
+    },
+    {
+      id: 3,
+      author: 'Michael Johnson',
+      content: 'I will be working on this task tomorrow.',
+      date: '2025-03-03 09:30 AM',
+    },
+    {
+      id: 4,
+      author: 'Sarah Williams',
+      content: 'This task is progressing well, everything looks good.',
+      date: '2025-03-04 01:45 PM',
+    },
+    {
+      id: 5,
+      author: 'David Lee',
+      content: 'The task is on hold for now due to some blockers.',
+      date: '2025-03-05 03:00 PM',
+    },
+  ]);
+
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+
+  const [newComment, setNewComment] = useState('');
+
+  const handleNewComment = (comment) => {
+    setComments([
+      ...comments,
+      {
+        id: comments.length + 1,
+        author: 'Current User',
+        content: comment,
+        date: new Date().toLocaleString(),
+      },
+    ]);
+    setNewComment('');
+  };
+
+  const onCommentChange = (value) => {
+    setNewComment(value);
+  };
+
+  const showCommentModal = () => {
+    setIsCommentModalVisible(true);
+  };
+
+  const hideCommentModal = () => {
+    setIsCommentModalVisible(false);
+  };
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
@@ -669,6 +736,57 @@ const TaskList = ({
               </Col>
             </Row>
           </Form>
+        </Modal>
+        <Modal
+          title="Task Comments"
+          open={isCommentModalVisible}
+          onCancel={hideCommentModal}
+          footer={null}
+          style={{ top: 20 }}
+        >
+          <div
+            style={{
+              maxHeight: '500px',
+              overflowY: 'auto',
+              paddingBottom: '80px',
+            }}
+          >
+            <CommentSection comments={comments} />
+          </div>
+
+          {/* Fixed Mention box and Submit Button */}
+          <div
+            style={{
+              bottom: '0',
+              width: '100%',
+              background: 'white',
+              padding: '16px',
+            }}
+          >
+            <Mentions
+              value={newComment}
+              onChange={onCommentChange}
+              placeholder="Add your comment"
+              style={{
+                width: '100%',
+                marginBottom: '8px',
+                minHeight: '80px',
+              }}
+              suggestions={[
+                { label: '@John Doe', value: '@John Doe' },
+                { label: '@Jane Smith', value: '@Jane Smith' },
+                { label: '@Michael Johnson', value: '@Michael Johnson' },
+              ]}
+            />
+            <Button
+              type="primary"
+              block
+              onClick={() => handleNewComment(newComment)}
+              disabled={!newComment.trim()}
+            >
+              Submit Comment
+            </Button>
+          </div>
         </Modal>
       </div>
     </Content>
