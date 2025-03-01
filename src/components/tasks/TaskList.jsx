@@ -17,13 +17,20 @@ import {
   Dropdown,
   Menu,
   Grid,
+  Tag,
 } from 'antd';
 import {
   MoreOutlined,
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
+  MessageOutlined,
+  InboxOutlined,
+  FileImageOutlined,
 } from '@ant-design/icons';
+
+import { Upload } from 'antd';
+const { Dragger } = Upload;
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -33,8 +40,13 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 
-const AllTasks = () => {
+const TaskList = ({
+  isAllTask = false,
+  isMyTask = false,
+  isMyTeamTask = false,
+}) => {
   const screens = useBreakpoint();
+  console.log({ isAllTask, isMyTask, isMyTeamTask });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -90,12 +102,21 @@ const AllTasks = () => {
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
+      render: (text) => <a>TASK-{text}</a>,
+      width: '5%',
     },
     {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+      key: 'category',
+      sorter: (a, b) => a.category.localeCompare(b.category),
+      responsive: ['md'],
     },
     {
       title: 'Status',
@@ -111,14 +132,19 @@ const AllTasks = () => {
       sorter: (a, b) => a.priority.localeCompare(b.priority),
       responsive: ['lg'],
     },
+    ...(!isMyTask
+      ? [
+          {
+            title: 'Assigned To',
+            dataIndex: 'assignedTo',
+            key: 'assignedTo',
+            responsive: ['md'],
+          },
+        ]
+      : []),
+
     {
-      title: 'Assigned',
-      dataIndex: 'assignedTo',
-      key: 'assignedTo',
-      responsive: ['md'],
-    },
-    {
-      title: 'Creator',
+      title: 'Created By',
       dataIndex: 'createdBy',
       key: 'createdBy',
       responsive: ['lg'],
@@ -131,27 +157,32 @@ const AllTasks = () => {
       responsive: ['sm'],
     },
     {
-      title: 'Actions',
+      title: 'Action',
       key: 'action',
+      width: '10%',
       render: (_, record) =>
         screens.md ? (
           <Space size="middle">
             <Button
               type="link"
-              icon={<EyeOutlined />}
+              icon={<MessageOutlined />}
               onClick={() => console.log(record.key)}
             />
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => console.log(record.key)}
-            />
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => console.log(record.key)}
-            />
+            {!isMyTask && (
+              <>
+                <Button
+                  type="link"
+                  icon={<EditOutlined />}
+                  onClick={() => console.log(record.key)}
+                />
+                <Button
+                  type="link"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => console.log(record.key)}
+                />
+              </>
+            )}
           </Space>
         ) : (
           <Dropdown
@@ -181,6 +212,7 @@ const AllTasks = () => {
     {
       key: 1,
       title: 'fix login bug',
+      category: 'bug',
       status: 'in progress',
       priority: 'high',
       assignedTo: 'John Doe',
@@ -190,6 +222,8 @@ const AllTasks = () => {
     {
       key: 2,
       title: 'design new ui',
+      category: 'bug',
+
       status: 'pending',
       priority: 'medium',
       assignedTo: 'Jane Smith',
@@ -199,6 +233,8 @@ const AllTasks = () => {
     {
       key: 3,
       title: 'write api documentation',
+      category: 'bug',
+
       status: 'completed',
       priority: 'low',
       assignedTo: 'Emily Davis',
@@ -208,6 +244,8 @@ const AllTasks = () => {
     {
       key: 4,
       title: 'implement payment gateway',
+      category: 'bug',
+
       status: 'in progress',
       priority: 'high',
       assignedTo: 'Michael Brown',
@@ -221,6 +259,9 @@ const AllTasks = () => {
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>Home</Breadcrumb.Item>
         <Breadcrumb.Item>Tasks</Breadcrumb.Item>
+        <Breadcrumb.Item>
+          {isMyTask ? 'My Task' : isAllTask ? 'All Task' : 'My Team Task'}
+        </Breadcrumb.Item>
       </Breadcrumb>
 
       <div
@@ -246,35 +287,224 @@ const AllTasks = () => {
           </Button>
         </div>
 
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={24} md={12} lg={6}>
-            <Space direction="vertical" size={8} style={{ width: '100%' }}>
-              <span>Date</span>
-              <RangePicker style={{ width: '100%' }} />
-            </Space>
-          </Col>
-          {['creator', 'assignee', 'status', 'archived'].map((filter) => (
-            <Col key={filter} xs={24} md={12} lg={6}>
-              <Space direction="vertical" size={8} style={{ width: '100%' }}>
-                <span>{filter.charAt(0).toUpperCase() + filter.slice(1)}</span>
-                <Select
-                  showSearch
-                  style={{ width: '100%' }}
-                  optionFilterProp="label"
-                  filterSort={filterSort}
-                  options={[
-                    { value: '1', label: 'Not identified' },
-                    { value: '2', label: 'Closed' },
-                    { value: '3', label: 'Communicated' },
-                    { value: '4', label: 'Identified' },
-                    { value: '5', label: 'Resolved' },
-                    { value: '6', label: 'Cancelled' },
-                  ]}
-                />
-              </Space>
-            </Col>
-          ))}
-        </Row>
+        <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>Date Range</p>
+            <RangePicker style={{ width: 385 }} />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Creator </p>
+            <Select
+              showSearch
+              style={{
+                width: 200,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Assignee</p>
+            <Select
+              showSearch
+              style={{
+                width: 200,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>By Status </p>
+            <Select
+              showSearch
+              style={{
+                width: 200,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+            <p>Archived </p>
+            <Select
+              showSearch
+              style={{
+                width: 150,
+              }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={[
+                {
+                  value: '1',
+                  label: 'Not Identified',
+                },
+                {
+                  value: '2',
+                  label: 'Closed',
+                },
+                {
+                  value: '3',
+                  label: 'Communicated',
+                },
+                {
+                  value: '4',
+                  label: 'Identified',
+                },
+                {
+                  value: '5',
+                  label: 'Resolved',
+                },
+                {
+                  value: '6',
+                  label: 'Cancelled',
+                },
+                {
+                  value: '7',
+                  label: 'Duplicate',
+                },
+                {
+                  value: '8',
+                  label: 'Invalid',
+                },
+                {
+                  value: '9',
+                  label: "Won't Fix",
+                },
+              ]}
+            />
+          </Space>
+        </Space>
 
         <Table
           columns={columns}
@@ -348,6 +578,20 @@ const AllTasks = () => {
                     </TabPane>
                   </Tabs>
                 </Form.Item>
+                <Form.Item>
+                  <Dragger>
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined />
+                    </p>
+                    <p className="ant-upload-text">
+                      Click or drag file to this area to upload
+                    </p>
+                    <p className="ant-upload-hint">
+                      Support for a single or bulk upload. Strictly prohibited
+                      from uploading company data or other banned files.
+                    </p>
+                  </Dragger>
+                </Form.Item>
               </Col>
 
               <Col xs={24} lg={6}>
@@ -404,6 +648,23 @@ const AllTasks = () => {
                       </Select>
                     </Form.Item>
                   </Col>
+
+                  <Col xs={24} md={12} lg={24}>
+                    <Form.Item label="Uploaded Files" name="files">
+                      {/* show uploaded files with attachments icon */}
+                      <Space>
+                        {form.getFieldValue('files')?.map((file) => (
+                          <Tag key={file.uid} closable>
+                            <FileImageOutlined />
+                            {file.name}
+                          </Tag>
+                        ))}
+                        {!form.getFieldValue('files')?.length && (
+                          <Tag>No files uploaded</Tag>
+                        )}
+                      </Space>
+                    </Form.Item>
+                  </Col>
                 </Row>
               </Col>
             </Row>
@@ -414,4 +675,4 @@ const AllTasks = () => {
   );
 };
 
-export default AllTasks;
+export default TaskList;

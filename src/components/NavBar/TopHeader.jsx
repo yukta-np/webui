@@ -83,7 +83,10 @@ const TopHeader = () => {
           gap: screens.xs ? '12px' : '24px',
         }}
       >
-        <Space size={screens.xs ? 'small' : 'middle'}>
+        <Space
+          size={screens.xs ? 'small' : 'middle'}
+          style={{ marginRight: '30px', gap: '50px' }}
+        >
           <Badge
             count={5}
             style={{
