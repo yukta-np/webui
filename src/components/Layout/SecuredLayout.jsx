@@ -22,7 +22,6 @@ import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
 
-
 const SecuredLayout = (props) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -47,18 +46,18 @@ const SecuredLayout = (props) => {
       icon: <CheckCircleOutlined />,
       children: [
         {
-          label: <Link href="/my-tasks">My Tasks</Link>,
-          key: 'my-tasks',
+          label: <Link href="/tasks/my-task">My Tasks</Link>,
+          key: 'my-task',
           icon: <CheckCircleOutlined />,
         },
         {
-          label: <Link href="/my-team-tasks">My Team's Tasks</Link>,
-          key: 'my-team-tasks',
+          label: <Link href="/tasks/my-team">My Team's Tasks</Link>,
+          key: 'my-team',
           icon: <TeamOutlined />,
         },
         {
-          label: <Link href="/all-tasks">All Tasks</Link>,
-          key: 'all-tasks',
+          label: <Link href="/tasks">All Tasks</Link>,
+          key: 'tasks',
           icon: <UnorderedListOutlined />,
         },
       ],
