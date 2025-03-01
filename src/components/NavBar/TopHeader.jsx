@@ -15,7 +15,6 @@ import {
   BellOutlined,
   NotificationOutlined,
   SearchOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
 
 const { Header } = Layout;
@@ -47,7 +46,7 @@ const TopHeader = () => {
   };
   const getRoleForHumans = (role) => {
     const roles = {
-      admin: 'Administrator',
+      admin: 'Admin',
       user: 'User',
       editor: 'Editor',
     };
