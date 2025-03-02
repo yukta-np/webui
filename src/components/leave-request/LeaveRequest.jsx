@@ -22,6 +22,7 @@ import {
   DatePicker,
   Switch,
   InputNumber,
+  Popconfirm,
 } from 'antd';
 import {
   MoreOutlined,
@@ -54,7 +55,6 @@ const LeaveRequest = ({
   const [action, setAction] = useState('add');
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
-  console.log(transfer);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -74,11 +74,35 @@ const LeaveRequest = ({
     openModal();
   };
 
+  const onReviewClick = () => {
+    setAction('review');
+    openModal();
+  };
+
+  const onEditClick = () => {
+    setAction('edit');
+    openModal();
+  };
+
+  const onDeleteClick = () => {
+    return (
+      <Popconfirm
+        title="Delete the task"
+        description="Are you sure to delete this task?"
+        okText="Yes"
+        cancelText="No"
+      />
+    );
+  };
   const getTitle = () => {
     if (action === 'add') {
       return 'Apply for Leave';
     } else if (action === 'accept-reject') {
       return 'Accept / Reject Leave';
+    } else if (action === 'review') {
+      return 'Review Leave Request';
+    } else if (action === 'edit') {
+      return 'Edit Leave Request';
     }
   };
 
@@ -145,20 +169,16 @@ const LeaveRequest = ({
       render: (_, record) =>
         screens.md ? (
           <Space size="middle">
-            <Button type="link" icon={<FaEye />} />
+            <Button type="link" icon={<FaEye />} onClick={onReviewClick} />
 
-            <Button
-              type="link"
-              icon={<FaEdit />}
-              onClick={() => console.log(record.key)}
-            />
+            <Button type="link" icon={<FaEdit />} onClick={onEditClick} />
             {isMyLeave && (
               <>
                 <Button
                   type="link"
                   danger
                   icon={<RiDeleteBin6Fill />}
-                  onClick={() => console.log(record.key)}
+                  onClick={onDeleteClick}
                 />
               </>
             )}
@@ -276,6 +296,50 @@ const LeaveRequest = ({
             Add New
           </Button>
         </div>
+        {!isMyLeave && (
+          <Space>
+            <Space direction="vertical" style={{ marginBottom: 16 }}>
+              <p>Filter By</p>
+              <Select
+                showSearch
+                placeholder="Teacher / Staff Member"
+                filterOption={(input, option) =>
+                  (option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                options={[
+                  { value: '1', label: 'Jack' },
+                  { value: '2', label: 'Lucy' },
+                  { value: '3', label: 'Tom' },
+                ]}
+                style={{ width: 300 }}
+              />
+            </Space>
+
+            <Space
+              direction="vertical"
+              style={{ width: '200px', marginLeft: 16, marginBottom: 16 }}
+            >
+              <p>Status</p>
+              <Select
+                showSearch
+                placeholder="Status"
+                filterOption={(input, option) =>
+                  (option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                options={[
+                  { value: '1', label: 'Jack' },
+                  { value: '2', label: 'Lucy' },
+                  { value: '3', label: 'Tom' },
+                ]}
+                style={{ width: '100%' }}
+              />
+            </Space>
+          </Space>
+        )}
 
         <Table
           columns={columns}
@@ -302,7 +366,7 @@ const LeaveRequest = ({
           footer={null}
         >
           <Divider />
-          <Form layout="vertical">
+          <Form layout="vertical" disabled={action === 'review'}>
             {action === 'accept-reject' && (
               <Row>
                 <Col span={12}>
@@ -311,7 +375,12 @@ const LeaveRequest = ({
                     label="Logged Date/Time"
                     initialValue={moment()} // Set the initialValue to moment()
                   >
-                    <DatePicker showTime disabled format="DD/MM/YYYY hh:mm A" />
+                    <DatePicker
+                      showTime
+                      disabled
+                      format="DD/MM/YYYY hh:mm A"
+                      value={moment()}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -335,10 +404,8 @@ const LeaveRequest = ({
                   width="100%"
                 >
                   <Select placeholder="Select a teacher or staff member">
-                    <Select.Option value="sick leave">Sick Leave</Select.Option>
-                    <Select.Option value="casual leave">
-                      Casual Leave
-                    </Select.Option>
+                    <Select.Option value="sick leave">John Doe</Select.Option>
+                    <Select.Option value="casual leave">Jane Doe</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
@@ -350,6 +417,7 @@ const LeaveRequest = ({
                 label="Leave Type"
                 rules={[{ required: true }]}
                 width="100%"
+                initialValue={action === 'review' ? data.leaveType : ''}
               >
                 <Select>
                   <Select.Option value="sick leave">Sick Leave</Select.Option>
@@ -361,7 +429,7 @@ const LeaveRequest = ({
             </Col>
             <Form.Item>
               <p style={{ marginBottom: '5px' }}>All Day?</p>
-              <Switch />
+              <Switch dis />
             </Form.Item>
             <Row gutter={16} style={{ width: '100%' }}>
               <Col span={12}>
@@ -370,7 +438,12 @@ const LeaveRequest = ({
                   label="From"
                   rules={[{ required: true }]}
                 >
-                  <DatePicker presets={dateRanges} style={{ width: '100%' }} />
+                  <DatePicker
+                    showTime
+                    format="DD/MM/YYYY hh:mm A"
+                    ranges={dateRanges}
+                    style={{ width: '100%' }}
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -379,7 +452,12 @@ const LeaveRequest = ({
                   label="To"
                   rules={[{ required: true }]}
                 >
-                  <DatePicker presets={dateRanges} style={{ width: '100%' }} />
+                  <DatePicker
+                    showTime
+                    format="DD/MM/YYYY hh:mm A"
+                    ranges={dateRanges}
+                    style={{ width: '100%' }}
+                  />
                 </Form.Item>
               </Col>
             </Row>

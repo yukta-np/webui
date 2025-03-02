@@ -348,7 +348,9 @@ const TaskList = ({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0 }}>Tasks</h2>
+          <h2 style={{ margin: 0 }}>
+            {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
+          </h2>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
             Add Task
           </Button>
