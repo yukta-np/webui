@@ -43,6 +43,7 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
+import { dateRanges } from '@/utils';
 
 const TaskList = ({
   isAllTask = false,
@@ -105,7 +106,7 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text) => <a>TASK-{text}</a>,
+      render: (text) => <a>TSK-{text}</a>,
       width: '5%',
     },
     {
@@ -325,7 +326,6 @@ const TaskList = ({
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>Home</Breadcrumb.Item>
-        <Breadcrumb.Item>Tasks</Breadcrumb.Item>
         <Breadcrumb.Item>
           {isMyTask ? 'My Task' : isAllTask ? 'All Task' : 'My Team Task'}
         </Breadcrumb.Item>
@@ -348,7 +348,9 @@ const TaskList = ({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0 }}>Tasks</h2>
+          <h2 style={{ margin: 0 }}>
+            {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
+          </h2>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
             Add Task
           </Button>
@@ -357,7 +359,7 @@ const TaskList = ({
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>Date Range</p>
-            <RangePicker style={{ width: 385 }} />
+            <RangePicker presets={dateRanges} style={{ width: 385 }} />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>By Creator </p>
@@ -690,7 +692,10 @@ const TaskList = ({
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Due date" name="dueDate">
-                      <DatePicker style={{ width: '100%' }} />
+                      <DatePicker
+                        presets={dateRanges}
+                        style={{ width: '100%' }}
+                      />
                     </Form.Item>
                   </Col>
 
