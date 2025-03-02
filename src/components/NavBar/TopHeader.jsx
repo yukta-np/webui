@@ -36,7 +36,7 @@ const TopHeader = () => {
 
   const loggedInUser = {
     avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg', // Replace with an actual image URL
-    fullName: 'John Doe',
+    fullName: 'Abishek Ghimire',
     role: 'admin', // Example role
   };
 
@@ -144,36 +144,41 @@ const TopHeader = () => {
         align="center"
         style={{ marginLeft: 'auto' }}
       >
-        <Badge
-          count={5}
-          style={{
-            boxShadow: `0 0 0 2px ${colorBgContainer}`,
-            cursor: 'pointer',
-          }}
-        >
-          <BellOutlined
-            style={{ fontSize: '20px', color: colorTextSecondary }}
-          />
-        </Badge>
+        <Space className="gap-9 mr-2">
+          <Badge
+            count={5}
+            style={{
+              boxShadow: `0 0 0 2px ${colorBgContainer}`,
+              cursor: 'pointer',
+            }}
+          >
+            <BellOutlined
+              style={{ fontSize: '20px', color: colorTextSecondary }}
+            />
+          </Badge>
 
-        <Badge
-          count={5}
-          style={{
-            boxShadow: `0 0 0 2px ${colorBgContainer}`,
-            cursor: 'pointer',
-          }}
-        >
-          <NotificationOutlined
-            style={{ fontSize: '20px', color: colorTextSecondary }}
-          />
-        </Badge>
+          <Badge
+            count={5}
+            style={{
+              boxShadow: `0 0 0 2px ${colorBgContainer}`,
+              cursor: 'pointer',
+            }}
+          >
+            <NotificationOutlined
+              style={{ fontSize: '20px', color: colorTextSecondary }}
+            />
+          </Badge>
+        </Space>
 
         <Dropdown menu={{ items: menuItems }} trigger={['click']}>
           <a className="ant-dropdown-link">
             <Button type="text">
               <Space className="text-left">
                 {loggedInUser?.avatarUrl ? (
-                  <Avatar style={{ marginBottom: '8px' }} src={loggedInUser?.avatarUrl} />
+                  <Avatar
+                    style={{ marginBottom: '8px' }}
+                    src={loggedInUser?.avatarUrl}
+                  />
                 ) : (
                   <Avatar style={{ backgroundColor: '#87d068' }}>
                     {loggedInUser && loggedInUser?.fullName?.toUpperCase()[0]}

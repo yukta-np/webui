@@ -86,20 +86,22 @@ const SecuredLayout = ({ children }) => {
       icon: <FormOutlined />,
       children: [
         {
-          label: <Link href="/leave-request/my-leave">My Request</Link>,
+          label: 'My Request',
           key: 'my-leave-request',
           icon: <FormOutlined />,
-          href: '/my-leave-request',
+          href: '/leave-request/my-leave',
         },
         {
-          label: <Link href="/leave-request/team-leave">Team's Request</Link>,
+          label: "Team's Request",
           key: 'my-team-leave-request',
           icon: <TeamOutlined />,
+          href: '/leave-request/team-leave',
         },
         {
-          label: <Link href="/leave-request">All Request</Link>,
+          label: 'All Request',
           key: 'all-leave-request',
           icon: <UnorderedListOutlined />,
+          href: '/leave-request',
         },
       ],
     },

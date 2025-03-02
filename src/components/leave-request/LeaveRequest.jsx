@@ -285,13 +285,13 @@ const LeaveRequest = ({
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0 }}>
+          <p className="text-xl font-bold">
             {isMyLeave
               ? 'My Leave'
               : isAllLeave
               ? 'All Leave'
               : "My Team's Leave"}
-          </h2>
+          </p>
           <Button type="primary" onClick={onAddClick}>
             Add New
           </Button>
