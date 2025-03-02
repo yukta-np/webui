@@ -13,7 +13,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
-import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
 import { Footer } from 'antd/es/layout/layout';
@@ -21,24 +20,40 @@ import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
+import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
 
-const SecuredLayout = (props) => {
+const { Content } = Layout;
+
+const SecuredLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
   const cookies = new Cookies();
   const size = useWindowSize();
 
-  const items = [
+  useEffect(() => {
+    setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
+  }, []);
+
+  const onCollapse = (value) => {
+    cookies.set(COOKIE_SIDEBER_COLLAPSED, value, { path: '/' });
+    setCollapsed(value);
+  };
+
+  const toggleDrawer = () => setDrawerVisible(!drawerVisible);
+
+  const menuItems = [
     {
-      label: <Link href="/dashboard">Dashboard</Link>,
+      label: 'Dashboard',
       key: 'dashboard',
       icon: <PieChartOutlined />,
+      href: '/dashboard',
     },
     {
-      label: <Link href="/routine">Routine</Link>,
+      label: 'Routine',
       key: 'routine',
       icon: <CalendarOutlined />,
+      href: '/routine',
     },
     {
       label: 'Tasks',
@@ -46,19 +61,22 @@ const SecuredLayout = (props) => {
       icon: <CheckCircleOutlined />,
       children: [
         {
-          label: <Link href="/tasks/my-task">My Tasks</Link>,
+          label: 'My Tasks',
           key: 'my-task',
           icon: <CheckCircleOutlined />,
+          href: '/tasks/my-task',
         },
         {
-          label: <Link href="/tasks/my-team">My Team's Tasks</Link>,
+          label: "My Team's Tasks",
           key: 'my-team',
           icon: <TeamOutlined />,
+          href: '/tasks/my-team',
         },
         {
-          label: <Link href="/tasks">All Tasks</Link>,
-          key: 'tasks',
+          label: 'All Tasks',
+          key: 'AllTasks',
           icon: <UnorderedListOutlined />,
+          href: '/tasks',
         },
       ],
     },
@@ -71,6 +89,7 @@ const SecuredLayout = (props) => {
           label: <Link href="/leave-request/my-leave">My Request</Link>,
           key: 'my-leave-request',
           icon: <FormOutlined />,
+          href: '/my-leave-request',
         },
         {
           label: <Link href="/leave-request/team-leave">Team's Request</Link>,
@@ -85,108 +104,113 @@ const SecuredLayout = (props) => {
       ],
     },
     {
-      label: <Link href="/documents">Documents</Link>,
+      label: 'Documents',
       key: 'documents',
       icon: <FileTextOutlined />,
+      href: '/documents',
     },
     {
-      label: <Link href="/announcements">Announcements</Link>,
+      label: 'Announcements',
       key: 'announcements',
       icon: <NotificationOutlined />,
+      href: '/announcements',
     },
     {
-      label: <Link href="/calender">Calender</Link>,
-      key: 'calender',
+      label: 'Calendar',
+      key: 'calendar',
       icon: <CalendarOutlined />,
+      href: '/calendar',
     },
     {
-      label: <Link href="/settings">Settings</Link>,
+      label: 'Settings',
       key: 'settings',
       icon: <SettingOutlined />,
+      href: '/settings',
     },
   ];
 
-  const onCollapse = (collapsed) => {
-    cookies.set(COOKIE_SIDEBER_COLLAPSED, collapsed, { path: '/' });
-    setCollapsed(collapsed);
-  };
+  const renderMenu = (items) =>
+    items.map(({ label, key, icon, href, children }) =>
+      children
+        ? { label, key, icon, children: renderMenu(children) }
+        : { label: <Link href={href}>{label}</Link>, key, icon }
+    );
 
-  useEffect(() => {
-    setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
-  }, []);
-
-  const toggleDrawer = () => {
-    setDrawerVisible(!drawerVisible);
-  };
-
-  const orgSidebar = () => (
-    <>
-      {size.width > 768 ? (
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={onCollapse}
-          breakpoint="md"
-          collapsedWidth="80"
-        >
-          <div className="logo bg-white p-2 flex items-center justify-center">
-            <Link href="/">
-              <img
-                src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
-                height={44}
-                style={{ marginTop: '8px', transition: 'width 0.3s' }}
-                alt="Yukta"
-              />
-            </Link>
-          </div>
-          <Menu
-            theme="dark"
-            defaultSelectedKeys={[router.route]}
-            mode="inline"
-            items={items}
+  const sidebar = (
+    <Sider
+      collapsible
+      collapsed={collapsed}
+      onCollapse={onCollapse}
+      breakpoint="md"
+      collapsedWidth={80}
+      style={{
+        overflow: 'auto',
+        height: '100vh',
+        position: 'fixed',
+        left: 0,
+        transition: 'all 0.3s ease-in-out',
+      }}
+    >
+      <div className="p-2 flex items-center justify-center">
+        <Link href="/">
+          <img
+            src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
+            height={44}
+            style={{ marginTop: '8px', transition: 'width 0.3s ease-in-out' }}
+            alt="Yukta"
           />
-        </Sider>
-      ) : (
-        <>
-          <Button
-            className="menu-button"
-            type="primary"
-            onClick={toggleDrawer}
-            icon={drawerVisible ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          />
-          <Drawer
-            title="Menu"
-            placement="left"
-            closable={true}
-            onClose={toggleDrawer}
-            open={drawerVisible}
-          >
-            <Menu
-              mode="inline"
-              defaultSelectedKeys={[router.route]}
-              items={items}
-              onClick={() => setDrawerVisible(false)}
-            />
-          </Drawer>
-        </>
-      )}
-    </>
+        </Link>
+      </div>
+      <Menu
+        theme="dark"
+        defaultSelectedKeys={[router.route]}
+        mode="inline"
+        items={renderMenu(menuItems)}
+      />
+    </Sider>
   );
 
-  const footer = (
-    <Layout className="site-layout">
-      <TopHeader />
-      <div className="content-container">{props.children}</div>
-      <Footer style={{ textAlign: 'center' }}>
-        ©{new Date().getFullYear()} Yukta
-      </Footer>
-    </Layout>
+  const mobileMenu = (
+    <>
+      <Button
+        type="primary"
+        onClick={toggleDrawer}
+        icon={drawerVisible ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+      />
+      <Drawer
+        title="Menu"
+        placement="left"
+        closable
+        onClose={toggleDrawer}
+        open={drawerVisible}
+      >
+        <Menu
+          mode="inline"
+          defaultSelectedKeys={[router.route]}
+          items={renderMenu(menuItems)}
+          onClick={() => setDrawerVisible(false)}
+        />
+      </Drawer>
+    </>
   );
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {orgSidebar()}
-      {footer}
+      {size.width > 768 ? sidebar : mobileMenu}
+      <Layout
+        className="site-layout"
+        style={{
+          minHeight: '100vh',
+          marginLeft: collapsed ? 80 : 200,
+          transition: 'margin-left 0.3s ease-in-out',
+        }}
+      >
+        <TopHeader />
+        <Content className="content-container">{children}</Content>
+        <Footer style={{ textAlign: 'center' }}>
+          ©{new Date().getFullYear()} Yukta
+        </Footer>
+      </Layout>
     </Layout>
   );
 };
