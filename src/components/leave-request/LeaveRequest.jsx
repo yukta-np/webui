@@ -331,9 +331,9 @@ const LeaveRequest = ({
                     .includes(input.toLowerCase())
                 }
                 options={[
-                  { value: '1', label: 'Jack' },
-                  { value: '2', label: 'Lucy' },
-                  { value: '3', label: 'Tom' },
+                  { value: '1', label: 'Pending' },
+                  { value: '2', label: 'Approved' },
+                  { value: '3', label: 'Rejected' },
                 ]}
                 style={{ width: '100%' }}
               />

@@ -106,7 +106,7 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text) => <a>TSK-{text}</a>,
+      render: (text) => <a className="text-blue-600">TSK-{text}</a>,
       width: '5%',
     },
     {
@@ -227,7 +227,6 @@ const TaskList = ({
       key: 2,
       title: 'design new ui',
       category: 'bug',
-
       status: 'pending',
       priority: 'medium',
       assignedTo: 'Jane Smith',
@@ -238,7 +237,6 @@ const TaskList = ({
       key: 3,
       title: 'write api documentation',
       category: 'bug',
-
       status: 'completed',
       priority: 'low',
       assignedTo: 'Emily Davis',
@@ -249,7 +247,6 @@ const TaskList = ({
       key: 4,
       title: 'implement payment gateway',
       category: 'bug',
-
       status: 'in progress',
       priority: 'high',
       assignedTo: 'Michael Brown',
@@ -483,39 +480,20 @@ const TaskList = ({
               options={[
                 {
                   value: '1',
-                  label: 'Not Identified',
+                  label: 'To Do',
                 },
                 {
                   value: '2',
-                  label: 'Closed',
+                  label: 'In Progress',
                 },
                 {
                   value: '3',
-                  label: 'Communicated',
+                  label: 'Blocked',
                 },
+
                 {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
+                  value: '3',
+                  label: 'Completed',
                 },
               ]}
             />
@@ -536,39 +514,11 @@ const TaskList = ({
               options={[
                 {
                   value: '1',
-                  label: 'Not Identified',
+                  label: 'No',
                 },
                 {
                   value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
+                  label: 'Yes',
                 },
               ]}
             />
