@@ -19,6 +19,7 @@ import {
   Grid,
   Tag,
   Mentions,
+  Switch,
 } from 'antd';
 import {
   MoreOutlined,
@@ -374,96 +375,51 @@ const TaskList = ({
               options={[
                 {
                   value: '1',
-                  label: 'Not Identified',
+                  label: 'John Doe',
                 },
                 {
                   value: '2',
-                  label: 'Closed',
+                  label: 'Jane Smith',
                 },
                 {
                   value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
+                  label: 'Michael Johnson',
                 },
               ]}
             />
           </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Assignee</p>
-            <Select
-              showSearch
-              style={{
-                width: 200,
-              }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                {
-                  value: '1',
-                  label: 'Not Identified',
-                },
-                {
-                  value: '2',
-                  label: 'Closed',
-                },
-                {
-                  value: '3',
-                  label: 'Communicated',
-                },
-                {
-                  value: '4',
-                  label: 'Identified',
-                },
-                {
-                  value: '5',
-                  label: 'Resolved',
-                },
-                {
-                  value: '6',
-                  label: 'Cancelled',
-                },
-                {
-                  value: '7',
-                  label: 'Duplicate',
-                },
-                {
-                  value: '8',
-                  label: 'Invalid',
-                },
-                {
-                  value: '9',
-                  label: "Won't Fix",
-                },
-              ]}
-            />
-          </Space>
+          {!isMyTask && (
+            <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
+              <p>By Assignee</p>
+              <Select
+                showSearch
+                style={{
+                  width: 200,
+                }}
+                optionFilterProp="label"
+                filterSort={(optionA, optionB) =>
+                  (optionA?.label ?? '')
+                    .toLowerCase()
+                    .localeCompare((optionB?.label ?? '').toLowerCase())
+                }
+                options={[
+                  {
+                    value: '1',
+                    label: 'John Doe',
+                  },
+                  {
+                    value: '2',
+                    label: 'Jane Smith',
+                  },
+                  {
+                    value: '3',
+                    label: 'Michael Johnson',
+                  },
+                ]}
+              />
+            </Space>
+          )}
+
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>By Status </p>
             <Select
@@ -617,7 +573,7 @@ const TaskList = ({
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Status" name="status">
-                      <Select defaultValue="to do">
+                      <Select defaultValue="">
                         <Select.Option value="to do">To Do</Select.Option>
                         <Select.Option value="in progress">
                           In Progress
@@ -628,9 +584,14 @@ const TaskList = ({
                       </Select>
                     </Form.Item>
                   </Col>
-                  {!isMyTask && (
-                    <Col xs={24} md={12} lg={24}>
-                      <Form.Item label="Assign to" name="assignee">
+                  <Col xs={24} md={12} lg={24}>
+                    <Form.Item
+                      label={isMyTask ? 'Assign yourself' : 'Assign to'}
+                      name="assignee"
+                    >
+                      {isMyTask ? (
+                        <Switch disabled defaultChecked />
+                      ) : (
                         <Select defaultValue="john doe">
                           <Select.Option value="john doe">
                             John Doe
@@ -639,9 +600,9 @@ const TaskList = ({
                             Jane Smith
                           </Select.Option>
                         </Select>
-                      </Form.Item>
-                    </Col>
-                  )}
+                      )}
+                    </Form.Item>
+                  </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Due date" name="dueDate">
@@ -654,19 +615,22 @@ const TaskList = ({
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Category" name="category">
-                      <Select defaultValue="general">
-                        <Select.Option value="general">General</Select.Option>
-                        <Select.Option value="urgent">Urgent</Select.Option>
-                        <Select.Option value="low-priority">
-                          Low Priority
+                      <Select defaultValue="">
+                        <Select.Option value="incident">Incident</Select.Option>
+                        <Select.Option value="complaint">
+                          Complaint
                         </Select.Option>
+                        <Select.Option value="request">Request</Select.Option>
+                        <Select.Option value="problem">Problem</Select.Option>
+                        <Select.Option value="change">Change</Select.Option>
                       </Select>
                     </Form.Item>
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Priority" name="priority">
-                      <Select defaultValue="medium">
+                      <Select defaultValue="">
+                        <Select.Option value="critical">Critical</Select.Option>
                         <Select.Option value="high">High</Select.Option>
                         <Select.Option value="medium">Medium</Select.Option>
                         <Select.Option value="low">Low</Select.Option>
