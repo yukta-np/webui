@@ -628,17 +628,20 @@ const TaskList = ({
                       </Select>
                     </Form.Item>
                   </Col>
-
-                  <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Assign to" name="assignee">
-                      <Select defaultValue="john doe">
-                        <Select.Option value="john doe">John Doe</Select.Option>
-                        <Select.Option value="jane smith">
-                          Jane Smith
-                        </Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                  {!isMyTask && (
+                    <Col xs={24} md={12} lg={24}>
+                      <Form.Item label="Assign to" name="assignee">
+                        <Select defaultValue="john doe">
+                          <Select.Option value="john doe">
+                            John Doe
+                          </Select.Option>
+                          <Select.Option value="jane smith">
+                            Jane Smith
+                          </Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  )}
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Due date" name="dueDate">
