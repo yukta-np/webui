@@ -11,15 +11,11 @@ import {
   Dropdown,
   Button,
 } from 'antd';
-import {
-  BellOutlined,
-  NotificationOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
-const { Search } = Input;
+const { SearchInput } = Input;
 
 const TopHeader = () => {
   const [searchExpanded, setSearchExpanded] = useState(false);
@@ -98,7 +94,7 @@ const TopHeader = () => {
         }}
       >
         {screens.xs && !searchExpanded ? (
-          <SearchOutlined
+          <SearchIcon
             onClick={() => setSearchExpanded(true)}
             style={{
               fontSize: '20px',
@@ -111,7 +107,7 @@ const TopHeader = () => {
             placeholder="Search..."
             allowClear
             enterButton
-            prefix={<SearchOutlined style={{ color: colorTextSecondary }} />}
+            prefix={<SearchIcon stroke={colorTextSecondary} />}
             style={{
               borderRadius: borderRadiusLG,
               backgroundColor: '#f5f5f5',
@@ -130,7 +126,7 @@ const TopHeader = () => {
         height={screens.xs ? '100%' : '60%'}
         width={screens.xs ? '100%' : '50%'}
       >
-        <Search
+        <SearchInput
           placeholder="Type to search..."
           allowClear
           enterButton
@@ -152,9 +148,7 @@ const TopHeader = () => {
               cursor: 'pointer',
             }}
           >
-            <BellOutlined
-              style={{ fontSize: '20px', color: colorTextSecondary }}
-            />
+            <Bell stroke={colorTextSecondary} size={20} />
           </Badge>
 
           <Badge
@@ -164,9 +158,7 @@ const TopHeader = () => {
               cursor: 'pointer',
             }}
           >
-            <NotificationOutlined
-              style={{ fontSize: '20px', color: colorTextSecondary }}
-            />
+            <Megaphone stroke={colorTextSecondary} size={20} />
           </Badge>
         </Space>
 

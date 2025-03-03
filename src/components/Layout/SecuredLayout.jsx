@@ -1,18 +1,20 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import {
-  PieChartOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined,
-  TeamOutlined,
-  UnorderedListOutlined,
-  FormOutlined,
-  FileTextOutlined,
-  NotificationOutlined,
-  SettingOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from '@ant-design/icons';
+  ChartPie,
+  Calendar,
+  CalendarDays,
+  CalendarX,
+  CheckCircle,
+  Users,
+  List,
+  UserX,
+  FileStack,
+  Megaphone,
+  Settings,
+  PanelLeftOpen,
+  PanelLeftClose,
+} from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
 import { Footer } from 'antd/es/layout/layout';
@@ -46,36 +48,36 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Dashboard',
       key: 'dashboard',
-      icon: <PieChartOutlined />,
+      icon: <ChartPie />,
       href: '/dashboard',
     },
     {
       label: 'Routine',
       key: 'routine',
-      icon: <CalendarOutlined />,
+      icon: <CalendarDays />,
       href: '/routine',
     },
     {
       label: 'Tasks',
       key: 'tasks',
-      icon: <CheckCircleOutlined />,
+      icon: <CheckCircle />,
       children: [
         {
           label: 'My Tasks',
           key: 'my-task',
-          icon: <CheckCircleOutlined />,
+          icon: <CheckCircle />,
           href: '/tasks/my-task',
         },
         {
           label: "My Team's Tasks",
           key: 'my-team',
-          icon: <TeamOutlined />,
+          icon: <Users />,
           href: '/tasks/my-team',
         },
         {
           label: 'All Tasks',
           key: 'AllTasks',
-          icon: <UnorderedListOutlined />,
+          icon: <List />,
           href: '/tasks',
         },
       ],
@@ -83,24 +85,29 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Leave Request',
       key: 'leave-request',
-      icon: <FormOutlined />,
+      icon: <CalendarX />,
       children: [
         {
           label: 'My Request',
           key: 'my-leave-request',
-          icon: <FormOutlined />,
+          icon: <UserX />,
           href: '/leave-request/my-leave',
         },
         {
           label: "Team's Request",
           key: 'my-team-leave-request',
-          icon: <TeamOutlined />,
+          icon: (
+            <>
+              <UserX />
+              <UserX /> {/* Yesko CSS milao hai... 😂*/}
+            </>
+          ),
           href: '/leave-request/team-leave',
         },
         {
           label: 'All Request',
           key: 'all-leave-request',
-          icon: <UnorderedListOutlined />,
+          icon: <CalendarX />,
           href: '/leave-request',
         },
       ],
@@ -108,25 +115,25 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Documents',
       key: 'documents',
-      icon: <FileTextOutlined />,
+      icon: <FileStack />,
       href: '/documents',
     },
     {
       label: 'Announcements',
       key: 'announcements',
-      icon: <NotificationOutlined />,
+      icon: <Megaphone />,
       href: '/announcements',
     },
     {
       label: 'Calendar',
       key: 'calendar',
-      icon: <CalendarOutlined />,
+      icon: <Calendar />,
       href: '/calendar',
     },
     {
       label: 'Settings',
       key: 'settings',
-      icon: <SettingOutlined />,
+      icon: <Settings />,
       href: '/settings',
     },
   ];
@@ -177,7 +184,7 @@ const SecuredLayout = ({ children }) => {
       <Button
         type="primary"
         onClick={toggleDrawer}
-        icon={drawerVisible ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        icon={drawerVisible ? <PanelLeftOpen /> : <PanelLeftClose />}
       />
       <Drawer
         title="Menu"

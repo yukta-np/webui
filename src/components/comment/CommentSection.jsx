@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { Avatar, Space, Card, Typography } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
-import {
-  BiLike,
-  BiSolidLike,
-  BiHeart,
-  BiSolidHeart,
-  BiSmile,
-  BiSolidSmile,
-} from 'react-icons/bi';
+import { User, ThumbsUp, Heart, Smile } from 'lucide-react';
 
 const { Text } = Typography;
 
@@ -33,36 +25,36 @@ const CommentSection = ({ comments }) => {
             <Space key="reactions">
               {/* Like reaction */}
               {reactions[comment.id] === 'like' ? (
-                <BiSolidLike
-                  style={{ color: 'blue', cursor: 'pointer' }}
+                <ThumbsUp
+                  style={{ fill: 'blue', color: 'blue', cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'like')}
                 />
               ) : (
-                <BiLike
+                <ThumbsUp
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'like')}
                 />
               )}
               {/* Heart reaction */}
               {reactions[comment.id] === 'heart' ? (
-                <BiSolidHeart
-                  style={{ color: 'red', cursor: 'pointer' }}
+                <Heart
+                  style={{ fill: 'red', color: 'red', cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'heart')}
                 />
               ) : (
-                <BiHeart
+                <Heart
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'heart')}
                 />
               )}
               {/* Smile reaction */}
               {reactions[comment.id] === 'smile' ? (
-                <BiSolidSmile
-                  style={{ color: 'yellow', cursor: 'pointer' }}
+                <Smile
+                  style={{ fill: 'yellwo', color: 'yellow', cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'smile')}
                 />
               ) : (
-                <BiSmile
+                <Smile
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleReactionClick(comment.id, 'smile')}
                 />
@@ -71,7 +63,7 @@ const CommentSection = ({ comments }) => {
           ]}
         >
           <Space style={{ width: '100%' }} align="baseline">
-            <Avatar icon={<UserOutlined />} />
+            <Avatar icon={<User />} />
             <Space direction="vertical" size={4} style={{ width: '100%' }}>
               <Space style={{ width: '100%', justifyContent: 'space-between' }}>
                 <strong>{comment.author}</strong>

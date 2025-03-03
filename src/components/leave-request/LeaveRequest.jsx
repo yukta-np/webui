@@ -24,15 +24,7 @@ import {
   InputNumber,
   Popconfirm,
 } from 'antd';
-import {
-  MoreOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-} from '@ant-design/icons';
-
-import { FaEdit, FaEye } from 'react-icons/fa';
-import { RiDeleteBin6Fill } from 'react-icons/ri';
+import { EllipsisVertical, FilePenLine, Trash2Icon, Eye } from 'lucide-react';
 import Link from 'next/link';
 import moment from 'moment';
 import { dateRanges } from '@/utils';
@@ -169,15 +161,15 @@ const LeaveRequest = ({
       render: (_, record) =>
         screens.md ? (
           <Space size="middle">
-            <Button type="link" icon={<FaEye />} onClick={onReviewClick} />
+            <Button type="link" icon={<Eye />} onClick={onReviewClick} />
 
-            <Button type="link" icon={<FaEdit />} onClick={onEditClick} />
+            <Button type="link" icon={<FilePenLine />} onClick={onEditClick} />
             {isMyLeave && (
               <>
                 <Button
                   type="link"
                   danger
-                  icon={<RiDeleteBin6Fill />}
+                  icon={<Trash2Icon stroke="red" />}
                   onClick={onDeleteClick}
                 />
               </>
@@ -201,12 +193,12 @@ const LeaveRequest = ({
             overlay={
               <Menu
                 items={[
-                  { key: 'view', label: 'View', icon: <EyeOutlined /> },
-                  { key: 'edit', label: 'Edit', icon: <EditOutlined /> },
+                  { key: 'view', label: 'View', icon: <Eye /> },
+                  { key: 'edit', label: 'Edit', icon: <FilePenLine /> },
                   {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <DeleteOutlined />,
+                    icon: <Trash2Icon />,
                     danger: true,
                   },
                 ]}
@@ -214,7 +206,7 @@ const LeaveRequest = ({
             }
             trigger={['click']}
           >
-            <Button icon={<MoreOutlined />} />
+            <Button icon={<EllipsisVertical />} />
           </Dropdown>
         ),
     },

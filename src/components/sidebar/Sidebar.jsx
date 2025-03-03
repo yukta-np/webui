@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import {
-  DashboardOutlined,
-  ScheduleOutlined,
-  CheckSquareOutlined,
-  CalendarOutlined,
-  FolderOpenOutlined,
-  NotificationOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+  ChartPie,
+  CalendarDays,
+  CheckCircle,
+  Users,
+  List,
+  CalendarX,
+  UserX,
+  FileStack,
+  Megaphone,
+  Calendar,
+  Settings,
+} from 'lucide-react';
 
 const { Sider } = Layout;
 
@@ -22,21 +26,28 @@ function getItem(label, key, icon, children) {
 }
 
 const items = [
-  getItem('Dashboard', '1', <DashboardOutlined />),
-  getItem('Routine', '2', <ScheduleOutlined />),
-  getItem('Tasks', '3', <CheckSquareOutlined />, [
-    getItem('My Tasks', '4'),
-    getItem("My Team's Tasks", '5'),
-    getItem('All Tasks', '6'),
+  getItem('Dashboard', 'dashboard', <ChartPie />),
+  getItem('Routine', 'routine', <CalendarDays />),
+  getItem('Tasks', 'tasks', <CheckCircle />, [
+    getItem('My Tasks', 'my-task', <CheckCircle />),
+    getItem("My Team's Tasks", 'my-team', <Users />),
+    getItem('All Tasks', 'all-tasks', <List />),
   ]),
-  getItem('Leave Request', '7', <CalendarOutlined />, [
-    getItem('My Leave Request', '8'),
-    getItem("My Team's Leave Request", '9'),
+  getItem('Leave Request', 'leave-request', <CalendarX />, [
+    getItem('My Leave Request', 'my-leave-request', <UserX />),
+    getItem(
+      "My Team's Leave Request",
+      'my-team-leave-request',
+      <>
+        <UserX />
+        <UserX /> {/* Yesko CSS milao hai... 😂*/}
+      </>
+    ),
   ]),
-  getItem('Documents', '10', <FolderOpenOutlined />),
-  getItem('Announcements', '11', <NotificationOutlined />),
-  getItem('Calendar', '12', <CalendarOutlined />),
-  getItem('Settings', '13', <SettingOutlined />),
+  getItem('Documents', 'documents', <FileStack />),
+  getItem('Announcements', 'announcements', <Megaphone />),
+  getItem('Calendar', 'calendar', <Calendar />),
+  getItem('Settings', 'settings', <Settings />),
 ];
 
 const Sidebar = () => {
@@ -53,7 +64,7 @@ const Sidebar = () => {
       <div className="demo-logo-vertical" />
       <Menu
         theme="dark"
-        defaultSelectedKeys={['1']}
+        defaultSelectedKeys={['dashboard']}
         mode="inline"
         items={items}
       />

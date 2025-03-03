@@ -22,16 +22,15 @@ import {
   Switch,
 } from 'antd';
 import {
-  MoreOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
-  InboxOutlined,
-  FileImageOutlined,
-} from '@ant-design/icons';
-
-import { FaCommentAlt, FaEdit } from 'react-icons/fa';
-import { RiDeleteBin6Fill } from 'react-icons/ri';
+  EllipsisVertical,
+  Pencil,
+  Trash2,
+  Eye,
+  Inbox,
+  FileImage,
+  MessageSquareText,
+  FilePenLine,
+} from 'lucide-react';
 
 import { Upload } from 'antd';
 const { Dragger } = Upload;
@@ -170,20 +169,20 @@ const TaskList = ({
           <Space size="middle">
             <Button
               type="link"
-              icon={<FaCommentAlt />}
+              icon={<MessageSquareText />}
               onClick={showCommentModal}
             />
             {!isMyTask && (
               <>
                 <Button
                   type="link"
-                  icon={<FaEdit />}
+                  icon={<FilePenLine />}
                   onClick={() => console.log(record.key)}
                 />
                 <Button
                   type="link"
                   danger
-                  icon={<RiDeleteBin6Fill />}
+                  icon={<Trash2 />}
                   onClick={() => console.log(record.key)}
                 />
               </>
@@ -194,12 +193,12 @@ const TaskList = ({
             overlay={
               <Menu
                 items={[
-                  { key: 'view', label: 'View', icon: <EyeOutlined /> },
-                  { key: 'edit', label: 'Edit', icon: <EditOutlined /> },
+                  { key: 'view', label: 'View', icon: <Eye /> },
+                  { key: 'edit', label: 'Edit', icon: <Pencil /> },
                   {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <DeleteOutlined />,
+                    icon: <Trash2 />,
                     danger: true,
                   },
                 ]}
@@ -207,7 +206,7 @@ const TaskList = ({
             }
             trigger={['click']}
           >
-            <Button icon={<MoreOutlined />} />
+            <Button icon={<EllipsisVertical />} />
           </Dropdown>
         ),
     },
@@ -556,7 +555,7 @@ const TaskList = ({
                 <Form.Item>
                   <Dragger>
                     <p className="ant-upload-drag-icon">
-                      <InboxOutlined />
+                      <Inbox />
                     </p>
                     <p className="ant-upload-text">
                       Click or drag file to this area to upload
@@ -644,7 +643,7 @@ const TaskList = ({
                       <Space>
                         {form.getFieldValue('files')?.map((file) => (
                           <Tag key={file.uid} closable>
-                            <FileImageOutlined />
+                            <FileImage />
                             {file.name}
                           </Tag>
                         ))}
