@@ -47,6 +47,7 @@ const LeaveRequest = ({
   const [action, setAction] = useState('add');
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
+  const [isAllDay, setIsAllDay] = useState(false);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -76,16 +77,19 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onDeleteClick = () => {
-    return (
-      <Popconfirm
-        title="Delete the task"
-        description="Are you sure to delete this task?"
-        okText="Yes"
-        cancelText="No"
-      />
-    );
+  const onDeleteClick = () => {};
+
+  const onDecisionChange = (value) => {
+    setDecision(value);
+    if (value === 'rejected') {
+      setTransfer(null);
+    }
   };
+
+  const onAllDayChange = () => {
+    setIsAllDay(!isAllDay);
+  };
+
   const getTitle = () => {
     if (action === 'add') {
       return 'Apply for Leave';
@@ -166,12 +170,19 @@ const LeaveRequest = ({
             <Button type="link" icon={<FilePenLine />} onClick={onEditClick} />
             {isMyLeave && (
               <>
-                <Button
-                  type="link"
-                  danger
-                  icon={<Trash2Icon stroke="red" />}
-                  onClick={onDeleteClick}
-                />
+                <Popconfirm
+                  title="Delete the task"
+                  description="Are you sure to delete this request?"
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button
+                    type="link"
+                    danger
+                    icon={<Trash2Icon stroke="red" />}
+                    onClick={onDeleteClick}
+                  />
+                </Popconfirm>
               </>
             )}
             {!isMyLeave && (
@@ -419,9 +430,9 @@ const LeaveRequest = ({
                 </Select>
               </Form.Item>
             </Col>
-            <Form.Item>
+            <Form.Item name="isAllDay">
               <p style={{ marginBottom: '5px' }}>All Day?</p>
-              <Switch dis />
+              <Switch checked={isAllDay} onChange={onAllDayChange} />
             </Form.Item>
             <Row gutter={16} style={{ width: '100%' }}>
               <Col span={12}>
@@ -434,6 +445,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY hh:mm A"
                     ranges={dateRanges}
+                    disabled={isAllDay}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -448,6 +460,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY hh:mm A"
                     ranges={dateRanges}
+                    disabled={isAllDay}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -472,7 +485,7 @@ const LeaveRequest = ({
                   label="Decision"
                   rules={[{ required: true }]}
                 >
-                  <Select onChange={(value) => setDecision(value)}>
+                  <Select onChange={onDecisionChange}>
                     <Select.Option value="approved">Approve</Select.Option>
                     <Select.Option value="rejected">Reject</Select.Option>
                   </Select>
