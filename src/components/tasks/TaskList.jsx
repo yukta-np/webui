@@ -32,8 +32,8 @@ import {
   MessageSquareText,
   FilePenLine,
 } from 'lucide-react';
-
 import { Upload } from 'antd';
+import DOMPurify from 'dompurify';
 const { Dragger } = Upload;
 
 const { useBreakpoint } = Grid;
@@ -45,6 +45,22 @@ const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
 import { dateRanges } from '@/utils';
+import { useTaskStatus } from '@/hooks/useTaskStatus';
+
+const PreviewSection = ({ content }) => {
+  const sanitizedContent = DOMPurify.sanitize(content);
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      style={{
+        padding: '16px',
+        border: '1px solid #d9d9d9',
+        borderRadius: '6px',
+        minHeight: '200px',
+      }}
+    />
+  );
+};
 
 const TaskList = ({
   isAllTask = false,
@@ -69,6 +85,9 @@ const TaskList = ({
     title: 'sample task',
     description: '<p>this is a description of the task.</p>',
   });
+
+  const { taskStatus } = useTaskStatus();
+  console.log(taskStatus);
 
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
@@ -140,13 +159,6 @@ const TaskList = ({
     defaultTag: 'div',
   };
 
-  const PreviewSection = ({ content }) => (
-    <div
-      className="preview-content"
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
-  );
-
   const columns = [
     {
       title: 'ID',
@@ -194,7 +206,6 @@ const TaskList = ({
           },
         ]
       : []),
-
     {
       title: 'Created By',
       dataIndex: 'createdBy',
@@ -310,8 +321,6 @@ const TaskList = ({
     },
   ];
 
-  //For comments
-
   const [comments, setComments] = useState([
     {
       id: 1,
@@ -346,7 +355,6 @@ const TaskList = ({
   ]);
 
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-
   const [newComment, setNewComment] = useState('');
 
   const handleNewComment = (comment) => {
@@ -417,9 +425,7 @@ const TaskList = ({
             <p>By Creator </p>
             <Select
               showSearch
-              style={{
-                width: 200,
-              }}
+              style={{ width: 200 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
@@ -427,18 +433,9 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={[
-                {
-                  value: '1',
-                  label: 'John Doe',
-                },
-                {
-                  value: '2',
-                  label: 'Jane Smith',
-                },
-                {
-                  value: '3',
-                  label: 'Michael Johnson',
-                },
+                { value: '1', label: 'John Doe' },
+                { value: '2', label: 'Jane Smith' },
+                { value: '3', label: 'Michael Johnson' },
               ]}
             />
           </Space>
@@ -447,9 +444,7 @@ const TaskList = ({
               <p>By Assignee</p>
               <Select
                 showSearch
-                style={{
-                  width: 200,
-                }}
+                style={{ width: 200 }}
                 optionFilterProp="label"
                 filterSort={(optionA, optionB) =>
                   (optionA?.label ?? '')
@@ -457,18 +452,9 @@ const TaskList = ({
                     .localeCompare((optionB?.label ?? '').toLowerCase())
                 }
                 options={[
-                  {
-                    value: '1',
-                    label: 'John Doe',
-                  },
-                  {
-                    value: '2',
-                    label: 'Jane Smith',
-                  },
-                  {
-                    value: '3',
-                    label: 'Michael Johnson',
-                  },
+                  { value: '1', label: 'John Doe' },
+                  { value: '2', label: 'Jane Smith' },
+                  { value: '3', label: 'Michael Johnson' },
                 ]}
               />
             </Space>
@@ -478,43 +464,24 @@ const TaskList = ({
             <p>By Status </p>
             <Select
               showSearch
-              style={{
-                width: 200,
-              }}
+              style={{ width: 200 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
                   .toLowerCase()
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
-              options={[
-                {
-                  value: '1',
-                  label: 'To Do',
-                },
-                {
-                  value: '2',
-                  label: 'In Progress',
-                },
-                {
-                  value: '3',
-                  label: 'Blocked',
-                },
-
-                {
-                  value: '3',
-                  label: 'Completed',
-                },
-              ]}
+              options={taskStatus?.map((ts) => ({
+                label: ts.name,
+                value: ts.id,
+              }))}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>Archived </p>
             <Select
               showSearch
-              style={{
-                width: 150,
-              }}
+              style={{ width: 150 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
@@ -522,14 +489,8 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={[
-                {
-                  value: '1',
-                  label: 'No',
-                },
-                {
-                  value: '2',
-                  label: 'Yes',
-                },
+                { value: '1', label: 'No' },
+                { value: '2', label: 'Yes' },
               ]}
             />
           </Space>
@@ -641,15 +602,18 @@ const TaskList = ({
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Status" name="status">
-                      <Select defaultValue="">
-                        <Select.Option value="to do">To Do</Select.Option>
-                        <Select.Option value="in progress">
-                          In Progress
-                        </Select.Option>
-                        <Select.Option value="completed">
-                          Completed
-                        </Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskStatus?.map((ts) => ({
+                          label: ts.name,
+                          value: ts.id,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12} lg={24}>
@@ -748,13 +712,14 @@ const TaskList = ({
             <CommentSection comments={comments} />
           </div>
 
-          {/* Fixed Mention box and Submit Button */}
           <div
             style={{
+              position: 'sticky',
               bottom: '0',
               width: '100%',
               background: 'white',
               padding: '16px',
+              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
             }}
           >
             <Mentions
