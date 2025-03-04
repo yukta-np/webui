@@ -45,6 +45,7 @@ const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
 import { dateRanges } from '@/utils';
+import moment from 'moment';
 
 const TaskList = ({
   isAllTask = false,
@@ -60,6 +61,7 @@ const TaskList = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [action, setAction] = useState('add');
+  const [editTask, setEditTask] = useState(null);
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [task] = useState({
@@ -86,8 +88,12 @@ const TaskList = ({
     setAction('add');
     openModal();
   };
-  const onEditClick = () => {
+  const onEditClick = (record) => {
+    //
+    console.log('Editing record:', record);
     setAction('edit');
+    setEditTask(record);
+    form.setFieldsValue(record);
     openModal();
   };
 
@@ -225,7 +231,7 @@ const TaskList = ({
                 <Button
                   type="link"
                   icon={<FilePenLine />}
-                  onClick={onEditClick}
+                  onClick={() => onEditClick(record)}
                 />
 
                 <Popconfirm
@@ -568,6 +574,8 @@ const TaskList = ({
             layout="vertical"
             onFinish={(values) => {
               console.log('Form values:', values);
+              const date = values.taskDueDate;
+              console.log(date.moment);
               setIsProcessing(true);
               setTimeout(() => {
                 setIsProcessing(false);
@@ -577,9 +585,9 @@ const TaskList = ({
             initialValues={{
               status: '',
               assignee: '',
-              dueDate: null,
               category: '',
               priority: '',
+              dueDate: moment(),
               files: [],
             }}
           >
@@ -673,9 +681,18 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Due date" name="dueDate">
+                    <Form.Item
+                      label="Due Date"
+                      name="taskDueDate"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please enter the due date',
+                        },
+                      ]}
+                    >
                       <DatePicker
-                        presets={dateRanges}
+                        format={'DD/MM/YYYY'}
                         style={{ width: '100%' }}
                       />
                     </Form.Item>

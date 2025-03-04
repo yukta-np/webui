@@ -48,6 +48,7 @@ const LeaveRequest = ({
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
   const [isAllDay, setIsAllDay] = useState(false);
+  const [editLeave, setEditLeave] = useState(null);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -72,8 +73,11 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onEditClick = () => {
+  const onEditClick = (record) => {
+    console.log('Editing record:', record);
     setAction('edit');
+    setEditLeave(record);
+    form.setFieldsValue(record);
     openModal();
   };
 
@@ -167,7 +171,11 @@ const LeaveRequest = ({
           <Space size="middle">
             <Button type="link" icon={<Eye />} onClick={onReviewClick} />
 
-            <Button type="link" icon={<FilePenLine />} onClick={onEditClick} />
+            <Button
+              type="link"
+              icon={<FilePenLine />}
+              onClick={() => onEditClick(record)}
+            />
             {isMyLeave && (
               <>
                 <Popconfirm
@@ -369,7 +377,7 @@ const LeaveRequest = ({
           footer={null}
         >
           <Divider />
-          <Form layout="vertical" disabled={action === 'review'}>
+          <Form form={form} layout="vertical" disabled={action === 'review'}>
             {action === 'accept-reject' && (
               <Row>
                 <Col span={12}>
