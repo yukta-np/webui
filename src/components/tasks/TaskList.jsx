@@ -20,11 +20,12 @@ import {
   Tag,
   Mentions,
   Switch,
+  Popconfirm,
 } from 'antd';
 import {
   EllipsisVertical,
   Pencil,
-  Trash2,
+  Trash2Icon,
   Eye,
   Inbox,
   FileImage,
@@ -73,6 +74,9 @@ const TaskList = ({
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [action, setAction] = useState('add');
+
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [task] = useState({
     creatorId: 1,
     taskStatus: 1,
@@ -84,6 +88,59 @@ const TaskList = ({
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
   };
+
+
+
+  const openModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
+
+  const onAddClick = () => {
+    setAction('add');
+    openModal();
+  };
+  const onEditClick = () => {
+    setAction('edit');
+    openModal();
+  };
+
+  const getTitle = () => {
+    if (action === 'add') {
+      return 'Add  Task';
+    } else if (action === 'edit') {
+      return 'Edit Task';
+    }
+  };
+
+  const onFileChange = (info) => {
+    const newFile = {
+      name: info.file.name,
+      uid: info.file.uid,
+    };
+
+    setUploadedFiles((prevFiles) => [...prevFiles, newFile]);
+    form.setFieldsValue({ files: [...uploadedFiles, newFile] });
+  };
+
+  const onFileRemove = (index) => {
+    const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(updatedFiles);
+
+    form.setFieldsValue({ files: updatedFiles });
+
+    console.log('Files after removal:', updatedFiles);
+  };
+
+  const filterSort = (optionA, optionB) => {
+    const labelA = String(optionA?.label || '').toLowerCase();
+    const labelB = String(optionB?.label || '').toLowerCase();
+    return labelA.localeCompare(labelB);
+  };
+
 
   const editorOptions = {
     buttonList: [
@@ -178,14 +235,21 @@ const TaskList = ({
                 <Button
                   type="link"
                   icon={<FilePenLine />}
-                  onClick={() => console.log(record.key)}
+                  onClick={onEditClick}
                 />
-                <Button
-                  type="link"
-                  danger
-                  icon={<Trash2 />}
-                  onClick={() => console.log(record.key)}
-                />
+
+                <Popconfirm
+                  title="Delete the task"
+                  description="Are you sure to delete this task?"
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button
+                    type="link"
+                    danger
+                    icon={<Trash2Icon stroke="red" />}
+                  />
+                </Popconfirm>
               </>
             )}
           </Space>
@@ -199,7 +263,7 @@ const TaskList = ({
                   {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <Trash2 />,
+                    icon: <Trash2Icon />,
                     danger: true,
                   },
                 ]}
@@ -346,7 +410,7 @@ const TaskList = ({
           <p className="text-xl font-bold">
             {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
           </p>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
+          <Button type="primary" onClick={onAddClick}>
             Add Task
           </Button>
         </div>
@@ -452,9 +516,9 @@ const TaskList = ({
         />
 
         <Modal
-          title="Task Details"
+          title={getTitle()}
           open={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
+          onCancel={closeModal}
           onOk={() => form.submit()}
           width={screens.xs ? '95%' : 1000}
           style={{ top: screens.xs ? 16 : 32 }}
@@ -471,6 +535,14 @@ const TaskList = ({
                 setIsProcessing(false);
                 setIsModalVisible(false);
               }, 1000);
+            }}
+            initialValues={{
+              status: '',
+              assignee: '',
+              dueDate: null,
+              category: '',
+              priority: '',
+              files: [],
             }}
           >
             <Row gutter={24}>
@@ -506,7 +578,13 @@ const TaskList = ({
                   </Tabs>
                 </Form.Item>
                 <Form.Item>
-                  <Dragger>
+                  <Dragger
+                    name="files"
+                    multiple
+                    beforeUpload={() => false}
+                    onChange={onFileChange}
+                    showUploadList={false}
+                  >
                     <p className="ant-upload-drag-icon">
                       <Inbox />
                     </p>
@@ -593,13 +671,18 @@ const TaskList = ({
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Uploaded Files" name="files">
                       <Space>
-                        {form.getFieldValue('files')?.map((file) => (
-                          <Tag key={file.uid} closable>
-                            <FileImage />
-                            {file.name}
-                          </Tag>
-                        ))}
-                        {!form.getFieldValue('files')?.length && (
+                        {uploadedFiles.length > 0 ? (
+                          uploadedFiles.map((file, index) => (
+                            <Tag
+                              key={file.uid || index}
+                              closable
+                              onClose={() => onFileRemove(index)}
+                            >
+                              <FileImage />
+                              {file.name || 'File'}
+                            </Tag>
+                          ))
+                        ) : (
                           <Tag>No files uploaded</Tag>
                         )}
                       </Space>
