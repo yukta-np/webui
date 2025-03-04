@@ -45,6 +45,7 @@ const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
 import { dateRanges } from '@/utils';
+import { useTaskStatus } from '@/hooks/useTaskStatus';
 
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
@@ -85,11 +86,12 @@ const TaskList = ({
     description: '<p>this is a description of the task.</p>',
   });
 
+  const { taskStatus } = useTaskStatus();
+  console.log(taskStatus);
+
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
   };
-
-
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -140,7 +142,6 @@ const TaskList = ({
     const labelB = String(optionB?.label || '').toLowerCase();
     return labelA.localeCompare(labelB);
   };
-
 
   const editorOptions = {
     buttonList: [
@@ -470,12 +471,10 @@ const TaskList = ({
                   .toLowerCase()
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
-              options={[
-                { value: '1', label: 'To Do' },
-                { value: '2', label: 'In Progress' },
-                { value: '3', label: 'Blocked' },
-                { value: '4', label: 'Completed' },
-              ]}
+              options={taskStatus?.map((ts) => ({
+                label: ts.name,
+                value: ts.id,
+              }))}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
@@ -603,15 +602,18 @@ const TaskList = ({
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Status" name="status">
-                      <Select defaultValue="">
-                        <Select.Option value="to do">To Do</Select.Option>
-                        <Select.Option value="in progress">
-                          In Progress
-                        </Select.Option>
-                        <Select.Option value="completed">
-                          Completed
-                        </Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskStatus?.map((ts) => ({
+                          label: ts.name,
+                          value: ts.id,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12} lg={24}>

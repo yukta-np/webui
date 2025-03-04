@@ -25,6 +25,7 @@
     "sonner": "^2.0.1",
     "suneditor": "^2.47.5",
     "suneditor-react": "^3.6.1",
+    "swr": "^2.3.2",
     "universal-cookie": "^7.2.2"
   },
   "devDependencies": {

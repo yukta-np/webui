@@ -1,11 +1,11 @@
 import moment from 'moment';
 export const fetcher = async (url, options = {}) => {
-  const headers = {
-    Authorization: 'Bearer YOUR_ACCESS_TOKEN',
-    ...options.headers,
-  };
+  // const headers = {
+  //   Authorization: 'Bearer YOUR_ACCESS_TOKEN',
+  //   ...options.headers,
+  // };
 
-  return await fetch(url, { ...options, headers }).then((res) => res.json());
+  return await fetch(url, { ...options }).then((res) => res.json());
 };
 
 export const dateRanges = {
