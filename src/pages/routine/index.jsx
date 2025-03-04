@@ -36,7 +36,7 @@ export default function RoutineScheduler() {
   const [schedule, setSchedule] = useState(
     Array.from({ length: days.length }, () => Array(periods.length).fill(''))
   );
-  const [userId, setUserId] = useState('user-123'); // Example user ID
+  const [userId, setUserId] = useState('user-123');
 
   const handleChange = (dayIndex, periodIndex, teacher) => {
     const newSchedule = schedule.map((day, dIdx) =>
@@ -83,27 +83,29 @@ export default function RoutineScheduler() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold text-gray-900 text-center mb-4">
-        Class Routine
-      </h1>
-      <p className="text-center text-gray-600 mb-6">
-        Manage teacher assignments for each period
-      </p>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Class Routine Manager
+        </h1>
+        <p className="text-gray-600 text-sm">
+          Manage teacher assignments for academic periods
+        </p>
+      </div>
 
       <div className="overflow-x-auto bg-white p-4 rounded-lg shadow">
-        <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+        <table className="w-full border border-gray-200 rounded-lg">
           <thead className="bg-gray-100 text-gray-900">
             <tr>
-              <th className="p-4 border border-gray-200 text-left text-lg font-semibold">
+              <th className="p-3 border border-gray-200 text-left font-semibold w-40">
                 Day
               </th>
               {periods.map((period, index) => (
                 <th
                   key={index}
-                  className="p-4 border border-gray-200 text-center"
+                  className="p-3 border border-gray-200 text-center"
                 >
-                  <div className="font-semibold">{period}</div>
-                  <div className="text-sm text-gray-600">{times[index]}</div>
+                  <div className="font-semibold text-sm">{period}</div>
+                  <div className="text-xs text-gray-600 mt-1">{times[index]}</div>
                 </th>
               ))}
             </tr>
@@ -114,26 +116,27 @@ export default function RoutineScheduler() {
                 key={dayIndex}
                 className={dayIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
               >
-                <td className="p-4 border border-gray-200 font-semibold text-gray-800 text-left">
+                <td className="p-3 border border-gray-200 font-medium text-gray-800">
                   {day}
                 </td>
                 {periods.map((_, periodIndex) => (
                   <td
                     key={periodIndex}
-                    className="p-2 border border-gray-200 text-center"
+                    className="p-2 border border-gray-200"
                   >
                     <select
                       value={schedule[dayIndex][periodIndex]}
-                      className={`w-full p-3 border-none rounded-md text-sm focus:ring focus:ring-blue-400 hover:shadow-md transition ${
-                        schedule[dayIndex][periodIndex] === ''
-                          ? 'text-gray-400 font-medium'
-                          : 'text-gray-900 font-medium'
-                      }`}
+                      className={`w-full px-3 py-2 rounded-md border-none text-sm focus:ring-2 focus:ring-blue-400 transition-all
+                        ${
+                          schedule[dayIndex][periodIndex] === '' 
+                            ? 'text-gray-400 bg-gray-50 hover:bg-gray-100' 
+                            : 'text-gray-800 bg-white hover:bg-gray-50'
+                        }`}
                       onChange={(e) =>
                         handleChange(dayIndex, periodIndex, e.target.value)
                       }
                     >
-                      <option value="">Select Teacher</option>
+                      <option value="">Select</option>
                       {teachers.map((teacher) => (
                         <option key={teacher} value={teacher}>
                           {teacher}
@@ -148,19 +151,16 @@ export default function RoutineScheduler() {
         </table>
       </div>
 
-      <div className="mt-6 text-center">
+      <div className="mt-6 flex justify-between items-center">
+        <div className="text-sm text-gray-600">
+          {teachers.length} teachers available
+        </div>
         <button
           onClick={saveSchedule}
-          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition"
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm font-medium shadow-sm"
         >
           Save Schedule
         </button>
-      </div>
-
-      <div className="mt-6 text-center text-gray-700 text-sm">
-        <p>
-          A total of {teachers.length} teachers are available for scheduling.
-        </p>
       </div>
     </div>
   );
