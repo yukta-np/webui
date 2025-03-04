@@ -1,7 +1,7 @@
 ---
 name: bug_report.md
 about: " Report a problem or unexpected behavior in the project."
-title: Bug
+title: BUG
 labels: bug
 assignees: ''
 
