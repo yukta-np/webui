@@ -2,14 +2,14 @@
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-export const URL = 'https://yukta-cms.onrender.com/';
+export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
     userUrl: `${URL}/user`,
-    taskUrl: `${URL}/task`,
+    taskUrl: `${URL}/tasks`,
     taskTypeUrl: `${URL}/task-type`,
     taskStatusUrl: `${URL}/task-status`,
     organisationsUrl: `${URL}/organisations`,
