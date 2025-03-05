@@ -46,6 +46,11 @@ import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
 import { dateRanges } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
+import { useTasks } from '@/hooks/useTasks';
+import moment from 'moment/moment';
+import { constants } from '@/constants';
+import axios from 'axios';
+import { mutate } from 'swr';
 
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
@@ -86,8 +91,11 @@ const TaskList = ({
     description: '<p>this is a description of the task.</p>',
   });
 
+  const URL = constants.urls.taskUrl;
+
   const { taskStatus } = useTaskStatus();
-  console.log(taskStatus);
+  const { tasks: data, revalidate: tasksRevalidate } = useTasks();
+  console.log(data);
 
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
@@ -108,6 +116,37 @@ const TaskList = ({
   const onEditClick = () => {
     setAction('edit');
     openModal();
+  };
+
+  const onViewClick = () => {
+    setAction('view');
+    openModal();
+  };
+
+  const onSubmit = async (values) => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setIsModalVisible(false);
+    }, 3000);
+    const { files, ...deletedValue } = values;
+    const myValues = {
+      ...deletedValue,
+      createdBy: 1,
+      organisationId: 1,
+      isArchived: false,
+      assignedTo: 2,
+    };
+    try {
+      const response = await axios.post(URL, myValues);
+      console.log(response.data);
+      tasksRevalidate();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      setIsModalVisible(false);
+    }
   };
 
   const getTitle = () => {
@@ -162,11 +201,15 @@ const TaskList = ({
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
+      dataIndex: 'id',
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text) => <a className="text-blue-600">TSK-{text}</a>,
+      render: (text) => (
+        <a className="text-blue-600" onClick={onViewClick}>
+          TSK-{text}
+        </a>
+      ),
       width: '5%',
     },
     {
@@ -188,6 +231,23 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
+      render: (text, record) => (
+        <Select
+          defaultValue={text}
+          style={{ width: 200 }}
+          optionFilterProp="label"
+          filterSort={(optionA, optionB) =>
+            (optionA?.label ?? '')
+              .toLowerCase()
+              .localeCompare((optionB?.label ?? '').toLowerCase())
+          }
+          options={taskStatus?.map((ts) => ({
+            label: ts.name,
+            value: ts.id,
+          }))}
+          onChange={(value) => onColumnStatusChange(value, record)}
+        />
+      ),
     },
     {
       title: 'Priority',
@@ -218,6 +278,7 @@ const TaskList = ({
       key: 'dueDate',
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
+      render: (text) => moment(text).format('DD/MM/YYYY '),
     },
     {
       title: 'Action',
@@ -278,48 +339,10 @@ const TaskList = ({
     },
   ];
 
-  const data = [
-    {
-      key: 1,
-      title: 'fix login bug',
-      category: 'bug',
-      status: 'in progress',
-      priority: 'high',
-      assignedTo: 'John Doe',
-      createdBy: 'John Doe',
-      dueDate: '2025-02-28',
-    },
-    {
-      key: 2,
-      title: 'design new ui',
-      category: 'bug',
-      status: 'pending',
-      priority: 'medium',
-      assignedTo: 'Jane Smith',
-      createdBy: 'John Doe',
-      dueDate: '2025-03-05',
-    },
-    {
-      key: 3,
-      title: 'write api documentation',
-      category: 'bug',
-      status: 'completed',
-      priority: 'low',
-      assignedTo: 'Emily Davis',
-      createdBy: 'John Doe',
-      dueDate: '2025-02-20',
-    },
-    {
-      key: 4,
-      title: 'implement payment gateway',
-      category: 'bug',
-      status: 'in progress',
-      priority: 'high',
-      assignedTo: 'Michael Brown',
-      createdBy: 'John Doe',
-      dueDate: '2025-03-10',
-    },
-  ];
+  const onColumnStatusChange = (value, record) => {
+    const updatedTask = { ...record, status: value };
+    updateTaskStatus(updatedTask);
+  };
 
   const [comments, setComments] = useState([
     {
@@ -473,7 +496,7 @@ const TaskList = ({
               }
               options={taskStatus?.map((ts) => ({
                 label: ts.name,
-                value: ts.id,
+                value: ts.name,
               }))}
             />
           </Space>
@@ -518,7 +541,22 @@ const TaskList = ({
           title={getTitle()}
           open={isModalVisible}
           onCancel={closeModal}
-          onOk={() => form.submit()}
+          footer={
+            action === 'add' ? (
+              <>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Submit
+                </Button>
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
+            ) : action === 'edit' ? (
+              <Button type="primary" onClick={() => form.submit()}>
+                Update
+              </Button>
+            ) : (
+              []
+            )
+          }
           width={screens.xs ? '95%' : 1000}
           style={{ top: screens.xs ? 16 : 32 }}
           bodyStyle={{ padding: screens.xs ? 16 : 24 }}
@@ -527,17 +565,18 @@ const TaskList = ({
           <Form
             form={form}
             layout="vertical"
-            onFinish={(values) => {
-              console.log('Form values:', values);
-              setIsProcessing(true);
-              setTimeout(() => {
-                setIsProcessing(false);
-                setIsModalVisible(false);
-              }, 1000);
-            }}
+            // onFinish={(values) => {
+            //   console.log('Form values:', values);
+            //   setIsProcessing(true);
+            //   setTimeout(() => {
+            //     setIsProcessing(false);
+            //     setIsModalVisible(false);
+            //   }, 1000);
+            // }}
+            onFinish={onSubmit}
             initialValues={{
               status: '',
-              assignee: '',
+              assignedTo: '',
               dueDate: null,
               category: '',
               priority: '',
@@ -611,7 +650,7 @@ const TaskList = ({
                         }
                         options={taskStatus?.map((ts) => ({
                           label: ts.name,
-                          value: ts.id,
+                          value: ts.name,
                         }))}
                       />
                     </Form.Item>
@@ -619,7 +658,7 @@ const TaskList = ({
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
                       label={isMyTask ? 'Assign yourself' : 'Assign to'}
-                      name="assignee"
+                      name="assignedTo"
                     >
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
