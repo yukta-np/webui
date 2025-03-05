@@ -3,29 +3,10 @@ import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ScheduleGrid = () => {
-  // Days of the week
-  const days = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ];
-
-  // Time slots (morning and day periods)
-  const morningPeriods = [
-    'Morning 1',
-    'Morning 2',
-    'Morning 3',
-    'Morning 4',
-    'Morning 5',
-  ];
-  const dayPeriods = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6'];
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const morningPeriods = ['M1', 'M2', 'M3', 'M4', 'M5'];
+  const dayPeriods = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6'];
   const allPeriods = [...morningPeriods, ...dayPeriods];
-
-  // Time slots display
   const timeSlots = [
     '6-7',
     '7-8',
@@ -40,49 +21,45 @@ const ScheduleGrid = () => {
     '4-5',
   ];
 
-  // State to track checked boxes
   const [checkedState, setCheckedState] = useState(
-    days.reduce((acc, day) => {
-      acc[day] = {};
-      timeSlots.forEach((time) => {
-        acc[day][time] = false;
-      });
-      return acc;
-    }, {})
+    days.reduce(
+      (acc, day) => ({
+        ...acc,
+        [day]: timeSlots.reduce(
+          (timeAcc, time) => ({ ...timeAcc, [time]: false }),
+          {}
+        ),
+      }),
+      {}
+    )
   );
 
-  // Handler for checkbox toggle
   const handleCheckboxChange = (day, timeSlot) => {
     setCheckedState((prev) => ({
       ...prev,
-      [day]: {
-        ...prev[day],
-        [timeSlot]: !prev[day][timeSlot],
-      },
+      [day]: { ...prev[day], [timeSlot]: !prev[day][timeSlot] },
     }));
-
-    if (!checkedState[day][timeSlot]) {
-      toast.success(`Added: ${day} ${timeSlot}`);
-    } else {
-      toast.info(`Removed: ${day} ${timeSlot}`);
-    }
+    toast[checkedState[day][timeSlot] ? 'info' : 'success'](
+      `${checkedState[day][timeSlot] ? 'Removed' : 'Added'}: ${day} ${timeSlot}`
+    );
   };
 
-  // Reset all checkboxes
   const resetCheckboxes = () => {
     setCheckedState(
-      days.reduce((acc, day) => {
-        acc[day] = {};
-        timeSlots.forEach((time) => {
-          acc[day][time] = false;
-        });
-        return acc;
-      }, {})
+      days.reduce(
+        (acc, day) => ({
+          ...acc,
+          [day]: timeSlots.reduce(
+            (timeAcc, time) => ({ ...timeAcc, [time]: false }),
+            {}
+          ),
+        }),
+        {}
+      )
     );
-    toast('All checkboxes reset');
+    toast('Schedule cleared');
   };
 
-  // Get selected slots for summary
   const selectedSlots = Object.entries(checkedState).flatMap(([day, times]) =>
     Object.entries(times)
       .filter(([_, isChecked]) => isChecked)
@@ -90,195 +67,99 @@ const ScheduleGrid = () => {
   );
 
   return (
-    <div
-      style={{
-        width: '100%',
-        overflowX: 'auto',
-        animation: 'fade-in 0.5s ease-in-out',
-        padding: '16px',
-      }}
-    >
-      {/* Reset Button */}
-      <button
-        onClick={resetCheckboxes}
-        style={{
-          padding: '8px 16px',
-          backgroundColor: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginBottom: '16px',
-        }}
-      >
-        Reset
-      </button>
+    <div className="max-w-7xl mx-auto p-6 bg-gray-50 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Availability Grid</h2>
+        <button
+          onClick={resetCheckboxes}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md border border-gray-300 transition-colors text-sm font-medium"
+        >
+          Reset Schedule
+        </button>
+      </div>
 
-      {/* Schedule Table */}
-      <table
-        style={{
-          width: '100%',
-          borderCollapse: 'collapse',
-          backgroundColor: 'white',
-        }}
-      >
-        <thead>
-          <tr style={{ backgroundColor: '#065f46', color: 'white' }}>
-            <th
-              style={{
-                padding: '12px',
-                textAlign: 'left',
-                fontWeight: '500',
-                border: '1px solid #064e3b',
-              }}
-            >
-              Period
-            </th>
-            {allPeriods.map((period) => (
-              <th
-                key={period}
-                style={{
-                  padding: '12px',
-                  fontWeight: '500',
-                  border: '1px solid #064e3b',
-                  position: 'relative',
-                  minWidth: '120px',
-                }}
-              >
-                {period}
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    paddingRight: '8px',
-                    pointerEvents: 'none',
-                    opacity: '0.7',
-                  }}
-                >
-                  <svg
-                    style={{
-                      width: '20px',
-                      height: '20px',
-                      fill: 'currentColor',
-                    }}
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M7 10l5 5 5-5z" />
-                  </svg>
-                </div>
+      <div className="overflow-x-auto bg-white p-4 rounded-lg shadow">
+        <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100 text-gray-900">
+            <tr>
+              <th className="p-3 border border-gray-200 text-left font-semibold">
+                Day/Period
               </th>
-            ))}
-          </tr>
-          <tr style={{ backgroundColor: '#047857', color: 'white' }}>
-            <th
-              style={{
-                padding: '12px',
-                textAlign: 'left',
-                fontWeight: '500',
-                border: '1px solid #064e3b',
-              }}
-            >
-              Time
-            </th>
-            {timeSlots.map((time) => (
-              <th
-                key={time}
-                style={{
-                  padding: '12px',
-                  fontWeight: '500',
-                  border: '1px solid #064e3b',
-                }}
-              >
-                {time}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {days.map((day) => (
-            <tr key={day}>
-              <td
-                style={{
-                  padding: '12px',
-                  fontWeight: '500',
-                  border: '1px solid #e5e7eb',
-                  backgroundColor: '#f9fafb',
-                }}
-              >
-                {day}
-              </td>
-              {timeSlots.map((time) => (
-                <td
-                  key={`${day}-${time}`}
-                  style={{
-                    border: '1px solid #e5e7eb',
-                    textAlign: 'center',
-                    padding: '12px',
-                  }}
+              {allPeriods.map((period) => (
+                <th
+                  key={period}
+                  className="p-3 border border-gray-200 font-semibold"
                 >
-                  <label
-                    style={{
-                      display: 'inline-block',
-                      width: '24px',
-                      height: '24px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      transition: 'all 200ms',
-                      position: 'relative',
-                      backgroundColor: checkedState[day][time]
-                        ? '#10b981'
-                        : 'white',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      style={{
-                        opacity: '0',
-                        position: 'absolute',
-                        inset: '0',
-                        width: '100%',
-                        height: '100%',
-                        cursor: 'pointer',
-                      }}
-                      checked={checkedState[day][time]}
-                      onChange={() => handleCheckboxChange(day, time)}
-                      aria-label={`Select ${day} ${time}`}
-                    />
-                    {checkedState[day][time] && (
-                      <Check
-                        size={16}
-                        style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          color: 'white',
-                        }}
-                      />
-                    )}
-                  </label>
-                </td>
+                  {period}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Selected Slots Summary */}
-      <div style={{ marginTop: '16px' }}>
-        <h3 style={{ marginBottom: '8px' }}>Selected Slots:</h3>
-        <ul style={{ listStyle: 'none', padding: '0' }}>
-          {selectedSlots.map((slot, index) => (
-            <li key={index} style={{ marginBottom: '4px' }}>
-              {slot}
-            </li>
-          ))}
-        </ul>
+            <tr>
+              <th className="p-3 border border-gray-200 text-left font-semibold">
+                Time Slot
+              </th>
+              {timeSlots.map((time) => (
+                <th
+                  key={time}
+                  className="p-3 border border-gray-200 font-medium text-sm text-gray-600"
+                >
+                  {time}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {days.map((day) => (
+              <tr
+                key={day}
+                className={
+                  days.indexOf(day) % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                }
+              >
+                <td className="p-3 border border-gray-200 font-semibold text-gray-800">
+                  {day}
+                </td>
+                {timeSlots.map((time) => (
+                  <td
+                    key={`${day}-${time}`}
+                    className="p-2 border border-gray-200 text-center"
+                  >
+                    <label
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded border cursor-pointer transition-all
+                        ${
+                          checkedState[day][time]
+                            ? 'bg-blue-600 border-blue-700 shadow-sm'
+                            : 'bg-white border-gray-300 hover:border-blue-300'
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={checkedState[day][time]}
+                        onChange={() => handleCheckboxChange(day, time)}
+                      />
+                      {checkedState[day][time] && (
+                        <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                      )}
+                    </label>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+
+      {selectedSlots.length > 0 && (
+        <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            Selected Time Slots:
+          </h3>
+          <div className="text-sm text-gray-600 font-medium">
+            {selectedSlots.join(', ')}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
