@@ -2,7 +2,7 @@
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-export const URL = 'https://yukta-cms.onrender.com/';
+export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {

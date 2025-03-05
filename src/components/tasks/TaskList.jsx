@@ -46,6 +46,8 @@ import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
 import { dateRanges } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
+import { useTaskPriority } from '@/hooks/useTaskPriority';
+import { useTaskCategory } from '@/hooks/useTaskCategory';
 
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
@@ -88,6 +90,12 @@ const TaskList = ({
 
   const { taskStatus } = useTaskStatus();
   console.log(taskStatus);
+
+  const {taskPriority} = useTaskPriority();
+  console.log(taskPriority);
+
+  const {taskCategory} = useTaskCategory();
+  console.log(taskCategory);
 
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
@@ -647,26 +655,35 @@ const TaskList = ({
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Category" name="category">
-                      <Select defaultValue="">
-                        <Select.Option value="incident">Incident</Select.Option>
-                        <Select.Option value="complaint">
-                          Complaint
-                        </Select.Option>
-                        <Select.Option value="request">Request</Select.Option>
-                        <Select.Option value="problem">Problem</Select.Option>
-                        <Select.Option value="change">Change</Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskCategory?.map((pl) => ({
+                          label: pl.name,
+                          value: pl.id,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Priority" name="priority">
-                      <Select defaultValue="">
-                        <Select.Option value="critical">Critical</Select.Option>
-                        <Select.Option value="high">High</Select.Option>
-                        <Select.Option value="medium">Medium</Select.Option>
-                        <Select.Option value="low">Low</Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskPriority?.map((pl) => ({
+                          label: pl.name,
+                          value: pl.id,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
 
