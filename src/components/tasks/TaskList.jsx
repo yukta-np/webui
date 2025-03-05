@@ -181,7 +181,7 @@ const TaskList = ({
 
   const onColumnStatusChange = async (id, status) => {
     try {
-      await taskService.updateTask(id, { status });
+      await updateTask(id, { status });
       openNotification('Task status updated successfully');
       tasksRevalidate();
     } catch (error) {
@@ -278,22 +278,29 @@ const TaskList = ({
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
       width: 150,
+
       render: (text, record) => (
-        <Select
-          defaultValue={text}
-          style={{ width: 150 }}
-          optionFilterProp="label"
-          filterSort={(optionA, optionB) =>
-            (optionA?.label ?? '')
-              .toLowerCase()
-              .localeCompare((optionB?.label ?? '').toLowerCase())
-          }
-          options={taskStatus?.map((ts) => ({
-            label: ts.name,
-            value: ts.name,
-          }))}
-          onChange={(value) => onColumnStatusChange(record.id, value)}
-        />
+        <>
+          {isMyTask ? (
+            <Select
+              defaultValue={text}
+              style={{ width: 150 }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={taskStatus?.map((ts) => ({
+                label: ts.name,
+                value: ts.name,
+              }))}
+              onChange={(value) => onColumnStatusChange(record.id, value)}
+            />
+          ) : (
+            <span>{text}</span>
+          )}
+        </>
       ),
     },
     {
