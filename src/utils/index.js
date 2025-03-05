@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { notification } from 'antd';
 export const fetcher = async (url, options = {}) => {
   // const headers = {
   //   Authorization: 'Bearer YOUR_ACCESS_TOKEN',
@@ -17,4 +18,20 @@ export const dateRanges = {
   ],
   'This Month': [moment().startOf('month'), moment().endOf('month')],
   'This Year': [moment().startOf('year'), moment().endOf('year')],
+};
+
+export const openNotification = (message, isError, description = '') => {
+  const fn = isError ? 'error' : 'success';
+
+  notification[fn]({
+    message,
+    description,
+    placement: 'bottom',
+  });
+};
+
+export const disableRefetchBlock = {
+  revalidateIfStale: false,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
 };
