@@ -21,6 +21,7 @@ import {
   Mentions,
   Switch,
   Popconfirm,
+  Divider,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -44,14 +45,11 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
-import { dateRanges } from '@/utils';
+import { dateRanges, openNotification } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
-import { useTasks } from '@/hooks/useTasks';
+import { useTasks, useTasksByStatus } from '@/hooks/useTasks';
 import moment from 'moment/moment';
-import { constants } from '@/constants';
-import axios from 'axios';
-import { mutate } from 'swr';
-
+import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
   return (
@@ -81,22 +79,34 @@ const TaskList = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [action, setAction] = useState('add');
-
+  const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [task] = useState({
+  const [status, setStatus] = useState(null);
+  const [priority, setPriority] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [task, setTask] = useState({
     creatorId: 1,
     taskStatus: 1,
     assigneeId: 2,
     title: 'sample task',
-    description: '<p>this is a description of the task.</p>',
+    description: 'this is a description of the task.',
   });
+  const params = {
+    ...(status !== null && { status }),
+    ...(priority !== null && { priority }),
+    ...(category !== null && { category }),
+  };
 
-  const URL = constants.urls.taskUrl;
+  console.log('hahahaha', editingData);
 
   const { taskStatus } = useTaskStatus();
-  const { tasks: data, revalidate: tasksRevalidate } = useTasks();
-  console.log(data);
-
+  const {
+    tasks: data,
+    meta: taskMeta,
+    revalidate: tasksRevalidate,
+    error: taskError,
+  } = useTasks(params);
+  console.log({ data, taskMeta, taskError });
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
   };
@@ -106,6 +116,7 @@ const TaskList = ({
   };
 
   const closeModal = () => {
+    form.resetFields();
     setIsModalVisible(false);
   };
 
@@ -113,22 +124,36 @@ const TaskList = ({
     setAction('add');
     openModal();
   };
-  const onEditClick = () => {
+  const onEditClick = (record) => {
+    const newRecord = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+    };
+    setEditingData(newRecord);
+    form.setFieldsValue(newRecord);
     setAction('edit');
     openModal();
   };
 
-  const onViewClick = () => {
+  const onDeleteClick = (record) => {
+    deleteTask(record.id);
+    openNotification('Task deleted successfully');
+    tasksRevalidate();
+  };
+
+  const onViewClick = (record) => {
+    const newRecord = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+    };
     setAction('view');
+    form.setFieldsValue(newRecord);
+
     openModal();
   };
 
   const onSubmit = async (values) => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setIsModalVisible(false);
-    }, 3000);
     const { files, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
@@ -138,8 +163,13 @@ const TaskList = ({
       assignedTo: 2,
     };
     try {
-      const response = await axios.post(URL, myValues);
-      console.log(response.data);
+      if (action === 'edit') {
+        await updateTask(editingData.id, values);
+        openNotification('Task updated successfully');
+      } else {
+        await createTask(myValues);
+        openNotification('Task added successfully');
+      }
       tasksRevalidate();
     } catch (error) {
       console.log(error);
@@ -147,6 +177,22 @@ const TaskList = ({
       setIsProcessing(false);
       setIsModalVisible(false);
     }
+  };
+
+  const onColumnStatusChange = async (id, status) => {
+    try {
+      await taskService.updateTask(id, { status });
+      openNotification('Task status updated successfully');
+      tasksRevalidate();
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
+  };
+
+  const filterStatusChange = (value) => {
+    setStatus(value);
+
+    tasksRevalidate();
   };
 
   const getTitle = () => {
@@ -205,8 +251,8 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text) => (
-        <a className="text-blue-600" onClick={onViewClick}>
+      render: (text, record) => (
+        <a className="text-blue-600" onClick={() => onViewClick(record)}>
           TSK-{text}
         </a>
       ),
@@ -231,10 +277,11 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
+      width: 150,
       render: (text, record) => (
         <Select
           defaultValue={text}
-          style={{ width: 200 }}
+          style={{ width: 150 }}
           optionFilterProp="label"
           filterSort={(optionA, optionB) =>
             (optionA?.label ?? '')
@@ -243,9 +290,9 @@ const TaskList = ({
           }
           options={taskStatus?.map((ts) => ({
             label: ts.name,
-            value: ts.id,
+            value: ts.name,
           }))}
-          onChange={(value) => onColumnStatusChange(value, record)}
+          onChange={(value) => onColumnStatusChange(record.id, value)}
         />
       ),
     },
@@ -278,7 +325,7 @@ const TaskList = ({
       key: 'dueDate',
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
-      render: (text) => moment(text).format('DD/MM/YYYY '),
+      render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Action',
@@ -297,14 +344,14 @@ const TaskList = ({
                 <Button
                   type="link"
                   icon={<FilePenLine />}
-                  onClick={onEditClick}
+                  onClick={() => onEditClick(record)}
                 />
-
                 <Popconfirm
                   title="Delete the task"
                   description="Are you sure to delete this task?"
                   okText="Yes"
                   cancelText="No"
+                  onConfirm={() => onDeleteClick(record)}
                 >
                   <Button
                     type="link"
@@ -338,11 +385,6 @@ const TaskList = ({
         ),
     },
   ];
-
-  const onColumnStatusChange = (value, record) => {
-    const updatedTask = { ...record, status: value };
-    updateTaskStatus(updatedTask);
-  };
 
   const [comments, setComments] = useState([
     {
@@ -498,6 +540,7 @@ const TaskList = ({
                 label: ts.name,
                 value: ts.name,
               }))}
+              onChange={(value) => filterStatusChange(value)}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
@@ -523,6 +566,7 @@ const TaskList = ({
           columns={columns}
           dataSource={data}
           pagination={{
+            ...taskMeta,
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
@@ -544,15 +588,22 @@ const TaskList = ({
           footer={
             action === 'add' ? (
               <>
-                <Button type="primary" onClick={() => form.submit()}>
-                  Submit
+                <Divider />
+                <Button className="mr-2" onClick={closeModal}>
+                  Cancel
                 </Button>
-                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Add
+                </Button>
               </>
             ) : action === 'edit' ? (
-              <Button type="primary" onClick={() => form.submit()}>
-                Update
-              </Button>
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Update
+                </Button>
+              </>
             ) : (
               []
             )
@@ -565,23 +616,8 @@ const TaskList = ({
           <Form
             form={form}
             layout="vertical"
-            // onFinish={(values) => {
-            //   console.log('Form values:', values);
-            //   setIsProcessing(true);
-            //   setTimeout(() => {
-            //     setIsProcessing(false);
-            //     setIsModalVisible(false);
-            //   }, 1000);
-            // }}
             onFinish={onSubmit}
-            initialValues={{
-              status: '',
-              assignedTo: '',
-              dueDate: null,
-              category: '',
-              priority: '',
-              files: [],
-            }}
+            disabled={action === 'view'}
           >
             <Row gutter={24}>
               <Col xs={24} lg={18}>
@@ -600,12 +636,20 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  <Tabs activeKey={activeTab} onChange={setActiveTab}>
+                  <Tabs
+                    activeKey={activeTab}
+                    onChange={setActiveTab}
+                    disabled={action === 'view'}
+                  >
                     <TabPane tab="Write" key="write">
                       <SunEditor
                         setOptions={editorOptions}
                         onChange={handleEditorChange}
-                        setContents={task.description}
+                        setContents={
+                          action === 'edit'
+                            ? form.getFieldValue('description')
+                            : task.description
+                        }
                       />
                     </TabPane>
                     <TabPane tab="Preview" key="preview">
@@ -680,6 +724,7 @@ const TaskList = ({
                       <DatePicker
                         presets={dateRanges}
                         style={{ width: '100%' }}
+                        format="DD/MM/YYYY"
                       />
                     </Form.Item>
                   </Col>
