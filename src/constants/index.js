@@ -2,25 +2,20 @@
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-import { notification } from "antd";
-
 export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
-    userUrl: `${URL}/user`,
-    usersUrl: `${URL}/users`, // Added
-    taskUrl: `${URL}/task`,
-    tasksUrl: `${URL}/tasks`, // Added
-    taskTypeUrl: `${URL}/task-type`,
-    taskTypesUrl: `${URL}/task-types`, // Added
+    usersUrl: `${URL}/users`,
+    tasksUrl: `${URL}/tasks`,
+    taskTypesUrl: `${URL}/task-types`,
     taskStatusUrl: `${URL}/task-status`,
-    taskChangeHistoriesUrl: `${URL}/task-change-histories`, // Added
-    roleUrl: `${URL}/role`, // Added
-    studentUrl: `${URL}/student`, // Added
-    universitiesUrl: `${URL}/universities`, // Added
+    taskChangeHistoriesUrl: `${URL}/task-change-histories`,
+    roleUrl: `${URL}/role`,
+    studentUrl: `${URL}/student`,
+    universitiesUrl: `${URL}/universities`,
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-categories`,
     taskPriorityUrl: `${URL}/task-priorities`,
@@ -29,7 +24,6 @@ export const constants = {
     notificationUrl: `${URL}/notification`,
     groupUrl: `${URL}/group`,
   },
-
 };
 
 export const COOKIE_SIDEBER_COLLAPSED = 'yukta.ui.sidebar.collapsed';

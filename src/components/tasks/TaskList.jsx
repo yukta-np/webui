@@ -49,7 +49,7 @@ import { dateRanges, openNotification } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
 import { useTaskPriority } from '@/hooks/useTaskPriority';
 import { useTaskCategory } from '@/hooks/useTaskCategory';
-import { useTasks, useTasksByStatus } from '@/hooks/useTasks';
+import { useTasks } from '@/hooks/useTasks';
 import moment from 'moment/moment';
 import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
 const PreviewSection = ({ content }) => {
@@ -93,15 +93,29 @@ const TaskList = ({
     title: 'sample task',
     description: 'this is a description of the task.',
   });
-  const params = {
-    ...(status !== null && { status }),
-    ...(priority !== null && { priority }),
-    ...(category !== null && { category }),
-  };
+
+  let params = {};
+  if (status) {
+    params.status = status;
+  }
+
+  if (priority) {
+    params.priority = priority;
+  }
+
+  if (category) {
+    params.category = category;
+  }
 
   console.log('hahahaha', editingData);
-
+  const {
+    tasks: data,
+    revalidate: tasksRevalidate,
+    meta: taskMeta,
+  } = useTasks(params);
   const { taskStatus } = useTaskStatus();
+  const { taskCategory } = useTaskCategory();
+  const { taskPriority } = useTaskPriority();
   console.log(taskStatus);
 
   const handleEditorChange = (content) => {
@@ -163,11 +177,12 @@ const TaskList = ({
       if (action === 'edit') {
         await updateTask(editingData.id, values);
         openNotification('Task updated successfully');
+        tasksRevalidate();
       } else {
         await createTask(myValues);
         openNotification('Task added successfully');
+        tasksRevalidate();
       }
-      tasksRevalidate();
     } catch (error) {
       console.log(error);
     } finally {
@@ -188,7 +203,6 @@ const TaskList = ({
 
   const filterStatusChange = (value) => {
     setStatus(value);
-
     tasksRevalidate();
   };
 
@@ -534,6 +548,8 @@ const TaskList = ({
             <Select
               showSearch
               style={{ width: 200 }}
+              allowClear={true}
+              onClear={() => filterStatusChange(null)}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
@@ -742,9 +758,9 @@ const TaskList = ({
                             .toLowerCase()
                             .includes(input.toLowerCase())
                         }
-                        options={taskCategory?.map((pl) => ({
-                          label: pl.name,
-                          value: pl.id,
+                        options={taskCategory?.map((tc) => ({
+                          label: tc.name,
+                          value: tc.name,
                         }))}
                       />
                     </Form.Item>
@@ -759,9 +775,9 @@ const TaskList = ({
                             .toLowerCase()
                             .includes(input.toLowerCase())
                         }
-                        options={taskPriority?.map((pl) => ({
-                          label: pl.name,
-                          value: pl.id,
+                        options={taskPriority?.map((tp) => ({
+                          label: tp.name,
+                          value: tp.name,
                         }))}
                       />
                     </Form.Item>

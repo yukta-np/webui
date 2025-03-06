@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { constants } from '@/constants';
 
-const URL = constants.urls.taskUrl;
+const URL = constants.urls.tasksUrl;
 
 export async function createTask(task) {
   return axios.post(URL, task);

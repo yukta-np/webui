@@ -9,7 +9,7 @@ export function useTasks(params) {
     return new URLSearchParams(params).toString();
   }, [params]);
 
-  const URL = constants.urls.taskUrl;
+  const URL = constants.urls.tasksUrl;
   const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
   const { disableAutoRefetch } = params || {};
