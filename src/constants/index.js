@@ -1,8 +1,8 @@
-// export const API_URL = 'http://localhost:3004';
+export const URL = 'http://localhost:4000';
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-export const URL = 'https://yukta-cms.onrender.com';
+// export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {

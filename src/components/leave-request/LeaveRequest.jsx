@@ -165,9 +165,9 @@ const LeaveRequest = ({
       render: (_, record) =>
         screens.md ? (
           <Space size="middle">
-            <Button type="link" icon={<Eye />} onClick={onReviewClick} />
+            <Button type="link" icon={<Eye size={18} />} onClick={onReviewClick} />
 
-            <Button type="link" icon={<FilePenLine />} onClick={onEditClick} />
+            <Button type="link" icon={<FilePenLine size={18} />} onClick={onEditClick} />
             {isMyLeave && (
               <>
                 <Popconfirm
@@ -179,7 +179,7 @@ const LeaveRequest = ({
                   <Button
                     type="link"
                     danger
-                    icon={<Trash2Icon stroke="red" />}
+                    icon={<Trash2Icon stroke="red" size={18} />}
                     onClick={onDeleteClick}
                   />
                 </Popconfirm>
@@ -204,12 +204,12 @@ const LeaveRequest = ({
             overlay={
               <Menu
                 items={[
-                  { key: 'view', label: 'View', icon: <Eye /> },
-                  { key: 'edit', label: 'Edit', icon: <FilePenLine /> },
+                  { key: 'view', label: 'View', icon: <Eye size={18} /> },
+                  { key: 'edit', label: 'Edit', icon: <FilePenLine size={18} /> },
                   {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <Trash2Icon />,
+                    icon: <Trash2Icon size={18} />,
                     danger: true,
                   },
                 ]}
@@ -217,7 +217,7 @@ const LeaveRequest = ({
             }
             trigger={['click']}
           >
-            <Button icon={<EllipsisVertical />} />
+            <Button icon={<EllipsisVertical size={18} />} />
           </Dropdown>
         ),
     },

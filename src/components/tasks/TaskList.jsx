@@ -354,14 +354,14 @@ const TaskList = ({
           <Space size="middle">
             <Button
               type="link"
-              icon={<MessageSquareText />}
+              icon={<MessageSquareText size={18} />}
               onClick={showCommentModal}
             />
             {!isMyTask && (
               <>
                 <Button
                   type="link"
-                  icon={<FilePenLine />}
+                  icon={<FilePenLine size={18} />}
                   onClick={() => onEditClick(record)}
                 />
                 <Popconfirm
@@ -374,7 +374,7 @@ const TaskList = ({
                   <Button
                     type="link"
                     danger
-                    icon={<Trash2Icon stroke="red" />}
+                    icon={<Trash2Icon stroke="red" size={18} />}
                   />
                 </Popconfirm>
               </>
