@@ -12,6 +12,7 @@ import {
   Button,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
+import { useAppContext } from '@/app-context';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -30,11 +31,14 @@ const TopHeader = () => {
   } = theme.useToken();
   const screens = useBreakpoint();
 
-  const loggedInUser = {
-    avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg', // Replace with an actual image URL
-    fullName: 'Abishek Ghimire',
-    role: 'admin', // Example role
-  };
+  const { loggedInUser } = useAppContext();
+  // console.log('login', login);
+
+  // const loggedInUser = {
+  //   avatarUrl: 'https://randomuser.me/api/portraits/men/45.jpg', // Replace with an actual image URL
+  //   fullName: 'Abishek Ghimire',
+  //   role: 'admin', // Example role
+  // };
 
   const handleSearchClick = () => {
     console.log('Search button clicked');
@@ -42,14 +46,17 @@ const TopHeader = () => {
   };
   const getRoleForHumans = (role) => {
     const roles = {
-      admin: 'Admin',
-      user: 'User',
-      editor: 'Editor',
+      ADMIN: 'ADMIN',
+      USER: 'USER',
+      MANAGER: 'MANAGER',
+      STUDENT: 'STUDENT',
     };
     return roles[role] || 'Unknown Role';
   };
 
-  const isClient = (user) => user.role === 'user';
+  // const isClient = (user) => user.role === 'STUDENT';
+  const isClient = (user) => user?.role === 'STUDENT';
+
 
   const menuItems = [
     {
@@ -140,7 +147,7 @@ const TopHeader = () => {
         align="center"
         style={{ marginLeft: 'auto' }}
       >
-        <Space className="gap-9 mr-2 mt-3">
+        <Space className="mt-3 mr-2 gap-9">
           <Badge
             count={5}
             style={{

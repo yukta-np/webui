@@ -52,7 +52,6 @@ import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import moment from 'moment/moment';
 import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
-<<<<<<< HEAD
 import {
   FileImageOutlined,
   FilePdfOutlined,
@@ -93,9 +92,7 @@ const getFileIcon = (fileName) => {
   }
 };
 
-=======
 import { useAppContext } from '@/app-context';
->>>>>>> context-api
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
   return (
@@ -739,7 +736,7 @@ const TaskList = ({
                       <Inbox
                         size={80}
                         strokeWidth={1}
-                        className="text-gray-300 mr-2"
+                        className="mr-2 text-gray-300"
                       />{' '}
                     </div>
                     <p className="ant-upload-text !text-gray-500">

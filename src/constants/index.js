@@ -4,7 +4,7 @@ export const URL = 'http://localhost:4000';
 
 import { getLoggedInUser } from "@/utils";
 
-export const URL = 'https://yukta-cms.onrender.com';
+// export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
