@@ -1,8 +1,8 @@
-// export const API_URL = 'http://localhost:3004';
+export const URL = 'http://localhost:3004';
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-export const URL = 'https://yukta-cms.onrender.com';
+// export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
@@ -19,7 +19,7 @@ export const constants = {
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-categories`,
     taskPriorityUrl: `${URL}/task-priorities`,
-    leaveRequestUrl: `${URL}/leave-request`,
+    leaveRequestUrl: `${URL}/leaves`,
     leaveTypesUrl: `${URL}/leave-types`,
     notificationUrl: `${URL}/notification`,
     groupUrl: `${URL}/group`,

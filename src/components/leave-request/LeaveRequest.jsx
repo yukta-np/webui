@@ -27,7 +27,14 @@ import {
 import { EllipsisVertical, FilePenLine, Trash2Icon, Eye } from 'lucide-react';
 import Link from 'next/link';
 import moment from 'moment';
-import { dateRanges } from '@/utils';
+import { dateRanges, openNotification } from '@/utils';
+import { useLeaveRequest } from '@/hooks/useLeaveRequest';
+import {
+  createLeaves,
+  updateLeaves,
+  deleteLeaves,
+} from '@/services/leaves.http';
+import { data } from 'autoprefixer';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -44,10 +51,22 @@ const LeaveRequest = ({
   } = theme.useToken();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [action, setAction] = useState('add');
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
   const [isAllDay, setIsAllDay] = useState(false);
+  const [editingData, setEditingData] = useState(null);
+
+  let params = {};
+  const loggedInUser = {
+    userId: 8,
+    fullname: 'Abishek Ghimire',
+  };
+
+  const { leaveRequest: leaves, revalidate: leavesRevalidate } =
+    useLeaveRequest(params);
+  console.log(leaves);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -67,17 +86,60 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onReviewClick = () => {
+  const onReviewClick = (record) => {
+    const newRecord = {
+      ...record,
+      startDate: record.startDate ? moment(record.startDate) : null,
+      endDate: record.endDate ? moment(record.endDate) : null,
+    };
+    form.setFieldsValue(newRecord);
     setAction('review');
     openModal();
   };
 
-  const onEditClick = () => {
+  const onEditClick = (record) => {
+    const newRecord = {
+      ...record,
+      startDate: record.startDate ? moment(record.startDate) : null,
+      endDate: record.endDate ? moment(record.endDate) : null,
+    };
+    setEditingData(newRecord);
+    form.setFieldsValue(newRecord);
     setAction('edit');
     openModal();
   };
 
-  const onDeleteClick = () => {};
+  const onDeleteClick = (record) => {
+    deleteLeaves(record.id);
+    leavesRevalidate();
+  };
+
+  const onSubmit = async (values) => {
+    setIsProcessing(true);
+    const myValues = {
+      ...values,
+      userId: 8,
+      isApproved: false,
+      organisationId: 1,
+      isArchived: false,
+      rejectionReason: 'hi',
+      transferShiftTo: 2,
+      createdBy: 4,
+    };
+    try {
+      if (action === 'edit') {
+        await updateLeaves(editingData.id, values);
+      } else {
+        await createLeaves(myValues);
+      }
+      leavesRevalidate();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      setIsModalVisible(false);
+    }
+  };
 
   const onDecisionChange = (value) => {
     setDecision(value);
@@ -102,8 +164,6 @@ const LeaveRequest = ({
     }
   };
 
-  console.log(getTitle());
-
   const columns = [
     ...(!isMyLeave
       ? [
@@ -111,6 +171,7 @@ const LeaveRequest = ({
             title: 'Teacher / Staff Member Name',
             dataIndex: 'name',
             key: 'name',
+            render: () => loggedInUser.fullname,
             responsive: ['lg'],
           },
         ]
@@ -119,43 +180,64 @@ const LeaveRequest = ({
     {
       title: 'Start Date',
       dataIndex: 'startDate',
+      render: (text) => moment(text).format('DD/MM/YYYY'),
+
       key: 'startDate',
       responsive: ['md'],
     },
     {
       title: 'End Date',
       dataIndex: 'endDate',
+      render: (text) => moment(text).format('DD/MM/YYYY'),
       key: 'endDate',
       responsive: ['md'],
     },
+
     {
-      title: 'Hour/Days',
-      dataIndex: 'hourDays',
-      key: 'hourDays',
-      responsive: ['md'],
-    },
-    {
-      title: 'Leave Type',
-      dataIndex: 'leaveType',
-      key: 'leaveType',
+      title: 'Request Type',
+      dataIndex: 'requestType',
+      key: 'requestType',
       responsive: ['lg'],
     },
     {
       title: 'Decided At',
       dataIndex: 'decidedAt',
       key: 'decidedAt',
+      render: (_, leaveRequest) => {
+        if (leaveRequest.decidedAt == null) {
+          return '-';
+        } else {
+          return leaveRequest.decidedAt;
+        }
+      },
       responsive: ['sm'],
     },
     {
       title: 'Decided By',
       dataIndex: 'decidedBy',
       key: 'decidedBy',
+      render: (_, leaveRequest) => {
+        if (leaveRequest.decidedBy == null) {
+          return '-';
+        } else {
+          return leaveRequest.decidedBy;
+        }
+      },
       responsive: ['sm'],
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
+      render: (_, leaveRequest) => {
+        if (leaveRequest.isApproved == true) {
+          return 'Approved';
+        } else if (leaveRequest.isApproved == false) {
+          return 'Rejected';
+        } else {
+          return 'Pending';
+        }
+      },
       responsive: ['sm'],
     },
     {
@@ -165,9 +247,17 @@ const LeaveRequest = ({
       render: (_, record) =>
         screens.md ? (
           <Space size="middle">
-            <Button type="link" icon={<Eye />} onClick={onReviewClick} />
-
-            <Button type="link" icon={<FilePenLine />} onClick={onEditClick} />
+            <Button
+              type="link"
+              icon={<Eye />}
+              onClick={() => onReviewClick(record)}
+            />
+            <Button
+              type="link"
+              icon={<FilePenLine />}
+              onClick={() => onEditClick(record)}
+              disabled={record.status !== 'Pending'}
+            />
             {isMyLeave && (
               <>
                 <Popconfirm
@@ -175,12 +265,12 @@ const LeaveRequest = ({
                   description="Are you sure to delete this request?"
                   okText="Yes"
                   cancelText="No"
+                  onConfirm={() => onDeleteClick(record)}
                 >
                   <Button
                     type="link"
                     danger
                     icon={<Trash2Icon stroke="red" />}
-                    onClick={onDeleteClick}
                   />
                 </Popconfirm>
               </>
@@ -192,7 +282,7 @@ const LeaveRequest = ({
                   danger
                   ghost
                   size="medium"
-                  onClick={onAcceptRejectClick}
+                  onClick={() => onAcceptRejectClick(record)}
                 >
                   Accept/Reject
                 </Button>
@@ -222,43 +312,6 @@ const LeaveRequest = ({
         ),
     },
   ];
-
-  const data = [
-    {
-      name: 'John Doe',
-      startDate: '2025-02-28',
-      endDate: '2025-03-05',
-      hourDays: '2 days',
-      leaveType: 'sick leave',
-      decidedAt: '2025-02-28',
-      decidedBy: 'John Doe',
-      status: 'pending',
-    },
-    {
-      name: 'John Doe',
-      startDate: '2025-02-28',
-      endDate: '2025-03-05',
-      hourDays: '8 hour',
-      leaveType: 'sick leave',
-      decidedAt: '2025-02-28',
-      decidedBy: 'John Doe',
-      status: 'pending',
-    },
-    {
-      name: 'John Doe',
-      startDate: '2025-02-28',
-      endDate: '2025-03-05',
-      hourDays: '7 days',
-      leaveType: 'sick leave',
-      decidedAt: '2025-02-28',
-      decidedBy: 'John Doe',
-      status: 'pending',
-    },
-  ];
-
-  const loggedInUser = {
-    fullname: 'Abishek Ghimire',
-  };
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
@@ -346,13 +399,13 @@ const LeaveRequest = ({
 
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={Array.isArray(leaves) ? leaves : []}
           pagination={{
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
           }}
-          rowKey="key"
+          rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
           size={screens.xs ? 'small' : 'middle'}
@@ -366,10 +419,37 @@ const LeaveRequest = ({
           title={getTitle()}
           open={isModalVisible}
           onCancel={closeModal}
-          footer={null}
+          confirmLoading={isProcessing}
+          footer={
+            action === 'add' ? (
+              <>
+                <Divider />
+                <Button className="mr-2" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Apply
+                </Button>
+              </>
+            ) : action === 'edit' ? (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Update
+                </Button>
+              </>
+            ) : (
+              []
+            )
+          }
         >
-          <Divider />
-          <Form layout="vertical" disabled={action === 'review'}>
+          <Form
+            layout="vertical"
+            disabled={action === 'review'}
+            form={form}
+            onFinish={onSubmit}
+          >
             {action === 'accept-reject' && (
               <Row>
                 <Col span={12}>
@@ -381,7 +461,7 @@ const LeaveRequest = ({
                     <DatePicker
                       showTime
                       disabled
-                      format="DD/MM/YYYY hh:mm A"
+                      format="DD/MM/YYYY "
                       value={moment()}
                     />
                   </Form.Item>
@@ -416,8 +496,8 @@ const LeaveRequest = ({
 
             <Col>
               <Form.Item
-                name="leaveType"
-                label="Leave Type"
+                name="requestType"
+                label="Request Type"
                 rules={[{ required: true }]}
                 width="100%"
                 initialValue={action === 'review' ? data.leaveType : ''}
@@ -437,45 +517,37 @@ const LeaveRequest = ({
             <Row gutter={16} style={{ width: '100%' }}>
               <Col span={12}>
                 <Form.Item
-                  name="fromDate"
+                  name="startDate"
                   label="From"
                   rules={[{ required: true }]}
                 >
                   <DatePicker
                     showTime
-                    format="DD/MM/YYYY hh:mm A"
+                    format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay}
+                    disabled={isAllDay || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item
-                  name="toDate"
+                  name="endDate"
                   label="To"
                   rules={[{ required: true }]}
                 >
                   <DatePicker
                     showTime
-                    format="DD/MM/YYYY hh:mm A"
+                    format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay}
+                    disabled={isAllDay || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
               </Col>
             </Row>
 
-            <Form.Item
-              name="hourDays"
-              label="Hour / Days"
-              rules={[{ required: true }]}
-            >
-              <InputNumber style={{ width: '100%' }} min={0} />
-            </Form.Item>
-
-            <Form.Item name="reason" label="Note to Approver">
+            <Form.Item name="note" label="Note to Approver">
               <Input.TextArea rows={4} />
             </Form.Item>
             {action === 'accept-reject' && (
@@ -535,18 +607,6 @@ const LeaveRequest = ({
                 )}
               </>
             )}
-
-            <Space
-              size="middle"
-              style={{ justifyContent: 'flex-end', display: 'flex' }}
-            >
-              <Button type="default" onClick={closeModal}>
-                Cancel
-              </Button>
-              <Button type="primary" htmlType="submit">
-                {action === 'add' ? 'Apply' : 'OK'}
-              </Button>
-            </Space>
           </Form>
         </Modal>
       </div>
