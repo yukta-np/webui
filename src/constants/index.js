@@ -2,13 +2,9 @@ export const URL = 'http://localhost:4000';
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-<<<<<<< HEAD
-// export const URL = 'https://yukta-cms.onrender.com';
-=======
 import { getLoggedInUser } from "@/utils";
 
 export const URL = 'https://yukta-cms.onrender.com';
->>>>>>> context-api
 
 export const constants = {
   urls: {
