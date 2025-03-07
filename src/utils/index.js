@@ -35,3 +35,24 @@ export const disableRefetchBlock = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
 };
+
+
+export const getLoggedInUser = () => {
+  const yuktaStr = process.browser
+    ? window.localStorage.getItem('yukta')
+    : '';
+  let yukta;
+  if (isJsonParsable(yuktaStr)) {
+    yukta = JSON.parse(yuktaStr);
+  }
+  return yukta;
+};
+
+export function isJsonParsable(str) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}

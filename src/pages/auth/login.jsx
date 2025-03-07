@@ -51,22 +51,15 @@ const Login = () => {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      alert(
-        `Welcome back to the ${
-          selectedTab === 'student' ? 'Student' : 'Faculty'
-        } portal.`
-      );
-    }, 1500);
+
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-4 relative overflow-hidden">
+    <div className="relative flex items-center justify-center min-h-screen p-4 overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100">
       {shapes.map((shape) => (
         <div
           key={shape.id}
-          className="absolute rounded-full bg-blue-200"
+          className="absolute bg-blue-200 rounded-full"
           style={{
             left: `${shape.x}%`,
             top: `${shape.y}%`,
@@ -79,27 +72,27 @@ const Login = () => {
         />
       ))}
 
-      <div className="container max-w-screen-xl mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 relative z-10">
-        <div className="w-full lg:w-1/2 max-w-md text-center lg:text-left">
-          <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
-            <img src="/yuktaLogo.png" className="h-10 w-10" alt="YUKTA's Connect" />
+      <div className="container relative z-10 flex flex-col items-center justify-center max-w-screen-xl gap-8 px-4 mx-auto lg:flex-row lg:gap-16">
+        <div className="w-full max-w-md text-center lg:w-1/2 lg:text-left">
+          <div className="flex items-center justify-center gap-3 mb-6 lg:justify-start">
+            <img src="/yuktaLogo.png" className="w-10 h-10" alt="YUKTA's Connect" />
             <h1 className="text-3xl font-bold text-blue-900">
               YUKTA's<span className="text-blue-600">Connect</span>
             </h1>
           </div>
 
-          <h2 className="text-4xl lg:text-5xl font-bold text-blue-900 mb-4">
+          <h2 className="mb-4 text-4xl font-bold text-blue-900 lg:text-5xl">
             Welcome to HDC College Portal
           </h2>
 
-          <p className="text-lg text-gray-600 mb-6">
+          <p className="mb-6 text-lg text-gray-600">
             Access all your academic resources, connect with peers and faculty,
             and manage your college life effortlessly.
           </p>
         </div>
 
-        <div className="w-full lg:w-1/2 max-w-md">
-          <div className="bg-white p-6 lg:p-8 rounded-xl shadow-lg">
+        <div className="w-full max-w-md lg:w-1/2">
+          <div className="p-6 bg-white shadow-lg lg:p-8 rounded-xl">
             <div className="mb-6">
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -134,13 +127,13 @@ const Login = () => {
                       : 'Faculty Email'}
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <span className="absolute transform -translate-y-1/2 left-3 top-1/2">
                       📧
                     </span>
                     <input
                       type="email"
                       placeholder={`${selectedTab}@college.edu`}
-                      className="w-full pl-10 p-2 border rounded"
+                      className="w-full p-2 pl-10 border rounded"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -152,19 +145,19 @@ const Login = () => {
                     Password
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <span className="absolute transform -translate-y-1/2 left-3 top-1/2">
                       🔒
                     </span>
                     <input
                       type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
-                      className="w-full pl-10 p-2 border rounded"
+                      className="w-full p-2 pl-10 border rounded"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                     <button
                       type="button"
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      className="absolute transform -translate-y-1/2 right-3 top-1/2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? '👁️' : '👁️🗨️'}
@@ -178,7 +171,7 @@ const Login = () => {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300"
+                      className="w-4 h-4 border-gray-300 rounded"
                     />
                     <label className="text-sm">Remember me</label>
                   </div>
@@ -192,13 +185,13 @@ const Login = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded disabled:opacity-50"
+                  className="w-full p-2 text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Loading...' : 'Sign In'}
                 </button>
 
-                <div className="text-center text-sm text-gray-500 mt-4">
+                <div className="mt-4 text-sm text-center text-gray-500">
                   <p>
                     Don't have an account?{' '}
                     <a href="#" className="text-blue-600 hover:text-blue-700">

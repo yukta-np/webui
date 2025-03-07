@@ -52,6 +52,7 @@ import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import moment from 'moment/moment';
 import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
+import { useAppContext } from '@/app-context';
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
   return (
@@ -93,6 +94,10 @@ const TaskList = ({
     title: 'sample task',
     description: 'this is a description of the task.',
   });
+
+  const { loggedInUser } = useAppContext();
+
+  console.log('loggedInUser', loggedInUser);
 
   let params = {};
   if (status) {
