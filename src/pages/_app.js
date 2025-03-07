@@ -1,14 +1,16 @@
 import SecuredLayout from "@/components/Layout/SecuredLayout";
 import "@/styles/globals.css";
-import { Spin } from "antd";
-import { Suspense } from "react";
+import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }) {
-   return (
-      <Suspense fallback={<Spin size="large" />} >
-         <SecuredLayout>
-            <Component {...pageProps} />;
-         </SecuredLayout>
-      </Suspense>
-   )
+   const router = useRouter();
+   const isLoginPage = router.pathname === "/auth/login";
+
+   return isLoginPage ? (
+      <Component {...pageProps} />
+   ) : (
+      <SecuredLayout>
+         <Component {...pageProps} />
+      </SecuredLayout>
+   );
 }
