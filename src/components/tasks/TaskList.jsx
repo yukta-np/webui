@@ -52,6 +52,46 @@ import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import moment from 'moment/moment';
 import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
+import {
+  FileImageOutlined,
+  FilePdfOutlined,
+  VideoCameraOutlined, // ✅ Use this for videos
+  FileTextOutlined,
+  FileOutlined,
+} from '@ant-design/icons';
+
+const getFileIcon = (fileName) => {
+  const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
+
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'svg':
+      return (
+        <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+      ); // Blue for images
+    case 'pdf':
+      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />; // Red for PDFs
+    case 'mp4':
+    case 'mkv':
+    case 'avi':
+    case 'mov':
+      return (
+        <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
+      ); // ✅ Yellow for videos
+    case 'txt':
+    case 'doc':
+    case 'docx':
+      return (
+        <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
+      ); // Green for text files
+    default:
+      return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+  }
+};
+
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
   return (
@@ -687,15 +727,15 @@ const TaskList = ({
                     onChange={onFileChange}
                     showUploadList={false}
                   >
-                    <p className="ant-upload-drag-icon">
-                      <Inbox />
-                    </p>
-                    <p className="ant-upload-text">
+                    <div className="flex items-center justify-center">
+                      <Inbox
+                        size={80}
+                        strokeWidth={1}
+                        className="text-gray-300 mr-2"
+                      />{' '}
+                    </div>
+                    <p className="ant-upload-text !text-gray-500">
                       Click or drag file to this area to upload
-                    </p>
-                    <p className="ant-upload-hint">
-                      Support for a single or bulk upload. Strictly prohibited
-                      from uploading company data or other banned files.
                     </p>
                   </Dragger>
                 </Form.Item>
@@ -793,8 +833,7 @@ const TaskList = ({
                               closable
                               onClose={() => onFileRemove(index)}
                             >
-                              <FileImage />
-                              {file.name || 'File'}
+                              {getFileIcon(file.name)} {file.name || 'File'}
                             </Tag>
                           ))
                         ) : (
