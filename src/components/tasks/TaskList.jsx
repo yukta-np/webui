@@ -687,15 +687,15 @@ const TaskList = ({
                     onChange={onFileChange}
                     showUploadList={false}
                   >
-                    <p className="ant-upload-drag-icon">
-                      <Inbox />
-                    </p>
-                    <p className="ant-upload-text">
+                    <div className="flex items-center justify-center">
+                      <Inbox
+                        size={80}
+                        strokeWidth={1}
+                        className="text-gray-300 mr-2"
+                      />{' '}
+                    </div>
+                    <p className="ant-upload-text !text-gray-500">
                       Click or drag file to this area to upload
-                    </p>
-                    <p className="ant-upload-hint">
-                      Support for a single or bulk upload. Strictly prohibited
-                      from uploading company data or other banned files.
                     </p>
                   </Dragger>
                 </Form.Item>
