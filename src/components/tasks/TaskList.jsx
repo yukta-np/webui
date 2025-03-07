@@ -92,7 +92,6 @@ const getFileIcon = (fileName) => {
   }
 };
 
-import { useAppContext } from '@/app-context';
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
   return (
@@ -134,10 +133,6 @@ const TaskList = ({
     title: 'sample task',
     description: 'this is a description of the task.',
   });
-
-  const { loggedInUser } = useAppContext();
-
-  console.log('loggedInUser', loggedInUser);
 
   let params = {};
   if (status) {
@@ -736,7 +731,7 @@ const TaskList = ({
                       <Inbox
                         size={80}
                         strokeWidth={1}
-                        className="mr-2 text-gray-300"
+                        className="text-gray-300 mr-2"
                       />{' '}
                     </div>
                     <p className="ant-upload-text !text-gray-500">
