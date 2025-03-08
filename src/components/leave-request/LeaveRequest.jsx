@@ -288,7 +288,6 @@ const LeaveRequest = ({
                     type="link"
                     danger
                     icon={<Trash2Icon stroke="red" size={18} />}
-                    onClick={onDeleteClick}
                   />
                 </Popconfirm>
               </>
