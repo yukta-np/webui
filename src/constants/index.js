@@ -1,6 +1,8 @@
-export const URL = 'http://localhost:3004';
+export const URL = 'http://localhost:3000';
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
+
+import { getLoggedInUser } from '@/utils';
 
 // export const URL = 'https://yukta-cms.onrender.com';
 
@@ -53,3 +55,22 @@ export const ROLES = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
+
+const getToken = () => {
+  const yukta = getLoggedInUser() || extractTokenFromQueryString();
+  return yukta?.token;
+};
+
+export const extractTokenFromQueryString = () => {
+  if (process.browser) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('token');
+  }
+  return null;
+};
+
+export const headers = {
+  Authorization: `Bearer ${getToken()}`,
+};
+
+export const token = getToken();

@@ -311,12 +311,16 @@ const LeaveRequest = ({
             overlay={
               <Menu
                 items={[
-                  { key: 'view', label: 'View', icon: <Eye /> },
-                  { key: 'edit', label: 'Edit', icon: <FilePenLine /> },
+                  { key: 'view', label: 'View', icon: <Eye size={18} /> },
+                  {
+                    key: 'edit',
+                    label: 'Edit',
+                    icon: <FilePenLine size={18} />,
+                  },
                   {
                     key: 'delete',
                     label: 'Delete',
-                    icon: <Trash2Icon />,
+                    icon: <Trash2Icon size={18} />,
                     danger: true,
                   },
                 ]}
@@ -324,7 +328,7 @@ const LeaveRequest = ({
             }
             trigger={['click']}
           >
-            <Button icon={<EllipsisVertical />} />
+            <Button icon={<EllipsisVertical size={18} />} />
           </Dropdown>
         ),
     },
