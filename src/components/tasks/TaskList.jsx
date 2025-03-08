@@ -147,16 +147,14 @@ const TaskList = ({
     params.category = category;
   }
 
-  console.log('hahahaha', editingData);
   const {
-    tasks: data,
+    taskList: tasks,
     revalidate: tasksRevalidate,
     meta: taskMeta,
   } = useTasks(params);
   const { taskStatus } = useTaskStatus();
   const { taskCategory } = useTaskCategory();
   const { taskPriority } = useTaskPriority();
-  console.log(taskStatus);
 
   const handleEditorChange = (content) => {
     form.setFieldsValue({ description: content });
@@ -188,7 +186,6 @@ const TaskList = ({
 
   const onDeleteClick = (record) => {
     deleteTask(record.id);
-    openNotification('Task deleted successfully');
     tasksRevalidate();
   };
 
@@ -208,21 +205,20 @@ const TaskList = ({
     const { files, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      createdBy: 1,
+      createdBy: 4,
       organisationId: 1,
       isArchived: false,
-      assignedTo: 2,
+      assignedTo: 3,
     };
     try {
       if (action === 'edit') {
         await updateTask(editingData.id, values);
         openNotification('Task updated successfully');
-        tasksRevalidate();
       } else {
         await createTask(myValues);
         openNotification('Task added successfully');
-        tasksRevalidate();
       }
+      tasksRevalidate();
     } catch (error) {
       console.log(error);
     } finally {
@@ -251,6 +247,8 @@ const TaskList = ({
       return 'Add  Task';
     } else if (action === 'edit') {
       return 'Edit Task';
+    } else if (action === 'view') {
+      return 'Task';
     }
   };
 
@@ -624,14 +622,14 @@ const TaskList = ({
 
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={tasks}
           pagination={{
             ...taskMeta,
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
           }}
-          rowKey="key"
+          rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
           size={screens.xs ? 'small' : 'middle'}

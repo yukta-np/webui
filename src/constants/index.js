@@ -1,8 +1,10 @@
 export const URL = 'http://localhost:4000';
+
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
-import { getLoggedInUser } from "@/utils";
+// export const URL = 'https://yukta-cms.onrender.com';
+import { getLoggedInUser } from '@/utils';
 
 // export const URL = 'https://yukta-cms.onrender.com';
 
@@ -21,7 +23,7 @@ export const constants = {
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-categories`,
     taskPriorityUrl: `${URL}/task-priorities`,
-    leaveRequestUrl: `${URL}/leave-request`,
+    leaveRequestUrl: `${URL}/leaves`,
     leaveTypesUrl: `${URL}/leave-types`,
     notificationUrl: `${URL}/notification`,
     groupUrl: `${URL}/group`,
@@ -55,7 +57,6 @@ export const ROLES = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
-
 
 const getToken = () => {
   const yukta = getLoggedInUser() || extractTokenFromQueryString();

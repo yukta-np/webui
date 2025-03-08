@@ -25,7 +25,7 @@ export function useTasks(params) {
   const revalidate = () => mutate(fullUrl);
 
   return {
-    tasks: responseData?.data,
+    taskList: responseData?.data,
     meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,
