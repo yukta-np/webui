@@ -48,36 +48,36 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Dashboard',
       key: 'dashboard',
-      icon: <ChartPie />,
+      icon: <ChartPie size={18} />,
       href: '/dashboard',
     },
     {
       label: 'Routine',
       key: 'routine',
-      icon: <CalendarDays />,
+      icon: <CalendarDays size={18} />,
       href: '/routine',
     },
     {
       label: 'Tasks',
       key: 'tasks',
-      icon: <CheckCircle />,
+      icon: <CheckCircle size={18} />,
       children: [
         {
           label: 'My Tasks',
           key: 'my-task',
-          icon: <CheckCircle />,
+          icon: <CheckCircle size={18} />,
           href: '/tasks/my-task',
         },
         {
           label: "My Team's Tasks",
           key: 'my-team',
-          icon: <Users />,
+          icon: <Users size={18} />,
           href: '/tasks/my-team',
         },
         {
           label: 'All Tasks',
           key: 'AllTasks',
-          icon: <List />,
+          icon: <List size={18} />,
           href: '/tasks',
         },
       ],
@@ -85,12 +85,12 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Leave Request',
       key: 'leave-request',
-      icon: <CalendarX />,
+      icon: <CalendarX size={18} />,
       children: [
         {
           label: 'My Request',
           key: 'my-leave-request',
-          icon: <UserX />,
+          icon: <UserX size={18} />,
           href: '/leave-request/my-leave',
         },
         {
@@ -98,8 +98,7 @@ const SecuredLayout = ({ children }) => {
           key: 'my-team-leave-request',
           icon: (
             <>
-              <UserX />
-              <UserX /> {/* Yesko CSS milao hai... 😂*/}
+              <UserX size={18} />
             </>
           ),
           href: '/leave-request/team-leave',
@@ -107,7 +106,7 @@ const SecuredLayout = ({ children }) => {
         {
           label: 'All Request',
           key: 'all-leave-request',
-          icon: <CalendarX />,
+          icon: <CalendarX size={18} />,
           href: '/leave-request',
         },
       ],
@@ -115,25 +114,25 @@ const SecuredLayout = ({ children }) => {
     {
       label: 'Documents',
       key: 'documents',
-      icon: <FileStack />,
+      icon: <FileStack size={18} />,
       href: '/documents',
     },
     {
       label: 'Announcements',
       key: 'announcements',
-      icon: <Megaphone />,
+      icon: <Megaphone size={18} />,
       href: '/announcements',
     },
     {
       label: 'Calendar',
       key: 'calendar',
-      icon: <Calendar />,
+      icon: <Calendar size={18} />,
       href: '/calendar',
     },
     {
       label: 'Settings',
       key: 'settings',
-      icon: <Settings />,
+      icon: <Settings size={18} />,
       href: '/settings',
     },
   ];

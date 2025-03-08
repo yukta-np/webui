@@ -267,12 +267,12 @@ const LeaveRequest = ({
           <Space size="middle">
             <Button
               type="link"
-              icon={<Eye />}
+              icon={<Eye size={18} />}
               onClick={() => onReviewClick(record)}
             />
             <Button
               type="link"
-              icon={<FilePenLine />}
+              icon={<FilePenLine size={18} />}
               onClick={() => onEditClick(record)}
             />
             {isMyLeave && (
@@ -287,7 +287,8 @@ const LeaveRequest = ({
                   <Button
                     type="link"
                     danger
-                    icon={<Trash2Icon stroke="red" />}
+                    icon={<Trash2Icon stroke="red" size={18} />}
+                    onClick={onDeleteClick}
                   />
                 </Popconfirm>
               </>
