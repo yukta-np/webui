@@ -23,6 +23,7 @@ import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
 import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
+import { CloseOutlined } from '@ant-design/icons';
 
 const { Content } = Layout;
 
@@ -98,7 +99,7 @@ const SecuredLayout = ({ children }) => {
           key: 'my-team-leave-request',
           icon: (
             <>
-              <UserX size={18} />
+            <Users size={18} /> <CloseOutlined style={{ fontSize: '8px' }} />
             </>
           ),
           href: '/leave-request/team-leave',
