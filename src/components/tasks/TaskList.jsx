@@ -156,9 +156,11 @@ const TaskList = ({
   const { taskCategory } = useTaskCategory();
   const { taskPriority } = useTaskPriority();
 
-  const handleEditorChange = (content) => {
-    form.setFieldsValue({ description: content });
-  };
+  const [editorContent, setEditorContent] = useState(task.description || ''); 
+
+   const handleEditorChange = (content) => {
+     setEditorContent(content); // Update the editor content state
+   };
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -712,7 +714,7 @@ const TaskList = ({
                     </TabPane>
                     <TabPane tab="Preview" key="preview">
                       <PreviewSection
-                        content={form.getFieldValue('description') || ''}
+                        content={editorContent} // Use the state for live updates
                       />
                     </TabPane>
                   </Tabs>
