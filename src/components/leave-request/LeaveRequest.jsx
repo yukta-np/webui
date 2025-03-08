@@ -57,6 +57,7 @@ const LeaveRequest = ({
   const [transfer, setTransfer] = useState(null);
   const [isAllDay, setIsAllDay] = useState(false);
   const [editingData, setEditingData] = useState(null);
+  const [isApproved, setIsApproved] = useState(false);
 
   let params = {};
   const loggedInUser = {
@@ -73,6 +74,7 @@ const LeaveRequest = ({
   };
 
   const closeModal = () => {
+    form.resetFields();
     setIsModalVisible(false);
   };
 
@@ -81,7 +83,20 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onAcceptRejectClick = () => {
+  const onAcceptRejectClick = (record) => {
+    const { actionForOverlap, ...deletedValue } = record;
+
+    const newRecord = {
+      ...deletedValue,
+      startDate: record.startDate ? moment(record.startDate) : null,
+      endDate: record.endDate ? moment(record.endDate) : null,
+      decidedAt: record.decidedAt ? moment(record.decidedAt) : null,
+      decidedBy: loggedInUser,
+      isApproved: decision === 'approved',
+    };
+    setEditingData(newRecord);
+    form.setFieldsValue(newRecord);
+
     setAction('accept-reject');
     openModal();
   };
@@ -116,16 +131,16 @@ const LeaveRequest = ({
 
   const onSubmit = async (values) => {
     setIsProcessing(true);
+    const { actionForOverlap, ...deletedValue } = values;
     const myValues = {
-      ...values,
+      ...deletedValue,
       userId: 8,
       isApproved: false,
       organisationId: 1,
       isArchived: false,
-      rejectionReason: 'hi',
-      transferShiftTo: 2,
-      createdBy: 4,
+      createdBy: 8,
     };
+
     try {
       if (action === 'edit') {
         await updateLeaves(editingData.id, values);
@@ -232,7 +247,10 @@ const LeaveRequest = ({
       render: (_, leaveRequest) => {
         if (leaveRequest.isApproved == true) {
           return 'Approved';
-        } else if (leaveRequest.isApproved == false) {
+        } else if (
+          leaveRequest.isApproved == false &&
+          leaveRequest.rejectionReason != null
+        ) {
           return 'Rejected';
         } else {
           return 'Pending';
@@ -244,7 +262,7 @@ const LeaveRequest = ({
       title: 'Action',
       key: 'action',
       width: '10%',
-      render: (_, record) =>
+      render: (_, record, leaveRequest) =>
         screens.md ? (
           <Space size="middle">
             <Button
@@ -256,7 +274,6 @@ const LeaveRequest = ({
               type="link"
               icon={<FilePenLine />}
               onClick={() => onEditClick(record)}
-              disabled={record.status !== 'Pending'}
             />
             {isMyLeave && (
               <>
@@ -439,6 +456,14 @@ const LeaveRequest = ({
                   Update
                 </Button>
               </>
+            ) : action === 'accept-reject' ? (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Ok
+                </Button>
+              </>
             ) : (
               []
             )
@@ -481,13 +506,12 @@ const LeaveRequest = ({
             {!isMyLeave && action !== 'accept-reject' && (
               <Col>
                 <Form.Item
-                  name="name"
                   label="Teacher / Staff Member Name"
                   rules={[{ required: true }]}
                   width="100%"
                 >
                   <Select placeholder="Select a teacher or staff member">
-                    <Select.Option value="sick leave">John Doe</Select.Option>
+                    <Select.Option value={8}>John Doe</Select.Option>
                     <Select.Option value="casual leave">Jane Doe</Select.Option>
                   </Select>
                 </Form.Item>
@@ -552,12 +576,13 @@ const LeaveRequest = ({
             </Form.Item>
             {action === 'accept-reject' && (
               <>
-                <Form.Item
-                  name="decision"
-                  label="Decision"
-                  rules={[{ required: true }]}
-                >
-                  <Select onChange={onDecisionChange}>
+                <Form.Item label="Decision" rules={[{ required: true }]}>
+                  <Select
+                    onChange={(value) => {
+                      onDecisionChange(value);
+                      if (value === 'approved') setIsApproved(true);
+                    }}
+                  >
                     <Select.Option value="approved">Approve</Select.Option>
                     <Select.Option value="rejected">Reject</Select.Option>
                   </Select>
