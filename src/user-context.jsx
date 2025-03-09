@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { createContext, useContext, useState } from 'react';
 import { constants, headers } from './constants';
-
 const UserContext = createContext();
 
 export function UserWrapper({ children }) {

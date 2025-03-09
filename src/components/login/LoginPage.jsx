@@ -58,9 +58,9 @@ const LoginPage = () => {
         email,
         password,
       });
-      const { accessToken } = response.data;
-      console.log('accessToken', accessToken);
-      setSessionStorageData(accessToken);
+      const { token } = response.data;
+      console.log('token', token);
+      setSessionStorageData(token);
       // const { return: ret } = router.query;
     } catch (e) {
       if (e.response) {

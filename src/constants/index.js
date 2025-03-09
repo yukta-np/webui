@@ -1,17 +1,18 @@
+import { getToken } from "@/utils";
+
 export const URL = 'http://localhost:4000';
 
 // export const PREFIX = 'v0';
 // export const URL = `${API_URL}/${PREFIX}`;
 
 // export const URL = 'https://yukta-cms.onrender.com';
-import { getLoggedInUser } from '@/utils';
-
 // export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
+    meUrl: `${URL}/users/me`,
     usersUrl: `${URL}/users`,
     tasksUrl: `${URL}/tasks`,
     taskTypesUrl: `${URL}/task-types`,
@@ -30,19 +31,12 @@ export const constants = {
   },
 };
 
+export const headers = {
+  Authorization: `Bearer ${getToken()}`,
+};
+
 export const COOKIE_SIDEBER_COLLAPSED = 'yukta.ui.sidebar.collapsed';
 
-// export const ROLES = {
-//    SYSTADMIN: 'SYSTADMIN',
-
-//    PRINCIPAL: 'PRINCIPAL',
-//    HOD: 'HOD',
-//    TEACHER: 'TEACHER',
-//    STAFF: 'STAFF',
-
-//    PARENT: 'PARENT',
-//    STUDENT: 'STUDENT',
-// }
 export const ROLES = {
   // SYSTEM ADMIN
   SYSTADMIN: 'SYSTADMIN',
@@ -58,21 +52,3 @@ export const ROLES = {
   STUDENT: 'STUDENT',
 };
 
-const getToken = () => {
-  const yukta = getLoggedInUser() || extractTokenFromQueryString();
-  return yukta?.token;
-};
-
-export const extractTokenFromQueryString = () => {
-  if (process.browser) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('token');
-  }
-  return null;
-};
-
-export const headers = {
-  Authorization: `Bearer ${getToken()}`,
-};
-
-export const token = getToken();

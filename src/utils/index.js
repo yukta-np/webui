@@ -1,53 +1,8 @@
 import moment from 'moment';
 import { notification } from 'antd';
-export const fetcher = async (url, options = {}) => {
-  // const headers = {
-  //   Authorization: 'Bearer YOUR_ACCESS_TOKEN',
-  //   ...options.headers,
-  // };
+import axios from 'axios';
 
-  return await fetch(url, { ...options }).then((res) => res.json());
-};
-
-export const dateRanges = {
-  Today: [moment(), moment()],
-  'This Week': [moment().startOf('week'), moment().endOf('week')],
-  'Last Week': [
-    moment().add(-1, 'week').startOf('week'),
-    moment().add(-1, 'week').endOf('week'),
-  ],
-  'This Month': [moment().startOf('month'), moment().endOf('month')],
-  'This Year': [moment().startOf('year'), moment().endOf('year')],
-};
-
-export const openNotification = (message, isError, description = '') => {
-  const fn = isError ? 'error' : 'success';
-
-  notification[fn]({
-    message,
-    description,
-    placement: 'bottom',
-  });
-};
-
-export const disableRefetchBlock = {
-  revalidateIfStale: false,
-  revalidateOnFocus: false,
-  revalidateOnReconnect: false,
-};
-
-
-export const getLoggedInUser = () => {
-  const yuktaStr = process.browser
-    ? window.localStorage.getItem('yukta')
-    : '';
-  let yukta;
-  if (isJsonParsable(yuktaStr)) {
-    yukta = JSON.parse(yuktaStr);
-  }
-  return yukta;
-};
-
+/** ========================== Utility Functions ========================== */
 export function isJsonParsable(str) {
   try {
     JSON.parse(str);
@@ -57,6 +12,27 @@ export function isJsonParsable(str) {
   return true;
 }
 
+export function parseJwt(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(
+    atob(base64)
+      .split('')
+      .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+      .join('')
+  );
+  return JSON.parse(jsonPayload);
+}
+
+export const extractTokenFromQueryString = () => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('token');
+  }
+  return null;
+};
+
+/** ========================== Storage Functions ========================== */
 export const setSessionStorageData = (token) => {
   const {
     id: userId,
@@ -88,20 +64,81 @@ export const setSessionStorageData = (token) => {
     updatedAt,
   };
   window.localStorage.setItem('yukta', JSON.stringify(yukta));
-
 };
 
-export function parseJwt(token) {
-  var base64Url = token.split('.')[1];
-  var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  var jsonPayload = decodeURIComponent(
-    atob(base64)
-      .split('')
-      .map(function (c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      })
-      .join('')
-  );
+export const getLoggedInUser = () => {
+  try {
+    const yuktaStr = window.localStorage.getItem('yukta');
+    if (yuktaStr && isJsonParsable(yuktaStr)) {
+      return JSON.parse(yuktaStr);
+    }
+  } catch (error) {
+    console.error('Error parsing user data from localStorage', error);
+  }
+  return null;
+};
 
-  return JSON.parse(jsonPayload);
-}
+export const getToken = () => {
+  const yukta = getLoggedInUser() || extractTokenFromQueryString();
+  return yukta?.token;
+};
+
+export const clearStorageAndRedirect = (returnUrl) => {
+  window.localStorage.removeItem('yukta');
+  window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(returnUrl)
+    ? '/auth/login'
+    : `/auth/login?return=${returnUrl}`;
+};
+
+/** ========================== API Functions ========================== */
+export const fetcher = (url, params) => {
+  const windowParams = new URLSearchParams(window.location.search);
+  const token = windowParams.get('token') ?? getToken();
+
+  const { exp } = parseJwt(token);
+
+  if (exp < new Date().getTime() / 1000) {
+    console.debug('Token Expired');
+    clearStorageAndRedirect(window.location.href);
+  } else {
+    const headers = { Authorization: `Bearer ${token}` };
+    setSessionStorageData(token);
+
+    return axios.get(url, { headers, params }).then((r) => {
+      if (r.status === 401) {
+        clearStorageAndRedirect(window.location.href);
+      }
+      return r.data;
+    });
+  }
+};
+
+export const token = getToken();
+
+/** ========================== UI Helpers ========================== */
+export const openNotification = (message, isError, description = '') => {
+  const fn = isError ? 'error' : 'success';
+  notification[fn]({
+    message,
+    description,
+    placement: 'bottom',
+  });
+};
+
+export const disableRefetchBlock = {
+  revalidateIfStale: false,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+};
+
+/** ========================== Date Ranges ========================== */
+export const dateRanges = {
+  Today: [moment(), moment()],
+  'This Week': [moment().startOf('week'), moment().endOf('week')],
+  'Last Week': [
+    moment().add(-1, 'week').startOf('week'),
+    moment().add(-1, 'week').endOf('week'),
+  ],
+  'This Month': [moment().startOf('month'), moment().endOf('month')],
+  'This Year': [moment().startOf('year'), moment().endOf('year')],
+};

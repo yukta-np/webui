@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layout,
   Input,
@@ -14,7 +14,9 @@ import {
   List,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
-import { useAppContext } from '@/app-context';
+import { fetcher } from '@/utils';
+import useSWRImmutable from 'swr/immutable';
+import { constants } from '@/constants';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -28,6 +30,18 @@ const TopHeader = () => {
     useState(false);
   const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] =
     useState(false);
+  const [loggedInUser, setLoggedInUser] = useState();
+
+  const meUrl = constants.urls.meUrl;
+  const { data: userData } = useSWRImmutable(meUrl, fetcher);
+
+  useEffect(() => {
+    if (userData) {
+      setLoggedInUser(userData);
+    }
+  }, [userData]);
+
+  console.log('loggedInUsers', loggedInUser);
 
   // Dummy data
   const [notifications] = useState([
@@ -61,27 +75,18 @@ const TopHeader = () => {
   ]);
 
   const {
-    token: {
-      colorBgContainer,
-      colorTextSecondary,
-      borderRadiusLG,
-      colorPrimary,
-    },
+    token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
   } = theme.useToken();
   const screens = useBreakpoint();
-  const { loggedInUser } = useAppContext();
+  // const { loggedInUser } = useAppContext();
 
-  const getRoleForHumans = (role) => {
-    const roles = {
-      ADMIN: 'Admin',
-      USER: 'User',
-      MANAGER: 'Manager',
-      STUDENT: 'Student',
-    };
-    return roles[role] || 'Unknown Role';
-  };
+  // const loggedInUser = getLoggedInUser();
 
-  const isClient = (user) => user?.role === 'STUDENT';
+  // const loggedInUser = {
+  //   userId: 8,
+  //   fullName: 'Abishek Ghimire',
+  //   role: 'Admin',
+  // };
 
   const menuItems = [
     {
@@ -218,6 +223,8 @@ const TopHeader = () => {
         open={isSearchModalOpen}
         onCancel={() => setIsSearchModalOpen(false)}
         footer={null}
+        width="80%"
+        style={{ top: 65, left: 40 }}
       >
         <Input.Search
           placeholder="Type to search..."
@@ -238,7 +245,6 @@ const TopHeader = () => {
             content={renderPopupContent(notifications, 'notification')}
             trigger="click"
             open={isNotificationPopupOpen}
-            
             onOpenChange={setIsNotificationPopupOpen}
           >
             <Badge
@@ -274,17 +280,10 @@ const TopHeader = () => {
           <a className="ant-dropdown-link">
             <Button type="text">
               <Space className="text-left">
-                {loggedInUser?.avatarUrl ? (
-                  <Avatar
-                    style={{ marginBottom: '8px' }}
-                    src={loggedInUser?.avatarUrl}
-                  />
-                ) : (
-                  <Avatar style={{ backgroundColor: '#87d068' }}>
-                    {loggedInUser?.fullName?.toUpperCase()[0]}
-                  </Avatar>
-                )}
+                <Avatar style={{ backgroundColor: '#87d068' }}>
+                  {loggedInUser?.firstname?.toUpperCase()[0]}
 
+                </Avatar>
                 <div
                   style={{
                     display: 'flex',
@@ -293,12 +292,10 @@ const TopHeader = () => {
                     lineHeight: 1.25,
                   }}
                 >
-                  <p className="m-0">{loggedInUser?.fullName}</p>
-                  {!isClient(loggedInUser) && (
-                    <p className="m-0 text-[10px] text-gray-500">
-                      {getRoleForHumans(loggedInUser?.role)}
-                    </p>
-                  )}
+                  <p className="m-0">{loggedInUser?.firstname} {loggedInUser?.lastname}</p>
+                  <p className="m-0 text-[10px] text-gray-500">
+                    {loggedInUser?.role}
+                  </p>
                 </div>
               </Space>
             </Button>
