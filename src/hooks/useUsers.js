@@ -1,18 +1,34 @@
 import { constants } from '@/constants';
-import useSWR, { mutate } from 'swr';
-import { fetcher } from '../utils';
+import useSWR from 'swr';
+import { fetcher, disableRefetchBlock } from '../utils';
+import { useMemo } from 'react';
 
-const URL = `${constants.urls.usersUrl}`;
+export function useUsers(params) {
+  const queryString = useMemo(() => {
+    if (!params || Object.keys(params).length === 0) return '';
+    return new URLSearchParams(params).toString();
+  }, [params]);
 
-export function useUsers() {
-   const { data: responseData, error, isValidating } = useSWR(URL, fetcher);
+  const URL = constants.urls.usersUrl;
+  const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
-   const revalidate = () => mutate(URL);
+  const { disableAutoRefetch } = params || {};
+  const autoRefetchConfig = disableAutoRefetch ? disableRefetchBlock : null;
 
-   return {
-      users: responseData,
-      isLoading: isValidating,
-      isError: error,
-      revalidate,
-   };
+  const {
+    data: responseData,
+    error,
+    isValidating,
+    mutate,
+  } = useSWR(fullUrl, fetcher, autoRefetchConfig);
+
+  const revalidate = () => mutate(fullUrl);
+
+  return {
+    users: responseData,
+    meta: responseData,
+    isLoading: isValidating,
+    isError: error,
+    revalidate,
+  };
 }

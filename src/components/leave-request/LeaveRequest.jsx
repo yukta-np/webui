@@ -63,11 +63,9 @@ const LeaveRequest = ({
   let params = {};
 
   const { loggedInUser } = useAppContext();
-  console.log(loggedInUser);
 
   const { leaveRequest: leaves, revalidate: leavesRevalidate } =
     useLeaveRequest(params);
-  console.log(leaves);
 
   const openModal = () => {
     setIsModalVisible(true);

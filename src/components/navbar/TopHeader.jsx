@@ -41,8 +41,6 @@ const TopHeader = () => {
     }
   }, [userData]);
 
-  console.log('loggedInUsers', loggedInUser);
-
   // Dummy data
   const [notifications] = useState([
     {
@@ -282,7 +280,6 @@ const TopHeader = () => {
               <Space className="text-left">
                 <Avatar style={{ backgroundColor: '#87d068' }}>
                   {loggedInUser?.firstname?.toUpperCase()[0]}
-
                 </Avatar>
                 <div
                   style={{
@@ -292,9 +289,11 @@ const TopHeader = () => {
                     lineHeight: 1.25,
                   }}
                 >
-                  <p className="m-0">{loggedInUser?.firstname} {loggedInUser?.lastname}</p>
+                  <p className="m-0">
+                    {loggedInUser?.firstname} {loggedInUser?.lastname}
+                  </p>
                   <p className="m-0 text-[10px] text-gray-500">
-                    {loggedInUser?.role}
+                    {loggedInUser?.role?.toUpperCase()}
                   </p>
                 </div>
               </Space>
