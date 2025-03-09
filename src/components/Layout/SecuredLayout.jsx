@@ -99,7 +99,7 @@ const SecuredLayout = ({ children }) => {
           key: 'my-team-leave-request',
           icon: (
             <>
-            <Users size={18} /> <CloseOutlined style={{ fontSize: '8px' }} />
+              <Users size={18} /> <CloseOutlined style={{ fontSize: '8px' }} />
             </>
           ),
           href: '/leave-request/team-leave',
@@ -129,6 +129,12 @@ const SecuredLayout = ({ children }) => {
       key: 'calendar',
       icon: <Calendar size={18} />,
       href: '/calendar',
+    },
+    {
+      label: 'Class Room',
+      key: 'class-room',
+      icon: <PanelLeftOpen size={18} />,
+      href: '/class-room',
     },
     {
       label: 'Settings',
