@@ -186,7 +186,7 @@ const LeaveRequest = ({
             title: 'Teacher / Staff Member Name',
             dataIndex: 'name',
             key: 'name',
-            render: () => loggedInUser.fullname,
+            render: () => loggedInUser?.fullName,
             responsive: ['lg'],
           },
         ]
@@ -499,7 +499,7 @@ const LeaveRequest = ({
                   <Form.Item
                     name="loggedBy"
                     label="Logged by"
-                    initialValue={loggedInUser.fullname}
+                    initialValue={loggedInUser?.fullName}
                   >
                     <Input disabled />
                   </Form.Item>
@@ -575,11 +575,14 @@ const LeaveRequest = ({
               </Col>
             </Row>
 
-            <Form.Item name="note" label="Note to Approver">
-              <Input.TextArea rows={4} />
+            <Form.Item name="comments" label="Comments">
+              <Input.TextArea rows={3} disabled={action === 'accept-reject'} />
             </Form.Item>
             {action === 'accept-reject' && (
               <>
+                <Form.Item name="note" label="Note">
+                  <Input.TextArea rows={3} />
+                </Form.Item>
                 <Form.Item label="Decision" rules={[{ required: true }]}>
                   <Select
                     onChange={(value) => {
