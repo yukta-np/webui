@@ -38,6 +38,7 @@ import { data } from 'autoprefixer';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
+import { useAppContext } from '@/app-context';
 
 const LeaveRequest = ({
   isAllLeave = false,
@@ -60,10 +61,9 @@ const LeaveRequest = ({
   const [isApproved, setIsApproved] = useState(false);
 
   let params = {};
-  const loggedInUser = {
-    userId: 8,
-    fullname: 'Abishek Ghimire',
-  };
+
+  const { loggedInUser } = useAppContext();
+  console.log(loggedInUser);
 
   const { leaveRequest: leaves, revalidate: leavesRevalidate } =
     useLeaveRequest(params);
@@ -134,11 +134,11 @@ const LeaveRequest = ({
     const { actionForOverlap, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      userId: 8,
+      userId: loggedInUser.userId,
+      organisationId: loggedInUser.orgId,
       isApproved: false,
-      organisationId: 1,
       isArchived: false,
-      createdBy: 8,
+      createdBy: loggedInUser.userId,
     };
 
     try {
