@@ -22,6 +22,7 @@ import {
   Switch,
   Popconfirm,
   Divider,
+  Avatar,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -50,6 +51,7 @@ import { useTaskStatus } from '@/hooks/useTaskStatus';
 import { useTaskPriority } from '@/hooks/useTaskPriority';
 import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
+import { useUsers } from '@/hooks/useUsers';
 import moment from 'moment/moment';
 import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
 import {
@@ -59,6 +61,7 @@ import {
   FileTextOutlined,
   FileOutlined,
 } from '@ant-design/icons';
+import { useAppContext } from '@/app-context';
 
 const getFileIcon = (fileName) => {
   const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
@@ -134,7 +137,10 @@ const TaskList = ({
     description: 'this is a description of the task.',
   });
 
+  const { loggedInUser } = useAppContext();
+
   let params = {};
+
   if (status) {
     params.status = status;
   }
@@ -155,12 +161,13 @@ const TaskList = ({
   const { taskStatus } = useTaskStatus();
   const { taskCategory } = useTaskCategory();
   const { taskPriority } = useTaskPriority();
+  const { users } = useUsers();
 
-  const [editorContent, setEditorContent] = useState(task.description || ''); 
+  const [editorContent, setEditorContent] = useState(task.description || '');
 
-   const handleEditorChange = (content) => {
-     setEditorContent(content); // Update the editor content state
-   };
+  const handleEditorChange = (content) => {
+    setEditorContent(content);
+  };
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -210,7 +217,6 @@ const TaskList = ({
       createdBy: 4,
       organisationId: 1,
       isArchived: false,
-      assignedTo: 3,
     };
     try {
       if (action === 'edit') {
@@ -566,6 +572,7 @@ const TaskList = ({
             <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
               <p>By Assignee</p>
               <Select
+                optionLabelProp="label"
                 showSearch
                 style={{ width: 200 }}
                 optionFilterProp="label"
@@ -574,12 +581,27 @@ const TaskList = ({
                     .toLowerCase()
                     .localeCompare((optionB?.label ?? '').toLowerCase())
                 }
-                options={[
-                  { value: '1', label: 'John Doe' },
-                  { value: '2', label: 'Jane Smith' },
-                  { value: '3', label: 'Michael Johnson' },
-                ]}
-              />
+              >
+                {users?.map((u) => (
+                  <Option
+                    key={u.id}
+                    value={`${u.firstname} ${u.lastname}`}
+                    label={`${u.firstname} ${u.lastname}`}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                        {!u.avatar && `${u.firstname[0]}`}{' '}
+                      </Avatar>
+                      <span>{`${u.firstname} ${u.lastname}`}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Space>
           )}
 
@@ -665,7 +687,10 @@ const TaskList = ({
                 </Button>
               </>
             ) : (
-              []
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
             )
           }
           width={screens.xs ? '95%' : 1000}
@@ -696,28 +721,26 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  <Tabs
-                    activeKey={activeTab}
-                    onChange={setActiveTab}
-                    disabled={action === 'view'}
-                  >
-                    <TabPane tab="Write" key="write">
-                      <SunEditor
-                        setOptions={editorOptions}
-                        onChange={handleEditorChange}
-                        setContents={
-                          action === 'edit'
-                            ? form.getFieldValue('description')
-                            : task.description
-                        }
-                      />
-                    </TabPane>
-                    <TabPane tab="Preview" key="preview">
-                      <PreviewSection
-                        content={editorContent} // Use the state for live updates
-                      />
-                    </TabPane>
-                  </Tabs>
+                  {action === 'view' ? (
+                    <PreviewSection content={editorContent} />
+                  ) : (
+                    <Tabs activeKey={activeTab} onChange={setActiveTab}>
+                      <TabPane tab="Write" key="write">
+                        <SunEditor
+                          setOptions={editorOptions}
+                          onChange={handleEditorChange}
+                          setContents={
+                            action === 'edit'
+                              ? form.getFieldValue('description')
+                              : task.description
+                          }
+                        />
+                      </TabPane>
+                      <TabPane tab="Preview" key="preview">
+                        <PreviewSection content={editorContent} />
+                      </TabPane>
+                    </Tabs>
+                  )}
                 </Form.Item>
                 <Form.Item>
                   <Dragger
@@ -767,13 +790,29 @@ const TaskList = ({
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
                       ) : (
-                        <Select defaultValue="john doe">
-                          <Select.Option value="john doe">
-                            John Doe
-                          </Select.Option>
-                          <Select.Option value="jane smith">
-                            Jane Smith
-                          </Select.Option>
+                        <Select optionLabelProp="label">
+                          {users?.map((u) => (
+                            <Option
+                              key={u.id}
+                              value={`${u.firstname} ${u.lastname}`}
+                              label={`${u.firstname} ${u.lastname}`}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Avatar
+                                  src={u.avatar}
+                                  style={{ marginRight: 8 }}
+                                >
+                                  {!u.avatar && `${u.firstname[0]}`}{' '}
+                                </Avatar>
+                                <span>{`${u.firstname} ${u.lastname}`}</span>
+                              </div>
+                            </Option>
+                          ))}
                         </Select>
                       )}
                     </Form.Item>
