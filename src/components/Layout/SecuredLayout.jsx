@@ -12,6 +12,7 @@ import {
   FileStack,
   Megaphone,
   Settings,
+  MessageCircle,
   PanelLeftOpen,
   PanelLeftClose,
 } from 'lucide-react';
@@ -141,6 +142,12 @@ const SecuredLayout = ({ children }) => {
       key: 'settings',
       icon: <Settings size={18} />,
       href: '/settings',
+    },
+    {
+      label: 'Feedback',
+      key: 'feedback',
+      icon: <MessageCircle size={18} />,
+      href: '/feedback',
     },
   ];
 
