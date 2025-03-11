@@ -205,12 +205,8 @@ const FeedbackPortal = () => {
           {/* Main Form */}
           <div className="xl:col-span-2 p-8 h-[calc(100vh-4rem)] overflow-y-auto">
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Academic Feedback Management System
+            Feedback
             </h1>
-            <p className="text-gray-500 mb-8">
-              Official feedback channel for institutional improvement
-            </p>
-
             <Spin spinning={submitting}>
               <Form
                 form={form}
