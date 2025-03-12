@@ -23,6 +23,7 @@ import {
   Switch,
   InputNumber,
   Popconfirm,
+  Avatar,
 } from 'antd';
 import { EllipsisVertical, FilePenLine, Trash2Icon, Eye } from 'lucide-react';
 import Link from 'next/link';
@@ -39,6 +40,7 @@ import { data } from 'autoprefixer';
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 import { useAppContext } from '@/app-context';
+import { useUsers } from '@/hooks/useUsers';
 
 const LeaveRequest = ({
   isAllLeave = false,
@@ -66,6 +68,7 @@ const LeaveRequest = ({
 
   const { leaveRequest: leaves, revalidate: leavesRevalidate } =
     useLeaveRequest(params);
+  const { users } = useUsers();
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -82,18 +85,20 @@ const LeaveRequest = ({
   };
 
   const onAcceptRejectClick = (record) => {
-    const { actionForOverlap, ...deletedValue } = record;
+    const { actionForOverlap, isApproved, ...deletedValue } = record;
 
     const newRecord = {
       ...deletedValue,
       startDate: record.startDate ? moment(record.startDate) : null,
       endDate: record.endDate ? moment(record.endDate) : null,
-      decidedAt: record.decidedAt ? moment(record.decidedAt) : null,
-      decidedBy: loggedInUser,
-      isApproved: decision === 'approved',
+      decidedAt: moment(),
+      isApproved: true,
+      decidedBy: loggedInUser.userId,
     };
+
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
+    console.log('eheheh', newRecord);
 
     setAction('accept-reject');
     openModal();
@@ -134,13 +139,15 @@ const LeaveRequest = ({
       ...deletedValue,
       userId: loggedInUser.userId,
       organisationId: loggedInUser.orgId,
-      isApproved: false,
+      isApproved: decision === 'approved' ? true : false,
       isArchived: false,
       createdBy: loggedInUser.userId,
     };
 
     try {
       if (action === 'edit') {
+        await updateLeaves(editingData.id, values);
+      } else if (action === 'accept-reject') {
         await updateLeaves(editingData.id, values);
       } else {
         await createLeaves(myValues);
@@ -156,7 +163,11 @@ const LeaveRequest = ({
 
   const onDecisionChange = (value) => {
     setDecision(value);
-    if (value === 'rejected') {
+
+    if (value === 'approved') {
+      setIsApproved(true);
+    } else if (value === 'rejected') {
+      setIsApproved(false);
       setTransfer(null);
     }
   };
@@ -230,11 +241,7 @@ const LeaveRequest = ({
       dataIndex: 'decidedBy',
       key: 'decidedBy',
       render: (_, leaveRequest) => {
-        if (leaveRequest.decidedBy == null) {
-          return '-';
-        } else {
-          return leaveRequest.decidedBy;
-        }
+        return leaveRequest.decidedBy;
       },
       responsive: ['sm'],
     },
@@ -290,8 +297,10 @@ const LeaveRequest = ({
                 </Popconfirm>
               </>
             )}
-            {!isMyLeave && (
-              <Flex wrap className="site-button-ghost-wrapper ">
+            {(!isMyLeave ||
+              (leaveRequest.isApproved === false &&
+                leaveRequest.rejectionReason === null)) && (
+              <Flex wrap className="site-button-ghost-wrapper">
                 <Button
                   type="primary"
                   danger
@@ -480,11 +489,7 @@ const LeaveRequest = ({
             {action === 'accept-reject' && (
               <Row>
                 <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="Logged Date/Time"
-                    initialValue={moment()} // Set the initialValue to moment()
-                  >
+                  <Form.Item name="decidedAt" label="Logged Date/Time">
                     <DatePicker
                       showTime
                       disabled
@@ -494,11 +499,7 @@ const LeaveRequest = ({
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="loggedBy"
-                    label="Logged by"
-                    initialValue={loggedInUser?.fullName}
-                  >
+                  <Form.Item name="decidedBy" label="Logged by">
                     <Input disabled />
                   </Form.Item>
                 </Col>
@@ -512,9 +513,26 @@ const LeaveRequest = ({
                   rules={[{ required: true }]}
                   width="100%"
                 >
-                  <Select placeholder="Select a teacher or staff member">
-                    <Select.Option value={8}>John Doe</Select.Option>
-                    <Select.Option value="casual leave">Jane Doe</Select.Option>
+                  <Select optionLabelProp="label">
+                    {users?.map((u) => (
+                      <Option
+                        key={u.id}
+                        value={u.id}
+                        label={`${u.firstname} ${u.lastname}`}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                            {!u.avatar && `${u.firstname[0]}`}{' '}
+                          </Avatar>
+                          <span>{`${u.firstname} ${u.lastname}`}</span>
+                        </div>
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>

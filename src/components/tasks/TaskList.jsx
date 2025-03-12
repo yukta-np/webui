@@ -794,7 +794,7 @@ const TaskList = ({
                           {users?.map((u) => (
                             <Option
                               key={u.id}
-                              value={`${u.firstname} ${u.lastname}`}
+                              value={u.id}
                               label={`${u.firstname} ${u.lastname}`}
                             >
                               <div
