@@ -1,9 +1,8 @@
-import React from 'react'
+import Announcements from '@/components/announcements/Announcements';
+import React from 'react';
 
 const index = () => {
-  return (
-    <div>index</div>
-  )
-}
+  return <Announcements />;
+};
 
-export default index
+export default index;
