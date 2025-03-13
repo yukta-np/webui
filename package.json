@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "go": "next dev -p 4000 --turbopack",
+    "go": "next dev -p 4001 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
