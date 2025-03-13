@@ -41,6 +41,7 @@ const { useBreakpoint } = Grid;
 const { Content } = Layout;
 import { useAppContext } from '@/app-context';
 import { useUsers } from '@/hooks/useUsers';
+import { useLeaveTypes } from '@/hooks/useLeaveTypes';
 
 const LeaveRequest = ({
   isAllLeave = false,
@@ -62,6 +63,8 @@ const LeaveRequest = ({
   const [editingData, setEditingData] = useState(null);
   const [isApproved, setIsApproved] = useState(false);
 
+  console.log('decision', decision);
+
   let params = {};
 
   const { loggedInUser } = useAppContext();
@@ -69,6 +72,8 @@ const LeaveRequest = ({
   const { leaveRequest: leaves, revalidate: leavesRevalidate } =
     useLeaveRequest(params);
   const { users } = useUsers();
+  const { leaveTypes } = useLeaveTypes();
+  console.log('ahahshs', leaveTypes);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -92,7 +97,6 @@ const LeaveRequest = ({
       startDate: record.startDate ? moment(record.startDate) : null,
       endDate: record.endDate ? moment(record.endDate) : null,
       decidedAt: moment(),
-      isApproved: true,
       decidedBy: loggedInUser.userId,
     };
 
@@ -164,12 +168,7 @@ const LeaveRequest = ({
   const onDecisionChange = (value) => {
     setDecision(value);
 
-    if (value === 'approved') {
-      setIsApproved(true);
-    } else if (value === 'rejected') {
-      setIsApproved(false);
-      setTransfer(null);
-    }
+    setTransfer(null);
   };
 
   const onAllDayChange = () => {
@@ -514,7 +513,7 @@ const LeaveRequest = ({
                   width="100%"
                 >
                   <Select optionLabelProp="label">
-                    {users?.map((u) => (
+                    {/* {users?.map((u) => (
                       <Option
                         key={u.id}
                         value={u.id}
@@ -532,7 +531,7 @@ const LeaveRequest = ({
                           <span>{`${u.firstname} ${u.lastname}`}</span>
                         </div>
                       </Option>
-                    ))}
+                    ))} */}
                   </Select>
                 </Form.Item>
               </Col>
@@ -546,12 +545,12 @@ const LeaveRequest = ({
                 width="100%"
                 initialValue={action === 'review' ? data.leaveType : ''}
               >
-                <Select>
-                  <Select.Option value="sick leave">Sick Leave</Select.Option>
-                  <Select.Option value="casual leave">
-                    Casual Leave
-                  </Select.Option>
-                </Select>
+                <Select
+                  options={leaveTypes?.map((lt) => ({
+                    label: lt.name,
+                    value: lt.name,
+                  }))}
+                ></Select>
               </Form.Item>
             </Col>
             <Form.Item name="isAllDay">
