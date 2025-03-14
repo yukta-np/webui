@@ -1,9 +1,9 @@
-import { getToken } from "@/utils";
+import { getToken } from '@/utils';
 
-export const URL = 'http://localhost:4000';
+export const API_URL = 'http://localhost:4000';
 
-// export const PREFIX = 'v0';
-// export const URL = `${API_URL}/${PREFIX}`;
+export const PREFIX = 'v1';
+export const URL = `${API_URL}/${PREFIX}`;
 
 // export const URL = 'https://yukta-cms.onrender.com';
 // export const URL = 'https://yukta-cms.onrender.com';
@@ -51,4 +51,3 @@ export const ROLES = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
-

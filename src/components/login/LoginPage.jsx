@@ -59,9 +59,8 @@ const LoginPage = () => {
         password,
       });
       const { token } = response.data;
-      console.log('token', token);
       setSessionStorageData(token);
-      // const { return: ret } = router.query;
+       window.location.href = '/dashboard';
     } catch (e) {
       if (e.response) {
         const msg = e.response.data.message;
@@ -117,7 +116,7 @@ const LoginPage = () => {
               name="password"
               rules={[
                 { required: true, message: 'Please input your password!' },
-                { min: 6, message: 'Password must be at least 6 characters' },
+                // { min: 6, message: 'Password must be at least 6 characters' },
               ]}
             >
               <Input.Password
