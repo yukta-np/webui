@@ -33,39 +33,70 @@ export const extractTokenFromQueryString = () => {
 };
 
 /** ========================== Storage Functions ========================== */
+// export const setSessionStorageData = (token) => {
+//   const {
+//     id: userId,
+//     firstName,
+//     lastName,
+//     email,
+//     phone,
+//     role,
+//     preferences,
+//     organisationId: orgId,
+//     isVerified,
+//     isActive,
+//     createdAt,
+//     updatedAt,
+//   } = parseJwt(token);
+
+//   const yukta = {
+//     token,
+//     userId,
+//     subId,
+//     fullName: `${firstName} ${lastName}`,
+//     email,
+//     phone,
+//     role,
+//     orgId,
+//     preferences: preferences ? JSON.parse(preferences) : {},
+//     isVerified,
+//     isActive,
+//     createdAt,
+//     updatedAt,
+//   };
+//   window.localStorage.setItem('yukta', JSON.stringify(yukta));
+// };
+
+
 export const setSessionStorageData = (token) => {
   const {
-    id: userId,
-    firstname,
-    lastname,
-    email,
-    phone,
-    role,
-    preferences,
-    organisationId: orgId,
-    isVerified,
-    isActive,
-    createdAt,
-    updatedAt,
-  } = parseJwt(token);
-
-  const yukta = {
-    token,
-    userId,
-    fullName: `${firstname} ${lastname}`,
-    email,
-    phone,
     role,
     orgId,
-    preferences: preferences ? JSON.parse(preferences) : {},
-    isVerified,
-    isActive,
-    createdAt,
-    updatedAt,
-  };
-  window.localStorage.setItem('yukta', JSON.stringify(yukta));
-};
+    sub,
+    subId,
+    fullName,
+    preferences,
+    orgName,
+    orgLogo,
+    permissions,
+  } = parseJwt(token);
 
+  if (process.browser) {
+    const yukta = {
+      token,
+      fullName,
+      orgId,
+      orgName,
+      orgLogo,
+      role,
+      subId,
+      preferences,
+      permissions,
+      userId: sub,
+    };
+    window.localStorage.setItem('yukta', JSON.stringify(yukta));
+  }
+};
 export const getLoggedInUser = () => {
   try {
     const yuktaStr = window.localStorage.getItem('yukta');
