@@ -279,7 +279,7 @@ const TopHeader = () => {
             <Button type="text">
               <Space className="text-left">
                 <Avatar style={{ backgroundColor: '#87d068' }}>
-                  {loggedInUser?.firstname?.toUpperCase()[0]}
+                  {loggedInUser?.fullName?.toUpperCase()[0]}
                 </Avatar>
                 <div
                   style={{
@@ -290,7 +290,7 @@ const TopHeader = () => {
                   }}
                 >
                   <p className="m-0">
-                    {loggedInUser?.firstname} {loggedInUser?.lastname}
+                    {loggedInUser?.fullName} 
                   </p>
                   <p className="m-0 text-[10px] text-gray-500">
                     {loggedInUser?.role?.toUpperCase()}
