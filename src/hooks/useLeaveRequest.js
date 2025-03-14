@@ -25,8 +25,8 @@ export function useLeaveRequest(params) {
   const revalidate = () => mutate(fullUrl);
 
   return {
-    leaveRequest: responseData,
-    meta: responseData,
+    leaveRequest: responseData?.data,
+    meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,
     revalidate,

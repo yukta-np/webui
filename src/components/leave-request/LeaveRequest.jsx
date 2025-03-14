@@ -57,6 +57,7 @@ const LeaveRequest = ({
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
   const [isAllDay, setIsAllDay] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
   const [editingData, setEditingData] = useState(null);
   const [isApproved, setIsApproved] = useState(false);
 
@@ -64,8 +65,12 @@ const LeaveRequest = ({
 
   const { loggedInUser } = useAppContext();
 
-  const { leaveRequest: leaves, revalidate: leavesRevalidate } =
-    useLeaveRequest(params);
+  const {
+    leaveRequest: leaves,
+    isLoading,
+    meta,
+    revalidate: leavesRevalidate,
+  } = useLeaveRequest(params);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -129,14 +134,11 @@ const LeaveRequest = ({
 
   const onSubmit = async (values) => {
     setIsProcessing(true);
-    const { actionForOverlap, ...deletedValue } = values;
     const myValues = {
-      ...deletedValue,
-      userId: loggedInUser.userId,
-      organisationId: loggedInUser.orgId,
+      ...values,
+      userId: +selectedUserId, // yo milena
       isApproved: false,
       isArchived: false,
-      createdBy: loggedInUser.userId,
     };
 
     try {
@@ -383,11 +385,13 @@ const LeaveRequest = ({
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
+                onChange={(value) => setSelectedUserId(value)}
                 options={[
-                  { value: '1', label: 'Jack' },
-                  { value: '2', label: 'Lucy' },
-                  { value: '3', label: 'Tom' },
+                  { value: 1, label: 'Jack' },
+                  { value: 2, label: 'Lucy' },
+                  { value: 3, label: 'Tom' },
                 ]}
+                value={selectedUserId}
                 style={{ width: 300 }}
               />
             </Space>
@@ -419,11 +423,17 @@ const LeaveRequest = ({
         <Table
           columns={columns}
           dataSource={Array.isArray(leaves) ? leaves : []}
-          pagination={{
-            pageSizeOptions: ['10', '20', '50'],
-            showSizeChanger: true,
-            responsive: true,
-          }}
+          loading={isLoading}
+          pagination={
+            meta
+              ? {
+                  total: meta.totalRows,
+                  pageSize: meta.limit,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['10', '20', '50', '100'],
+                }
+              : null
+          }
           rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
