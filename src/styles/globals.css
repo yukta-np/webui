@@ -2,11 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-
 * {
   box-sizing: border-box;
   margin: 0;
-  padding: 0
+  padding: 0;
 }
 
 .custom-search .ant-input {
@@ -22,4 +21,19 @@
   .custom-search .ant-input-affix-wrapper {
     padding: 0 8px !important;
   }
+}
+
+.ant-divider-horizontal {
+  margin: 12px 0;
+}
+
+input[disabled],
+.ant-radio-disabled + span,
+.ant-input[disabled],
+.ant-select-disabled.ant-select:not(.ant-select-customize-input)
+  .ant-select-selector,
+.ant-select-disabled.ant-select-multiple .ant-select-selection-item,
+.ant-radio-disabled .ant-radio-inner,
+.ant-select-disabled {
+  color: rgba(0, 0, 0, 0.75) !important;
 }

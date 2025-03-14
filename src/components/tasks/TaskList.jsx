@@ -21,6 +21,8 @@ import {
   Mentions,
   Switch,
   Popconfirm,
+  Divider,
+  Avatar,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -44,7 +46,54 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
-import { dateRanges } from '@/utils';
+import { dateRanges, openNotification } from '@/utils';
+import { useTaskStatus } from '@/hooks/useTaskStatus';
+import { useTaskPriority } from '@/hooks/useTaskPriority';
+import { useTaskCategory } from '@/hooks/useTaskCategory';
+import { useTasks } from '@/hooks/useTasks';
+import { useUsers } from '@/hooks/useUsers';
+import moment from 'moment/moment';
+import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
+import {
+  FileImageOutlined,
+  FilePdfOutlined,
+  VideoCameraOutlined, // ✅ Use this for videos
+  FileTextOutlined,
+  FileOutlined,
+} from '@ant-design/icons';
+import { useAppContext } from '@/app-context';
+
+const getFileIcon = (fileName) => {
+  const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
+
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'svg':
+      return (
+        <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
+      ); // Blue for images
+    case 'pdf':
+      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />; // Red for PDFs
+    case 'mp4':
+    case 'mkv':
+    case 'avi':
+    case 'mov':
+      return (
+        <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
+      ); // ✅ Yellow for videos
+    case 'txt':
+    case 'doc':
+    case 'docx':
+      return (
+        <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
+      ); // Green for text files
+    default:
+      return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+  }
+};
 
 const PreviewSection = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content);
@@ -75,27 +124,57 @@ const TaskList = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [action, setAction] = useState('add');
-
+  const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [task] = useState({
+  const [status, setStatus] = useState(null);
+  const [priority, setPriority] = useState(null);
+  const [category, setCategory] = useState(null);
+  const [task, setTask] = useState({
     creatorId: 1,
     taskStatus: 1,
     assigneeId: 2,
     title: 'sample task',
-    description: '<p>this is a description of the task.</p>',
+    description: 'this is a description of the task.',
   });
 
+  const { loggedInUser } = useAppContext();
+
+  let params = {};
+
+  if (status) {
+    params.status = status;
+  }
+
+  if (priority) {
+    params.priority = priority;
+  }
+
+  if (category) {
+    params.category = category;
+  }
+
+  const {
+    taskList: tasks,
+    revalidate: tasksRevalidate,
+    meta: taskMeta,
+  } = useTasks(params);
+  const { taskStatus } = useTaskStatus();
+  const { taskCategory } = useTaskCategory();
+  const { taskPriority } = useTaskPriority();
+  const { users } = useUsers();
+
+  const [editorContent, setEditorContent] = useState(task.description || '');
+
   const handleEditorChange = (content) => {
-    form.setFieldsValue({ description: content });
+    setEditorContent(content);
   };
-
-
 
   const openModal = () => {
     setIsModalVisible(true);
   };
 
   const closeModal = () => {
+    form.resetFields();
     setIsModalVisible(false);
   };
 
@@ -103,9 +182,72 @@ const TaskList = ({
     setAction('add');
     openModal();
   };
-  const onEditClick = () => {
+  const onEditClick = (record) => {
+    const newRecord = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+    };
+    setEditingData(newRecord);
+    form.setFieldsValue(newRecord);
     setAction('edit');
     openModal();
+  };
+
+  const onDeleteClick = (record) => {
+    deleteTask(record.id);
+    tasksRevalidate();
+  };
+
+  const onViewClick = (record) => {
+    const newRecord = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+    };
+    setAction('view');
+    form.setFieldsValue(newRecord);
+
+    openModal();
+  };
+
+  const onSubmit = async (values) => {
+    setIsProcessing(true);
+    const { files, ...deletedValue } = values;
+    const myValues = {
+      ...deletedValue,
+      createdBy: 4,
+      organisationId: 1,
+      isArchived: false,
+    };
+    try {
+      if (action === 'edit') {
+        await updateTask(editingData.id, values);
+        openNotification('Task updated successfully');
+      } else {
+        await createTask(myValues);
+        openNotification('Task added successfully');
+      }
+      tasksRevalidate();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      setIsModalVisible(false);
+    }
+  };
+
+  const onColumnStatusChange = async (id, status) => {
+    try {
+      await updateTask(id, { status });
+      openNotification('Task status updated successfully');
+      tasksRevalidate();
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
+  };
+
+  const filterStatusChange = (value) => {
+    setStatus(value);
+    tasksRevalidate();
   };
 
   const getTitle = () => {
@@ -113,6 +255,8 @@ const TaskList = ({
       return 'Add  Task';
     } else if (action === 'edit') {
       return 'Edit Task';
+    } else if (action === 'view') {
+      return 'Task';
     }
   };
 
@@ -141,7 +285,6 @@ const TaskList = ({
     return labelA.localeCompare(labelB);
   };
 
-
   const editorOptions = {
     buttonList: [
       ['undo', 'redo'],
@@ -161,11 +304,15 @@ const TaskList = ({
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
+      dataIndex: 'id',
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text) => <a className="text-blue-600">TSK-{text}</a>,
+      render: (text, record) => (
+        <a className="text-blue-600" onClick={() => onViewClick(record)}>
+          TSK-{text}
+        </a>
+      ),
       width: '5%',
     },
     {
@@ -187,6 +334,31 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
+      width: 150,
+
+      render: (text, record) => (
+        <>
+          {isMyTask ? (
+            <Select
+              defaultValue={text}
+              style={{ width: 150 }}
+              optionFilterProp="label"
+              filterSort={(optionA, optionB) =>
+                (optionA?.label ?? '')
+                  .toLowerCase()
+                  .localeCompare((optionB?.label ?? '').toLowerCase())
+              }
+              options={taskStatus?.map((ts) => ({
+                label: ts.name,
+                value: ts.name,
+              }))}
+              onChange={(value) => onColumnStatusChange(record.id, value)}
+            />
+          ) : (
+            <span>{text}</span>
+          )}
+        </>
+      ),
     },
     {
       title: 'Priority',
@@ -217,6 +389,7 @@ const TaskList = ({
       key: 'dueDate',
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
+      render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Action',
@@ -227,27 +400,27 @@ const TaskList = ({
           <Space size="middle">
             <Button
               type="link"
-              icon={<MessageSquareText />}
+              icon={<MessageSquareText size={18} />}
               onClick={showCommentModal}
             />
             {!isMyTask && (
               <>
                 <Button
                   type="link"
-                  icon={<FilePenLine />}
-                  onClick={onEditClick}
+                  icon={<FilePenLine size={18} />}
+                  onClick={() => onEditClick(record)}
                 />
-
                 <Popconfirm
                   title="Delete the task"
                   description="Are you sure to delete this task?"
                   okText="Yes"
                   cancelText="No"
+                  onConfirm={() => onDeleteClick(record)}
                 >
                   <Button
                     type="link"
                     danger
-                    icon={<Trash2Icon stroke="red" />}
+                    icon={<Trash2Icon stroke="red" size={18} />}
                   />
                 </Popconfirm>
               </>
@@ -274,49 +447,6 @@ const TaskList = ({
             <Button icon={<EllipsisVertical />} />
           </Dropdown>
         ),
-    },
-  ];
-
-  const data = [
-    {
-      key: 1,
-      title: 'fix login bug',
-      category: 'bug',
-      status: 'in progress',
-      priority: 'high',
-      assignedTo: 'John Doe',
-      createdBy: 'John Doe',
-      dueDate: '2025-02-28',
-    },
-    {
-      key: 2,
-      title: 'design new ui',
-      category: 'bug',
-      status: 'pending',
-      priority: 'medium',
-      assignedTo: 'Jane Smith',
-      createdBy: 'John Doe',
-      dueDate: '2025-03-05',
-    },
-    {
-      key: 3,
-      title: 'write api documentation',
-      category: 'bug',
-      status: 'completed',
-      priority: 'low',
-      assignedTo: 'Emily Davis',
-      createdBy: 'John Doe',
-      dueDate: '2025-02-20',
-    },
-    {
-      key: 4,
-      title: 'implement payment gateway',
-      category: 'bug',
-      status: 'in progress',
-      priority: 'high',
-      assignedTo: 'Michael Brown',
-      createdBy: 'John Doe',
-      dueDate: '2025-03-10',
     },
   ];
 
@@ -442,6 +572,7 @@ const TaskList = ({
             <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
               <p>By Assignee</p>
               <Select
+                optionLabelProp="label"
                 showSearch
                 style={{ width: 200 }}
                 optionFilterProp="label"
@@ -450,12 +581,27 @@ const TaskList = ({
                     .toLowerCase()
                     .localeCompare((optionB?.label ?? '').toLowerCase())
                 }
-                options={[
-                  { value: '1', label: 'John Doe' },
-                  { value: '2', label: 'Jane Smith' },
-                  { value: '3', label: 'Michael Johnson' },
-                ]}
-              />
+              >
+                {users?.map((u) => (
+                  <Option
+                    key={u.id}
+                    value={`${u.firstname} ${u.lastname}`}
+                    label={`${u.firstname} ${u.lastname}`}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                        {!u.avatar && `${u.firstname[0]}`}{' '}
+                      </Avatar>
+                      <span>{`${u.firstname} ${u.lastname}`}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Space>
           )}
 
@@ -464,18 +610,19 @@ const TaskList = ({
             <Select
               showSearch
               style={{ width: 200 }}
+              allowClear={true}
+              onClear={() => filterStatusChange(null)}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
                   .toLowerCase()
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
-              options={[
-                { value: '1', label: 'To Do' },
-                { value: '2', label: 'In Progress' },
-                { value: '3', label: 'Blocked' },
-                { value: '4', label: 'Completed' },
-              ]}
+              options={taskStatus?.map((ts) => ({
+                label: ts.name,
+                value: ts.name,
+              }))}
+              onChange={(value) => filterStatusChange(value)}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
@@ -499,13 +646,14 @@ const TaskList = ({
 
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={tasks}
           pagination={{
+            ...taskMeta,
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
           }}
-          rowKey="key"
+          rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
           size={screens.xs ? 'small' : 'middle'}
@@ -519,7 +667,32 @@ const TaskList = ({
           title={getTitle()}
           open={isModalVisible}
           onCancel={closeModal}
-          onOk={() => form.submit()}
+          footer={
+            action === 'add' ? (
+              <>
+                <Divider />
+                <Button className="mr-2" onClick={closeModal}>
+                  Cancel
+                </Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Add
+                </Button>
+              </>
+            ) : action === 'edit' ? (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Update
+                </Button>
+              </>
+            ) : (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
+            )
+          }
           width={screens.xs ? '95%' : 1000}
           style={{ top: screens.xs ? 16 : 32 }}
           bodyStyle={{ padding: screens.xs ? 16 : 24 }}
@@ -528,22 +701,8 @@ const TaskList = ({
           <Form
             form={form}
             layout="vertical"
-            onFinish={(values) => {
-              console.log('Form values:', values);
-              setIsProcessing(true);
-              setTimeout(() => {
-                setIsProcessing(false);
-                setIsModalVisible(false);
-              }, 1000);
-            }}
-            initialValues={{
-              status: '',
-              assignee: '',
-              dueDate: null,
-              category: '',
-              priority: '',
-              files: [],
-            }}
+            onFinish={onSubmit}
+            disabled={action === 'view'}
           >
             <Row gutter={24}>
               <Col xs={24} lg={18}>
@@ -562,20 +721,26 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  <Tabs activeKey={activeTab} onChange={setActiveTab}>
-                    <TabPane tab="Write" key="write">
-                      <SunEditor
-                        setOptions={editorOptions}
-                        onChange={handleEditorChange}
-                        setContents={task.description}
-                      />
-                    </TabPane>
-                    <TabPane tab="Preview" key="preview">
-                      <PreviewSection
-                        content={form.getFieldValue('description') || ''}
-                      />
-                    </TabPane>
-                  </Tabs>
+                  {action === 'view' ? (
+                    <PreviewSection content={editorContent} />
+                  ) : (
+                    <Tabs activeKey={activeTab} onChange={setActiveTab}>
+                      <TabPane tab="Write" key="write">
+                        <SunEditor
+                          setOptions={editorOptions}
+                          onChange={handleEditorChange}
+                          setContents={
+                            action === 'edit'
+                              ? form.getFieldValue('description')
+                              : task.description
+                          }
+                        />
+                      </TabPane>
+                      <TabPane tab="Preview" key="preview">
+                        <PreviewSection content={editorContent} />
+                      </TabPane>
+                    </Tabs>
+                  )}
                 </Form.Item>
                 <Form.Item>
                   <Dragger
@@ -585,15 +750,15 @@ const TaskList = ({
                     onChange={onFileChange}
                     showUploadList={false}
                   >
-                    <p className="ant-upload-drag-icon">
-                      <Inbox />
-                    </p>
-                    <p className="ant-upload-text">
+                    <div className="flex items-center justify-center">
+                      <Inbox
+                        size={80}
+                        strokeWidth={1}
+                        className="text-gray-300 mr-2"
+                      />{' '}
+                    </div>
+                    <p className="ant-upload-text !text-gray-500">
                       Click or drag file to this area to upload
-                    </p>
-                    <p className="ant-upload-hint">
-                      Support for a single or bulk upload. Strictly prohibited
-                      from uploading company data or other banned files.
                     </p>
                   </Dragger>
                 </Form.Item>
@@ -603,32 +768,51 @@ const TaskList = ({
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Status" name="status">
-                      <Select defaultValue="">
-                        <Select.Option value="to do">To Do</Select.Option>
-                        <Select.Option value="in progress">
-                          In Progress
-                        </Select.Option>
-                        <Select.Option value="completed">
-                          Completed
-                        </Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskStatus?.map((ts) => ({
+                          label: ts.name,
+                          value: ts.name,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
                       label={isMyTask ? 'Assign yourself' : 'Assign to'}
-                      name="assignee"
+                      name="assignedTo"
                     >
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
                       ) : (
-                        <Select defaultValue="john doe">
-                          <Select.Option value="john doe">
-                            John Doe
-                          </Select.Option>
-                          <Select.Option value="jane smith">
-                            Jane Smith
-                          </Select.Option>
+                        <Select optionLabelProp="label">
+                          {users?.map((u) => (
+                            <Option
+                              key={u.id}
+                              value={`${u.firstname} ${u.lastname}`}
+                              label={`${u.firstname} ${u.lastname}`}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <Avatar
+                                  src={u.avatar}
+                                  style={{ marginRight: 8 }}
+                                >
+                                  {!u.avatar && `${u.firstname[0]}`}{' '}
+                                </Avatar>
+                                <span>{`${u.firstname} ${u.lastname}`}</span>
+                              </div>
+                            </Option>
+                          ))}
                         </Select>
                       )}
                     </Form.Item>
@@ -639,32 +823,42 @@ const TaskList = ({
                       <DatePicker
                         presets={dateRanges}
                         style={{ width: '100%' }}
+                        format="DD/MM/YYYY"
                       />
                     </Form.Item>
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Category" name="category">
-                      <Select defaultValue="">
-                        <Select.Option value="incident">Incident</Select.Option>
-                        <Select.Option value="complaint">
-                          Complaint
-                        </Select.Option>
-                        <Select.Option value="request">Request</Select.Option>
-                        <Select.Option value="problem">Problem</Select.Option>
-                        <Select.Option value="change">Change</Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskCategory?.map((tc) => ({
+                          label: tc.name,
+                          value: tc.name,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item label="Priority" name="priority">
-                      <Select defaultValue="">
-                        <Select.Option value="critical">Critical</Select.Option>
-                        <Select.Option value="high">High</Select.Option>
-                        <Select.Option value="medium">Medium</Select.Option>
-                        <Select.Option value="low">Low</Select.Option>
-                      </Select>
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskPriority?.map((tp) => ({
+                          label: tp.name,
+                          value: tp.name,
+                        }))}
+                      />
                     </Form.Item>
                   </Col>
 
@@ -678,8 +872,7 @@ const TaskList = ({
                               closable
                               onClose={() => onFileRemove(index)}
                             >
-                              <FileImage />
-                              {file.name || 'File'}
+                              {getFileIcon(file.name)} {file.name || 'File'}
                             </Tag>
                           ))
                         ) : (
