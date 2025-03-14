@@ -74,8 +74,11 @@ const LeaveRequest = ({
 
   const { loggedInUser } = useAppContext();
 
-  const { leaveRequest: leaves, revalidate: leavesRevalidate } =
-    useLeaveRequest(params);
+  const {
+    leaveRequest: leaves,
+    meta: leavesMeta,
+    revalidate: leavesRevalidate,
+  } = useLeaveRequest(params);
   const { users } = useUsers();
   console.log(users);
   const { leaveTypes } = useLeaveTypes();
@@ -447,8 +450,9 @@ const LeaveRequest = ({
 
         <Table
           columns={columns}
-          dataSource={Array.isArray(leaves) ? leaves : []}
+          dataSource={leaves}
           pagination={{
+            ...leavesMeta,
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
