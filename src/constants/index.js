@@ -8,6 +8,7 @@ export const URL = `${API_URL}/${PREFIX}`;
 
 // export const URL = 'https://yukta-cms.onrender.com';
 // export const URL = 'https://yukta-cms.onrender.com';
+// export const URL = 'https://yukta-cms-erp.onrender.com';
 
 export const constants = {
   urls: {
