@@ -1,6 +1,5 @@
-import { getToken } from "@/utils";
+import { getToken } from '@/utils';
 
-// export const URL = 'http://localhost:4000';
 export const API_URL = 'http://localhost:4000';
 
 export const PREFIX = 'v1';
@@ -53,4 +52,3 @@ export const ROLES = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
-
