@@ -25,7 +25,13 @@ import {
   Popconfirm,
   Avatar,
 } from 'antd';
-import { EllipsisVertical, FilePenLine, Trash2Icon, Eye } from 'lucide-react';
+import {
+  EllipsisVertical,
+  FilePenLine,
+  Trash2Icon,
+  Eye,
+  CloudHail,
+} from 'lucide-react';
 import Link from 'next/link';
 import moment from 'moment';
 import { dateRanges, openNotification } from '@/utils';
@@ -71,6 +77,7 @@ const LeaveRequest = ({
   const { leaveRequest: leaves, revalidate: leavesRevalidate } =
     useLeaveRequest(params);
   const { users } = useUsers();
+  console.log(users);
   const { leaveTypes } = useLeaveTypes();
   console.log('ahahshs', leaveTypes);
 
@@ -513,7 +520,7 @@ const LeaveRequest = ({
                 </Col>
                 <Col span={12}>
                   <Form.Item name="decidedBy" label="Logged by">
-                    <Input disabled />
+                    <Input value={loggedInUser.fullName} disabled />
                   </Form.Item>
                 </Col>
               </Row>
@@ -527,12 +534,8 @@ const LeaveRequest = ({
                   width="100%"
                 >
                   <Select optionLabelProp="label">
-                    {/* {users?.map((u) => (
-                      <Option
-                        key={u.id}
-                        value={u.id}
-                        label={`${u.firstname} ${u.lastname}`}
-                      >
+                    {users?.map((u) => (
+                      <Option key={u.id} value={u.id} label={`${u.fullName}`}>
                         <div
                           style={{
                             display: 'flex',
@@ -540,12 +543,12 @@ const LeaveRequest = ({
                           }}
                         >
                           <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                            {!u.avatar && `${u.firstname[0]}`}{' '}
+                            {!u.avatar && `${u.fullName[0]}`}{' '}
                           </Avatar>
-                          <span>{`${u.firstname} ${u.lastname}`}</span>
+                          <span>{`${u.fullName}`}</span>
                         </div>
                       </Option>
-                    ))} */}
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>
