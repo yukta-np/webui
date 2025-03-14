@@ -500,7 +500,10 @@ const LeaveRequest = ({
                 </Button>
               </>
             ) : (
-              []
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
             )
           }
         >
@@ -612,7 +615,10 @@ const LeaveRequest = ({
             </Row>
 
             <Form.Item name="comments" label="Comments">
-              <Input.TextArea rows={3} disabled={action === 'accept-reject'} />
+              <Input.TextArea
+                rows={3}
+                disabled={action === 'accept-reject' || action === 'review'}
+              />
             </Form.Item>
             {action === 'accept-reject' && (
               <>
