@@ -165,6 +165,12 @@ const LeaveRequest = ({
 
     const acceptRejectvalues = {
       ...values,
+      periodAllocation: [
+        {
+          periodName: null,
+          allocatedUserId: null,
+        },
+      ],
       isApproved: decision === leaveDecision.approved ? true : false,
       decidedAt: values.decidedAt ? moment(values.decidedAt) : null,
       decidedBy: loggedInUser.userId,
@@ -265,7 +271,7 @@ const LeaveRequest = ({
         if (leaveRequest.decidedAt == null) {
           return '-';
         }
-        return leaveRequest.decidedBy;
+        return leaveRequest?.decider?.fullName;
       },
       responsive: ['sm'],
     },
@@ -276,10 +282,7 @@ const LeaveRequest = ({
       render: (_, leaveRequest) => {
         if (leaveRequest.isApproved == true) {
           return 'Approved';
-        } else if (
-          leaveRequest.isApproved == false &&
-          leaveRequest.rejectionReason != null
-        ) {
+        } else if (leaveRequest.isApproved == false) {
           return 'Rejected';
         } else {
           return 'Pending';
