@@ -55,7 +55,6 @@ const LeaveRequest = ({
   isMyTeamLeave = false,
 }) => {
   const screens = useBreakpoint();
-  console.log({ isAllLeave, isMyLeave, isMyTeamLeave });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -68,8 +67,6 @@ const LeaveRequest = ({
   const [isAllDay, setIsAllDay] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
-  console.log('decision', decision);
-
   let params = {};
 
   const { loggedInUser } = useAppContext();
@@ -78,11 +75,9 @@ const LeaveRequest = ({
     leaveRequest: leaves,
     meta: leavesMeta,
     revalidate: leavesRevalidate,
-  } = useLeaveRequest(params);
+  } = useLeaveRequest();
   const { users } = useUsers();
-  console.log(users);
   const { leaveTypes } = useLeaveTypes();
-  console.log('ahahshs', leaveTypes);
 
   const leaveDecision = {
     approved: 'approved',
@@ -113,11 +108,11 @@ const LeaveRequest = ({
       endDate: record.endDate ? moment(record.endDate) : null,
       decidedAt: moment(),
       decidedBy: loggedInUser.userId,
+      loggedBy: loggedInUser.fullName,
     };
 
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
-    console.log('eheheh', newRecord);
 
     setAction('accept-reject');
     openModal();
@@ -128,6 +123,7 @@ const LeaveRequest = ({
       ...record,
       startDate: record.startDate ? moment(record.startDate) : null,
       endDate: record.endDate ? moment(record.endDate) : null,
+      note: record.note,
     };
     form.setFieldsValue(newRecord);
     setAction('review');
@@ -156,19 +152,24 @@ const LeaveRequest = ({
     const { actionForOverlap, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      userId: loggedInUser.userId,
+      userId: isMyLeave ? loggedInUser.userId : values.userId,
       organisationId: loggedInUser.orgId,
-      isApproved: false,
       isArchived: false,
       createdBy: loggedInUser.userId,
+      periodAllocations: [
+        {
+          periodNames: 'M1',
+          allocatedUserId: null,
+        },
+      ],
     };
 
     const acceptRejectvalues = {
       ...values,
-      periodAllocation: [
+      periodAllocations: [
         {
-          periodName: null,
-          allocatedUserId: null,
+          periodNames: 'M1',
+          allocatedUserId: 2,
         },
       ],
       isApproved: decision === leaveDecision.approved ? true : false,
@@ -222,7 +223,7 @@ const LeaveRequest = ({
             title: 'Teacher / Staff Member Name',
             dataIndex: 'name',
             key: 'name',
-            render: () => loggedInUser?.fullName,
+            render: (_, leaves) => leaves?.assignee?.fullName,
             responsive: ['lg'],
           },
         ]
@@ -294,7 +295,7 @@ const LeaveRequest = ({
       title: 'Action',
       key: 'action',
       width: '10%',
-      render: (_, record, leaveRequest) =>
+      render: (_, record) =>
         screens.md ? (
           <Space size="middle">
             <Button
@@ -328,10 +329,9 @@ const LeaveRequest = ({
               <Flex wrap className="site-button-ghost-wrapper">
                 <Button
                   type="primary"
-                  danger
                   ghost
+                  danger
                   size="medium"
-                  disabled={decision === leaveDecision.pending}
                   onClick={() => onAcceptRejectClick(record)}
                 >
                   Accept/Reject
@@ -410,21 +410,34 @@ const LeaveRequest = ({
           <Space>
             <Space direction="vertical" style={{ marginBottom: 16 }}>
               <p>Filter By</p>
+
               <Select
-                showSearch
+                optionLabelProp="label"
+                style={{ width: 300 }}
                 placeholder="Teacher / Staff Member"
+                showSearch
                 filterOption={(input, option) =>
                   (option?.label ?? '')
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
-                options={[
-                  { value: '1', label: 'Jack' },
-                  { value: '2', label: 'Lucy' },
-                  { value: '3', label: 'Tom' },
-                ]}
-                style={{ width: 300 }}
-              />
+              >
+                {users?.map((u) => (
+                  <Option key={u.id} value={u.id} label={`${u.fullName}`}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {!u?.avatar && `${u?.fullName[0]}`}{' '}
+                      </Avatar>
+                      <span>{`${u.fullName}`}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Space>
 
             <Space
@@ -529,8 +542,8 @@ const LeaveRequest = ({
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="decidedBy" label="Logged by">
-                    <Input value={loggedInUser.fullName} disabled />
+                  <Form.Item name="loggedBy" label="Logged by">
+                    <Input disabled />
                   </Form.Item>
                 </Col>
               </Row>
@@ -542,6 +555,7 @@ const LeaveRequest = ({
                   label="Teacher / Staff Member Name"
                   rules={[{ required: true }]}
                   width="100%"
+                  name={'userId'}
                 >
                   <Select optionLabelProp="label">
                     {users?.map((u) => (
@@ -552,8 +566,8 @@ const LeaveRequest = ({
                             alignItems: 'center',
                           }}
                         >
-                          <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                            {!u.avatar && `${u.fullName[0]}`}{' '}
+                          <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                            {!u?.avatar && `${u?.fullName[0]}`}{' '}
                           </Avatar>
                           <span>{`${u.fullName}`}</span>
                         </div>
@@ -623,7 +637,7 @@ const LeaveRequest = ({
                 disabled={action === 'accept-reject' || action === 'review'}
               />
             </Form.Item>
-            {action === 'accept-reject' && (
+            {!isMyLeave && action === 'accept-reject' && (
               <>
                 <Form.Item name="note" label="Note">
                   <Input.TextArea rows={3} />
@@ -665,7 +679,6 @@ const LeaveRequest = ({
                       <Select.Option value="transferToAnother">
                         Transfer to another
                       </Select.Option>
-
                       <Select.Option value="doNothing">
                         Do Nothing
                       </Select.Option>
