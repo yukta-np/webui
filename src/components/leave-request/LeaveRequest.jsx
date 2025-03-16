@@ -48,6 +48,7 @@ const { Content } = Layout;
 import { useAppContext } from '@/app-context';
 import { useUsers } from '@/hooks/useUsers';
 import { useLeaveTypes } from '@/hooks/useLeaveTypes';
+import { comment } from 'postcss';
 
 const LeaveRequest = ({
   isAllLeave = false,
@@ -118,14 +119,19 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onReviewClick = (record) => {
-    const newRecord = {
-      ...record,
-      startDate: record.startDate ? moment(record.startDate) : null,
-      endDate: record.endDate ? moment(record.endDate) : null,
-      note: record.note,
+  const onReviewClick = (leaves) => {
+    const record = {
+      userId: leaves.assignee?.fullName,
+      requestType: leaves.requestType,
+      startDate: leaves.startDate ? moment(leaves.startDate) : null,
+      endDate: leaves.endDate ? moment(leaves.endDate) : null,
+      comments: leaves.comments,
+      note: leaves.note,
+      decidedAt: leaves.decidedAt ? moment(leaves.decidedAt) : null,
+      decidedBy: leaves.decider?.fullName,
+      reasonForRejection: leaves.reasonForRejection,
     };
-    form.setFieldsValue(newRecord);
+    form.setFieldsValue(record);
     setAction('review');
     openModal();
   };
@@ -156,12 +162,12 @@ const LeaveRequest = ({
       organisationId: loggedInUser.orgId,
       isArchived: false,
       createdBy: loggedInUser.userId,
-      periodAllocations: [
-        {
-          periodNames: 'M1',
-          allocatedUserId: null,
-        },
-      ],
+      // periodAllocations: [
+      //   {
+      //     periodNames: 'M1',
+      //     allocatedUserId: null,
+      //   },
+      // ],
     };
 
     const acceptRejectvalues = {
@@ -301,7 +307,7 @@ const LeaveRequest = ({
             <Button
               type="link"
               icon={<Eye size={18} />}
-              onClick={() => onReviewClick(record)}
+              onClick={() => onReviewClick()}
             />
             <Button
               type="link"
@@ -555,7 +561,7 @@ const LeaveRequest = ({
                   label="Teacher / Staff Member Name"
                   rules={[{ required: true }]}
                   width="100%"
-                  name={'userId'}
+                  name="userId"
                 >
                   <Select optionLabelProp="label">
                     {users?.map((u) => (
@@ -637,25 +643,46 @@ const LeaveRequest = ({
                 disabled={action === 'accept-reject' || action === 'review'}
               />
             </Form.Item>
-            {!isMyLeave && action === 'accept-reject' && (
+            {!isMyLeave && action !== 'add' && (
               <>
                 <Form.Item name="note" label="Note">
                   <Input.TextArea rows={3} />
                 </Form.Item>
-                <Form.Item label="Decision" rules={[{ required: true }]}>
-                  <Select
-                    onChange={(value) => {
-                      onDecisionChange(value);
-                    }}
-                  >
-                    <Select.Option value={leaveDecision.approved}>
-                      Approve
-                    </Select.Option>
-                    <Select.Option value={leaveDecision.rejected}>
-                      Reject
-                    </Select.Option>
-                  </Select>
-                </Form.Item>
+                {!isMyLeave && action === 'review' && (
+                  <Row>
+                    <Col span={12}>
+                      <Form.Item name="decidedAt" label="Decided At">
+                        <DatePicker
+                          showTime
+                          format={'DD/MM/YYYY hh:mm A'}
+                          disabled
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="decidedBy" label="Decided By">
+                        <Input disabled />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                )}
+
+                {action !== 'review' && (
+                  <Form.Item label="Decision" rules={[{ required: true }]}>
+                    <Select
+                      onChange={(value) => {
+                        onDecisionChange(value);
+                      }}
+                    >
+                      <Select.Option value={leaveDecision.approved}>
+                        Approve
+                      </Select.Option>
+                      <Select.Option value={leaveDecision.rejected}>
+                        Reject
+                      </Select.Option>
+                    </Select>
+                  </Form.Item>
+                )}
                 {decision === leaveDecision.rejected && (
                   <Form.Item
                     name="rejectionReason"
@@ -696,6 +723,15 @@ const LeaveRequest = ({
                       <Select.Option value="1">John Doe</Select.Option>
                       <Select.Option value="2">Jane Doe</Select.Option>
                     </Select>
+                  </Form.Item>
+                )}
+                {action === 'review' && (
+                  <Form.Item
+                    name="rejectionReason"
+                    label="Reason for Rejection"
+                    rules={[{ required: true }]}
+                  >
+                    <Input.TextArea rows={4} />
                   </Form.Item>
                 )}
               </>

@@ -595,9 +595,9 @@ const TaskList = ({
                       }}
                     >
                       <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                        {!u.avatar && `${u.firstname[0]}`}{' '}
+                        {!u.avatar && `${u.firstName[0]}`}{' '}
                       </Avatar>
-                      <span>{`${u.firstname} ${u.lastname}`}</span>
+                      <span>{`${u.fullName} `}</span>
                     </div>
                   </Option>
                 ))}
@@ -717,9 +717,9 @@ const TaskList = ({
                 <Form.Item
                   label="Description"
                   name="description"
-                  rules={[
-                    { required: true, message: 'Please enter a description' },
-                  ]}
+                  // rules={[
+                  //   { required: true, message: 'Please enter a description' },
+                  // ]}
                 >
                   {action === 'view' ? (
                     <PreviewSection content={editorContent} />
@@ -795,7 +795,7 @@ const TaskList = ({
                             <Option
                               key={u.id}
                               value={u.id}
-                              label={`${u.firstname} ${u.lastname}`}
+                              label={`${u.fullName}`}
                             >
                               <div
                                 style={{
@@ -807,9 +807,9 @@ const TaskList = ({
                                   src={u.avatar}
                                   style={{ marginRight: 8 }}
                                 >
-                                  {!u.avatar && `${u.firstname[0]}`}{' '}
+                                  {!u.avatar && `${u.firstName[0]}`}{' '}
                                 </Avatar>
-                                <span>{`${u.firstname} ${u.lastname}`}</span>
+                                <span>{`${u.fullName} `}</span>
                               </div>
                             </Option>
                           ))}
