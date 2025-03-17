@@ -65,7 +65,7 @@ const LeaveRequest = ({
   const [action, setAction] = useState('add');
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
-  const [isAllDay, setIsAllDay] = useState(false);
+  const [isForAllPeriods, setIsForAllPeriods] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
   let params = {};
@@ -162,12 +162,13 @@ const LeaveRequest = ({
       organisationId: loggedInUser.orgId,
       isArchived: false,
       createdBy: loggedInUser.userId,
-      // periodAllocations: [
-      //   {
-      //     periodNames: 'M1',
-      //     allocatedUserId: null,
-      //   },
-      // ],
+      isForAllPeriods: false,
+      periodAllocations: [
+        {
+          periodName: 'Morning',
+          allocatedUserId: null,
+        },
+      ],
     };
 
     const acceptRejectvalues = {
@@ -206,8 +207,8 @@ const LeaveRequest = ({
     setTransfer(null);
   };
 
-  const onAllDayChange = () => {
-    setIsAllDay(!isAllDay);
+  const onAllPeriodsChange = () => {
+    setIsForAllPeriods(!isAllPeriod);
   };
 
   const getTitle = () => {
@@ -600,9 +601,9 @@ const LeaveRequest = ({
                 ></Select>
               </Form.Item>
             </Col>
-            <Form.Item name="isAllDay">
-              <p style={{ marginBottom: '5px' }}>All Day?</p>
-              <Switch checked={isAllDay} onChange={onAllDayChange} />
+            <Form.Item name="isForAllPeriods">
+              <p style={{ marginBottom: '5px' }}>All Periods?</p>
+              <Switch checked={isForAllPeriods} onChange={onAllPeriodsChange} />
             </Form.Item>
             <Row gutter={16} style={{ width: '100%' }}>
               <Col span={12}>
@@ -615,7 +616,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay || action === 'review'}
+                    disabled={isForAllPeriods || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -630,7 +631,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay || action === 'review'}
+                    disabled={isForAllPeriods || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
