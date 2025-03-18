@@ -129,15 +129,11 @@ const TaskList = ({
   const [status, setStatus] = useState(null);
   const [priority, setPriority] = useState(null);
   const [category, setCategory] = useState(null);
-  const [task, setTask] = useState({
-    creatorId: 1,
-    taskStatus: 1,
-    assigneeId: 2,
-    title: 'sample task',
-    description: 'this is a description of the task.',
-  });
+  const [task, setTask] = useState({});
 
   const { loggedInUser } = useAppContext();
+
+  console.log({ loggedInUser });
 
   let params = {};
 
@@ -167,6 +163,7 @@ const TaskList = ({
 
   const handleEditorChange = (content) => {
     setEditorContent(content);
+    form.setFieldsValue({ description: content });
   };
 
   const openModal = () => {
@@ -214,9 +211,12 @@ const TaskList = ({
     const { files, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      createdBy: 4,
-      organisationId: 1,
+      dueDate: new Date(values.dueDate),
+      createdBy: loggedInUser.userId,
+      organisationId: loggedInUser.orgId,
       isArchived: false,
+      taskItems: [],
+      taskUsers: [],
     };
     try {
       if (action === 'edit') {
@@ -236,6 +236,9 @@ const TaskList = ({
   };
 
   const onColumnStatusChange = async (id, status) => {
+    console.log('id', id);
+    console.log('status', status);
+
     try {
       await updateTask(id, { status });
       openNotification('Task status updated successfully');
@@ -308,9 +311,9 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text, record) => (
+      render: (_, tasks) => (
         <a className="text-blue-600" onClick={() => onViewClick(record)}>
-          TSK-{text}
+          {tasks?.displayId}
         </a>
       ),
       width: '5%',
@@ -336,7 +339,7 @@ const TaskList = ({
       responsive: ['md'],
       width: 150,
 
-      render: (text, record) => (
+      render: (text, tasks) => (
         <>
           {isMyTask ? (
             <Select
@@ -352,10 +355,21 @@ const TaskList = ({
                 label: ts.name,
                 value: ts.name,
               }))}
-              onChange={(value) => onColumnStatusChange(record.id, value)}
+              onChange={(value) => onColumnStatusChange(tasks.id, value)}
             />
           ) : (
-            <span>{text}</span>
+            <Tag
+              className="items-center"
+              color={
+                text === 'Completed'
+                  ? 'green'
+                  : text === 'In Progress'
+                  ? 'yellow'
+                  : 'blue'
+              }
+            >
+              {text}
+            </Tag>
           )}
         </>
       ),
@@ -374,6 +388,7 @@ const TaskList = ({
             dataIndex: 'assignedTo',
             key: 'assignedTo',
             responsive: ['md'],
+            render: (_, tasks) => tasks?.assignee.fullName,
           },
         ]
       : []),
@@ -382,6 +397,7 @@ const TaskList = ({
       dataIndex: 'createdBy',
       key: 'createdBy',
       responsive: ['lg'],
+      render: (_, tasks) => tasks?.creator.fullName,
     },
     {
       title: 'Due Date',
@@ -717,9 +733,9 @@ const TaskList = ({
                 <Form.Item
                   label="Description"
                   name="description"
-                  // rules={[
-                  //   { required: true, message: 'Please enter a description' },
-                  // ]}
+                  rules={[
+                    { required: true, message: 'Please enter a description' },
+                  ]}
                 >
                   {action === 'view' ? (
                     <PreviewSection content={editorContent} />
@@ -729,6 +745,7 @@ const TaskList = ({
                         <SunEditor
                           setOptions={editorOptions}
                           onChange={handleEditorChange}
+                          placeholder="Enter your task description"
                           setContents={
                             action === 'edit'
                               ? form.getFieldValue('description')

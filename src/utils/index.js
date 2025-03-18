@@ -67,19 +67,19 @@ export const extractTokenFromQueryString = () => {
 //   window.localStorage.setItem('yukta', JSON.stringify(yukta));
 // };
 
-
 export const setSessionStorageData = (token) => {
   const {
     role,
-    orgId,
-    sub,
-    subId,
+    organisationId: orgId,
+    userId,
     fullName,
     preferences,
-    orgName,
-    orgLogo,
+    organisationName: orgName,
+    organisationLogo: orgLogo,
     permissions,
   } = parseJwt(token);
+
+  console.log('hehehe', userId);
 
   if (process.browser) {
     const yukta = {
@@ -89,10 +89,9 @@ export const setSessionStorageData = (token) => {
       orgName,
       orgLogo,
       role,
-      subId,
       preferences,
       permissions,
-      userId: sub,
+      userId: userId,
     };
     window.localStorage.setItem('yukta', JSON.stringify(yukta));
   }
@@ -116,7 +115,9 @@ export const getToken = () => {
 
 export const clearStorageAndRedirect = (returnUrl) => {
   window.localStorage.removeItem('yukta');
-  window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(returnUrl)
+  window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(
+    returnUrl
+  )
     ? '/auth/login'
     : `/auth/login?return=${returnUrl}`;
 };
