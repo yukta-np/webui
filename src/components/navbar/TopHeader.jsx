@@ -76,15 +76,6 @@ const TopHeader = () => {
     token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
   } = theme.useToken();
   const screens = useBreakpoint();
-  // const { loggedInUser } = useAppContext();
-
-  // const loggedInUser = getLoggedInUser();
-
-  // const loggedInUser = {
-  //   userId: 8,
-  //   fullName: 'Abishek Ghimire',
-  //   role: 'Admin',
-  // };
 
   const menuItems = [
     {
@@ -289,9 +280,7 @@ const TopHeader = () => {
                     lineHeight: 1.25,
                   }}
                 >
-                  <p className="m-0">
-                    {loggedInUser?.fullName} 
-                  </p>
+                  <p className="m-0">{loggedInUser?.fullName}</p>
                   <p className="m-0 text-[10px] text-gray-500">
                     {loggedInUser?.role?.toUpperCase()}
                   </p>
