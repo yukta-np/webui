@@ -157,7 +157,7 @@ const TaskList = ({
   const { taskPriority } = useTaskPriority();
   const { users } = useUsers();
 
-  const [editorContent, setEditorContent] = useState(task.description || '');
+  const [editorContent, setEditorContent] = useState();
 
   const handleEditorChange = (content) => {
     setEditorContent(content);
@@ -193,10 +193,15 @@ const TaskList = ({
     tasksRevalidate();
   };
 
-  const onViewClick = (record) => {
+  const onViewClick = (tasks) => {
     const newRecord = {
-      ...record,
-      dueDate: record.dueDate ? moment(record.dueDate) : null,
+      title: tasks?.title,
+      description: tasks?.description,
+      status: tasks?.status,
+      priority: tasks?.priority,
+      category: tasks?.category,
+      assignedTo: tasks?.assignee?.fullName,
+      dueDate: tasks?.dueDate ? moment(tasks?.dueDate) : null,
     };
     setAction('view');
     form.setFieldsValue(newRecord);
@@ -209,9 +214,9 @@ const TaskList = ({
     const { files, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      dueDate: new Date(values.dueDate),
-      createdBy: loggedInUser.userId,
-      organisationId: loggedInUser.orgId,
+      dueDate: new Date(values?.dueDate),
+      createdBy: loggedInUser?.userId,
+      organisationId: loggedInUser?.orgId,
       isArchived: false,
       taskItems: [],
       taskUsers: [],
@@ -307,7 +312,7 @@ const TaskList = ({
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
       render: (_, tasks) => (
-        <a className="text-blue-600" onClick={() => onViewClick(record)}>
+        <a className="text-blue-600" onClick={() => onViewClick(tasks)}>
           {tasks?.displayId}
         </a>
       ),
@@ -733,7 +738,9 @@ const TaskList = ({
                   ]}
                 >
                   {action === 'view' ? (
-                    <PreviewSection content={editorContent} />
+                    <PreviewSection
+                      content={form.getFieldValue('description')}
+                    />
                   ) : (
                     <Tabs activeKey={activeTab} onChange={setActiveTab}>
                       <TabPane tab="Write" key="write">
@@ -742,9 +749,9 @@ const TaskList = ({
                           onChange={handleEditorChange}
                           placeholder="Enter your task description"
                           setContents={
-                            action === 'edit'
+                            action === 'edit' || action === 'view'
                               ? form.getFieldValue('description')
-                              : task.description
+                              : tasks?.description
                           }
                         />
                       </TabPane>

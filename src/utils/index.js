@@ -79,8 +79,6 @@ export const setSessionStorageData = (token) => {
     permissions,
   } = parseJwt(token);
 
-  console.log('hehehe', userId);
-
   if (process.browser) {
     const yukta = {
       token,
