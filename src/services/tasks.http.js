@@ -8,7 +8,6 @@ export async function createTask(task) {
 }
 
 export async function updateTask(id, task) {
-  console.log('status', task);
   return axios.patch(`${URL}/${id}`, task, { headers });
 }
 

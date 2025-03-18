@@ -133,8 +133,6 @@ const TaskList = ({
 
   const { loggedInUser } = useAppContext();
 
-  console.log({ loggedInUser });
-
   let params = {};
 
   if (status) {
@@ -236,9 +234,6 @@ const TaskList = ({
   };
 
   const onColumnStatusChange = async (id, status) => {
-    console.log('id', id);
-    console.log('status', status);
-
     try {
       await updateTask(id, { status });
       openNotification('Task status updated successfully');
@@ -352,7 +347,7 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={taskStatus?.map((ts) => ({
-                label: ts.name,
+                label: ts.name.toUpperCase(),
                 value: ts.name,
               }))}
               onChange={(value) => onColumnStatusChange(tasks.id, value)}
@@ -364,11 +359,11 @@ const TaskList = ({
                 text === 'Completed'
                   ? 'green'
                   : text === 'In Progress'
-                  ? 'yellow'
+                  ? 'orange'
                   : 'blue'
               }
             >
-              {text}
+              {text.toUpperCase()}
             </Tag>
           )}
         </>
