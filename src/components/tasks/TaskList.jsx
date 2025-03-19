@@ -127,9 +127,8 @@ const TaskList = ({
   const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [status, setStatus] = useState(null);
-  const [priority, setPriority] = useState(null);
-  const [category, setCategory] = useState(null);
-  const [task, setTask] = useState({});
+  const [assignedTo, setAssignedTo] = useState(null);
+  const [createdBy, setCreatedBy] = useState(null);
 
   const { loggedInUser } = useAppContext();
 
@@ -139,12 +138,12 @@ const TaskList = ({
     params.status = status;
   }
 
-  if (priority) {
-    params.priority = priority;
+  if (createdBy) {
+    params.createdBy = createdBy;
   }
 
-  if (category) {
-    params.category = category;
+  if (assignedTo) {
+    params.assignedTo = assignedTo;
   }
 
   const {
@@ -248,8 +247,33 @@ const TaskList = ({
     }
   };
 
-  const filterStatusChange = (value) => {
+  const filterByDateRange = (value) => {
+    const startDate = value[0];
+    const endDate = value[1];
+    const formattedStartDate = startDate
+      ? startDate.format('YYYY-MM-DD')
+      : null;
+    const formattedEndDate = endDate ? endDate.format('YYYY-MM-DD') : null;
+    params = {
+      ...params,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+    };
+    tasksRevalidate();
+  };
+
+  const filterByStatus = (value) => {
     setStatus(value);
+    tasksRevalidate();
+  };
+
+  const filterByCreator = (value) => {
+    setCreatedBy(value);
+    tasksRevalidate();
+  };
+
+  const filterByAssignee = (value) => {
+    setAssignedTo(value);
     tasksRevalidate();
   };
 
@@ -569,6 +593,8 @@ const TaskList = ({
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>By Creator </p>
             <Select
+              allowClear={true}
+              optionLabelProp="label"
               showSearch
               style={{ width: 200 }}
               optionFilterProp="label"
@@ -577,17 +603,30 @@ const TaskList = ({
                   .toLowerCase()
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
-              options={[
-                { value: '1', label: 'John Doe' },
-                { value: '2', label: 'Jane Smith' },
-                { value: '3', label: 'Michael Johnson' },
-              ]}
-            />
+              onChange={(values) => filterByCreator(values)}
+            >
+              {users?.map((u) => (
+                <Option key={u.id} value={`${u.id} `} label={`${u.fullName} `}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                      {!u.avatar && `${u.firstName[0]}`}{' '}
+                    </Avatar>
+                    <span>{`${u.fullName} `}</span>
+                  </div>
+                </Option>
+              ))}
+            </Select>
           </Space>
           {!isMyTask && (
             <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
               <p>By Assignee</p>
               <Select
+                allowClear={true}
                 optionLabelProp="label"
                 showSearch
                 style={{ width: 200 }}
@@ -597,12 +636,13 @@ const TaskList = ({
                     .toLowerCase()
                     .localeCompare((optionB?.label ?? '').toLowerCase())
                 }
+                onChange={(values) => filterByAssignee(values)}
               >
                 {users?.map((u) => (
                   <Option
                     key={u.id}
-                    value={`${u.firstname} ${u.lastname}`}
-                    label={`${u.firstname} ${u.lastname}`}
+                    value={`${u.id} `}
+                    label={`${u.fullName} `}
                   >
                     <div
                       style={{
@@ -627,7 +667,6 @@ const TaskList = ({
               showSearch
               style={{ width: 200 }}
               allowClear={true}
-              onClear={() => filterStatusChange(null)}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
@@ -638,7 +677,7 @@ const TaskList = ({
                 label: ts.name,
                 value: ts.name,
               }))}
-              onChange={(value) => filterStatusChange(value)}
+              onChange={(value) => filterByStatus(value)}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
