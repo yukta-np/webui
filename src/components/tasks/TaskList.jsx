@@ -33,6 +33,7 @@ import {
   FileImage,
   MessageSquareText,
   FilePenLine,
+  CloudHail,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -63,14 +64,14 @@ import {
 import {
   FileImageOutlined,
   FilePdfOutlined,
-  VideoCameraOutlined, // ✅ Use this for videos
+  VideoCameraOutlined,
   FileTextOutlined,
   FileOutlined,
 } from '@ant-design/icons';
 import { useAppContext } from '@/app-context';
 
 const getFileIcon = (fileName) => {
-  const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
+  const ext = fileName.split('.').pop().toLowerCase();
 
   switch (ext) {
     case 'jpg':
@@ -80,22 +81,22 @@ const getFileIcon = (fileName) => {
     case 'svg':
       return (
         <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-      ); // Blue for images
+      );
     case 'pdf':
-      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />; // Red for PDFs
+      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
     case 'mp4':
     case 'mkv':
     case 'avi':
     case 'mov':
       return (
         <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
-      ); // ✅ Yellow for videos
+      );
     case 'txt':
     case 'doc':
     case 'docx':
       return (
         <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
-      ); // Green for text files
+      );
     default:
       return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
   }
@@ -136,6 +137,10 @@ const TaskList = ({
   const [assignedTo, setAssignedTo] = useState(null);
   const [createdBy, setCreatedBy] = useState(null);
   const [editorContent, setEditorContent] = useState();
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState([]);
+  const [currentTaskId, setCurrentTaskId] = useState(null);
 
   const { loggedInUser } = useAppContext();
 
@@ -495,28 +500,29 @@ const TaskList = ({
     },
   ];
 
-  const [comments, setComments] = useState([]);
+  const showCommentModal = async (record) => {
+    setCurrentTaskId(record.id);
+    const response = await getComments(record.id);
+    const data = response.data;
+    setComments(data);
+    setIsCommentModalVisible(true);
+  };
 
-  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [newComment, setNewComment] = useState('');
-
-  const onCommentSubmit = async (comments) => {
+  const onCommentSubmit = async (newComment) => {
+    setIsProcessing(true);
     const comment = {
-      comment: comments,
+      comment: newComment,
     };
-    // setComments([
-    //   ...comments,
-    //   {
-    //     id: comments.length + 1,
-    //     author: 'Current User',
-    //     content: comment,
-    //     date: new Date().toLocaleString(),
-    //   },
-    // ]);
     try {
-      await createComment(taskId, comment);
+      await createComment(currentTaskId, comment);
+      const response = await getComments(currentTaskId);
+      setComments(response.data);
+      setNewComment('');
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsProcessing(false);
+      form.resetFields();
     }
   };
 
@@ -524,15 +530,9 @@ const TaskList = ({
     setNewComment(value);
   };
 
-  const showCommentModal = async (record) => {
-    const response = await getComments(record.id);
-    const data = response.data;
-    setComments(data);
-    setIsCommentModalVisible(true);
-  };
-
   const hideCommentModal = () => {
     setIsCommentModalVisible(false);
+    form.resetFields();
   };
 
   return (
@@ -961,7 +961,17 @@ const TaskList = ({
           open={isCommentModalVisible}
           onCancel={hideCommentModal}
           on
-          footer={null}
+          footer={
+            <>
+              <Divider />
+              <Button className="mr-2" onClick={hideCommentModal}>
+                Cancel
+              </Button>
+              <Button type="primary" onClick={() => form.submit()}>
+                Comment
+              </Button>
+            </>
+          }
           style={{ top: 20 }}
         >
           <Divider />
@@ -984,35 +994,34 @@ const TaskList = ({
               padding: '16px',
             }}
           >
-            <Mentions
-              value={newComment}
-              onChange={onCommentChange}
-              placeholder="Add your comment"
-              style={{
-                width: '100%',
-                marginBottom: '8px',
-                minHeight: '80px',
-              }}
-              options={users?.map((u) => ({
-                label: (
-                  <Space>
-                    <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                      {!u.avatar && `${u.firstName[0]}`}{' '}
-                    </Avatar>
-                    <span>{u.fullName}</span>
-                  </Space>
-                ),
-                value: `${u.fullName}`,
-              }))}
-            />
-            <Button
-              type="primary"
-              block
-              onClick={onCommentSubmit}
-              disabled={!newComment.trim()}
+            <Form
+              form={form}
+              onFinish={() => onCommentSubmit(newComment)}
+              layout="vertical"
             >
-              Comment
-            </Button>
+              <Form.Item name="comment">
+                <Mentions
+                  value={newComment}
+                  onChange={onCommentChange}
+                  placeholder="Add your comment"
+                  autoSize={{ minRows: 3, maxRows: 6 }}
+                  style={{
+                    width: '100%',
+                  }}
+                  options={users?.map((u) => ({
+                    label: (
+                      <Space>
+                        <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                          {!u.avatar && `${u.firstName[0]}`}{' '}
+                        </Avatar>
+                        <span>{u.fullName}</span>
+                      </Space>
+                    ),
+                    value: `${u.fullName}`,
+                  }))}
+                />
+              </Form.Item>
+            </Form>
           </div>
         </Modal>
       </div>
