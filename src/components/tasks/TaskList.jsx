@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Breadcrumb,
   Layout,
@@ -135,6 +135,7 @@ const TaskList = ({
   const [status, setStatus] = useState(null);
   const [assignedTo, setAssignedTo] = useState(null);
   const [createdBy, setCreatedBy] = useState(null);
+  const [editorContent, setEditorContent] = useState();
 
   const { loggedInUser } = useAppContext();
 
@@ -161,8 +162,6 @@ const TaskList = ({
   const { taskCategory } = useTaskCategory();
   const { taskPriority } = useTaskPriority();
   const { users } = useUsers();
-
-  const [editorContent, setEditorContent] = useState();
 
   const handleEditorChange = (content) => {
     setEditorContent(content);
@@ -393,7 +392,7 @@ const TaskList = ({
               color={
                 text === 'Completed'
                   ? 'green'
-                  : text === 'In-Progress'
+                  : text === 'In Progress'
                   ? 'orange'
                   : 'blue'
               }
@@ -809,30 +808,28 @@ const TaskList = ({
 
               <Col xs={24} lg={6}>
                 <Row gutter={[16, 16]}>
-                  {action === 'edit' && (
-                    <Col xs={24} md={12} lg={24}>
-                      <Form.Item
-                        label="Status"
-                        name="status"
-                        rules={[
-                          { required: true, message: 'Please select a status' },
-                        ]}
-                      >
-                        <Select
-                          defaultValue=""
-                          filterOption={(input, option) =>
-                            (option?.label ?? '')
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
-                          options={taskStatus?.map((ts) => ({
-                            label: ts.name,
-                            value: ts.name,
-                          }))}
-                        />
-                      </Form.Item>
-                    </Col>
-                  )}
+                  <Col xs={24} md={12} lg={24}>
+                    <Form.Item
+                      label="Status"
+                      name="status"
+                      rules={[
+                        { required: true, message: 'Please select a status' },
+                      ]}
+                    >
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskStatus?.map((ts) => ({
+                          label: ts.name,
+                          value: ts.name,
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
@@ -996,15 +993,17 @@ const TaskList = ({
                 marginBottom: '8px',
                 minHeight: '80px',
               }}
-              // suggestions={users.map((user) => ({
-              //   label: (
-              //     <Space>
-              //       <Avatar src={user.avatar} size="small" />
-              //       <span>@{user.fullName}</span>
-              //     </Space>
-              //   ),
-              //   value: `@${user.fullName}`,
-              // }))}
+              options={users?.map((u) => ({
+                label: (
+                  <Space>
+                    <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                      {!u.avatar && `${u.firstName[0]}`}{' '}
+                    </Avatar>
+                    <span>{u.fullName}</span>
+                  </Space>
+                ),
+                value: `${u.fullName}`,
+              }))}
             />
             <Button
               type="primary"
