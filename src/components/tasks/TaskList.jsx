@@ -53,7 +53,13 @@ import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import { useUsers } from '@/hooks/useUsers';
 import moment from 'moment/moment';
-import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
+import {
+  createTask,
+  updateTask,
+  deleteTask,
+  createComment,
+  getComments,
+} from '@/services/tasks.http';
 import {
   FileImageOutlined,
   FilePdfOutlined,
@@ -441,7 +447,7 @@ const TaskList = ({
             <Button
               type="link"
               icon={<MessageSquareText size={18} />}
-              onClick={showCommentModal}
+              onClick={() => showCommentModal(record)}
             />
             {!isMyTask && (
               <>
@@ -490,60 +496,39 @@ const TaskList = ({
     },
   ];
 
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'John Doe',
-      content: 'This is a comment about the task.',
-      date: '2025-03-01 10:00 AM',
-    },
-    {
-      id: 2,
-      author: 'Jane Smith',
-      content: 'I have some updates on this task. Please review.',
-      date: '2025-03-02 11:00 AM',
-    },
-    {
-      id: 3,
-      author: 'Michael Johnson',
-      content: 'I will be working on this task tomorrow.',
-      date: '2025-03-03 09:30 AM',
-    },
-    {
-      id: 4,
-      author: 'Sarah Williams',
-      content: 'This task is progressing well, everything looks good.',
-      date: '2025-03-04 01:45 PM',
-    },
-    {
-      id: 5,
-      author: 'David Lee',
-      content: 'The task is on hold for now due to some blockers.',
-      date: '2025-03-05 03:00 PM',
-    },
-  ]);
+  const [comments, setComments] = useState([]);
 
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  const handleNewComment = (comment) => {
-    setComments([
-      ...comments,
-      {
-        id: comments.length + 1,
-        author: 'Current User',
-        content: comment,
-        date: new Date().toLocaleString(),
-      },
-    ]);
-    setNewComment('');
+  const onCommentSubmit = async (comments) => {
+    const comment = {
+      comment: comments,
+    };
+    // setComments([
+    //   ...comments,
+    //   {
+    //     id: comments.length + 1,
+    //     author: 'Current User',
+    //     content: comment,
+    //     date: new Date().toLocaleString(),
+    //   },
+    // ]);
+    try {
+      await createComment(taskId, comment);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const onCommentChange = (value) => {
     setNewComment(value);
   };
 
-  const showCommentModal = () => {
+  const showCommentModal = async (record) => {
+    const response = await getComments(record.id);
+    const data = response.data;
+    setComments(data);
     setIsCommentModalVisible(true);
   };
 
@@ -978,9 +963,11 @@ const TaskList = ({
           title="Task Comments"
           open={isCommentModalVisible}
           onCancel={hideCommentModal}
+          on
           footer={null}
           style={{ top: 20 }}
         >
+          <Divider />
           <div
             style={{
               maxHeight: '500px',
@@ -998,7 +985,6 @@ const TaskList = ({
               width: '100%',
               background: 'white',
               padding: '16px',
-              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
             }}
           >
             <Mentions
@@ -1010,19 +996,23 @@ const TaskList = ({
                 marginBottom: '8px',
                 minHeight: '80px',
               }}
-              suggestions={[
-                { label: '@John Doe', value: '@John Doe' },
-                { label: '@Jane Smith', value: '@Jane Smith' },
-                { label: '@Michael Johnson', value: '@Michael Johnson' },
-              ]}
+              // suggestions={users.map((user) => ({
+              //   label: (
+              //     <Space>
+              //       <Avatar src={user.avatar} size="small" />
+              //       <span>@{user.fullName}</span>
+              //     </Space>
+              //   ),
+              //   value: `@${user.fullName}`,
+              // }))}
             />
             <Button
               type="primary"
               block
-              onClick={() => handleNewComment(newComment)}
+              onClick={onCommentSubmit}
               disabled={!newComment.trim()}
             >
-              Submit Comment
+              Comment
             </Button>
           </div>
         </Modal>
