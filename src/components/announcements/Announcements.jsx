@@ -211,7 +211,7 @@ const Announcements = () => {
           open={isModalVisible}
           onCancel={closeModal}
           onOk={closeModal}
-          width={shareToEveryone ? 700 : 1200}
+          width={shareToEveryone ? 500 : 1000}
           footer={
             <>
               {/* <Divider /> */}
