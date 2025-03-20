@@ -387,7 +387,7 @@ const TaskList = ({
               color={
                 text === 'Completed'
                   ? 'green'
-                  : text === 'In Progress'
+                  : text === 'In-Progress'
                   ? 'orange'
                   : 'blue'
               }
@@ -824,26 +824,38 @@ const TaskList = ({
 
               <Col xs={24} lg={6}>
                 <Row gutter={[16, 16]}>
-                  <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Status" name="status">
-                      <Select
-                        defaultValue=""
-                        filterOption={(input, option) =>
-                          (option?.label ?? '')
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        options={taskStatus?.map((ts) => ({
-                          label: ts.name,
-                          value: ts.name,
-                        }))}
-                      />
-                    </Form.Item>
-                  </Col>
+                  {action === 'edit' && (
+                    <Col xs={24} md={12} lg={24}>
+                      <Form.Item
+                        label="Status"
+                        name="status"
+                        rules={[
+                          { required: true, message: 'Please select a status' },
+                        ]}
+                      >
+                        <Select
+                          defaultValue=""
+                          filterOption={(input, option) =>
+                            (option?.label ?? '')
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          options={taskStatus?.map((ts) => ({
+                            label: ts.name,
+                            value: ts.name,
+                          }))}
+                        />
+                      </Form.Item>
+                    </Col>
+                  )}
+
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
                       label={isMyTask ? 'Assign yourself' : 'Assign to'}
                       name="assignedTo"
+                      rules={[
+                        { required: true, message: 'Please select a user' },
+                      ]}
                     >
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
@@ -877,7 +889,13 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Due date" name="dueDate">
+                    <Form.Item
+                      label="Due date"
+                      name="dueDate"
+                      rules={[
+                        { required: true, message: 'Please select a due date' },
+                      ]}
+                    >
                       <DatePicker
                         presets={dateRanges}
                         style={{ width: '100%' }}
@@ -887,7 +905,13 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Category" name="category">
+                    <Form.Item
+                      label="Category"
+                      name="category"
+                      rules={[
+                        { required: true, message: 'Please select a category' },
+                      ]}
+                    >
                       <Select
                         defaultValue=""
                         filterOption={(input, option) =>
@@ -904,7 +928,13 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Priority" name="priority">
+                    <Form.Item
+                      label="Priority"
+                      name="priority"
+                      rules={[
+                        { required: true, message: 'Please select a priority' },
+                      ]}
+                    >
                       <Select
                         defaultValue=""
                         filterOption={(input, option) =>
