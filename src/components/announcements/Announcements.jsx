@@ -125,6 +125,7 @@ const Announcements = () => {
       isLeaf: true,
     },
   ]);
+
   const genTreeNode = (parentId, isLeaf = false) => {
     const random = Math.random().toString(36).substring(2, 6);
     return {
@@ -135,6 +136,7 @@ const Announcements = () => {
       isLeaf,
     };
   };
+
   const onLoadData = ({ id }) =>
     new Promise((resolve) => {
       setTimeout(() => {
@@ -148,9 +150,11 @@ const Announcements = () => {
         resolve(undefined);
       }, 300);
     });
+
   const onChange = (newValue) => {
     setValue(newValue);
   };
+
   const openModal = () => {
     setIsModalVisible(true);
   };
@@ -207,9 +211,10 @@ const Announcements = () => {
           open={isModalVisible}
           onCancel={closeModal}
           onOk={closeModal}
+          width={shareToEveryone ? 700 : 1200}
           footer={
             <>
-              <Divider />
+              {/* <Divider /> */}
               <Button className="mr-2" onClick={closeModal}>
                 Cancel
               </Button>
@@ -220,85 +225,124 @@ const Announcements = () => {
           }
         >
           <Form form={form} onFinish={closeModal} layout="vertical">
-            <Row gutter={24}>
-              <Col xs={24}>
-                <Form.Item
-                  label="Title"
-                  name="title"
-                  rules={[{ required: true, message: 'Please enter a title' }]}
-                >
-                  <Input placeholder="Enter task title" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col xs={24}>
-                <Form.Item label="Select Documents" name="description">
-                  <TreeSelect
-                    treeDataSimpleMode
-                    style={{
-                      width: '100%',
-                    }}
-                    value={value}
-                    dropdownStyle={{
-                      maxHeight: 400,
-                      overflow: 'auto',
-                    }}
-                    placeholder="Please select"
-                    onChange={onChange}
-                    loadData={onLoadData}
-                    treeData={treeData}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col xs={24}>
-                <Form.Item
-                  label="Description"
-                  name="description"
-                  rules={[
-                    { required: true, message: 'Please enter a description' },
-                  ]}
-                >
-                  <Input.TextArea
-                    placeholder="Enter the description"
-                    style={{ height: 100 }}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={24}>
-              <Col xs={12}>
-                <Form.Item label="Due Date" name="dueDate">
-                  <DatePicker style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col xs={12}>
-                <Form.Item label="Share to Everyone" name="everyone">
-                  <Switch
-                    defaultChecked
-                    onChange={(checked) => setShareToEveryone(checked)}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <div className={shareToEveryone ? '' : 'grid grid-cols-2 gap-4'}>
+              <div>
+                <Row gutter={24}>
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Title"
+                      name="title"
+                      rules={[
+                        { required: true, message: 'Please enter a title' },
+                      ]}
+                    >
+                      <Input placeholder="Enter task title" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Select Documents"
+                      name="selectedDocuments"
+                    >
+                      <TreeSelect
+                        treeDataSimpleMode
+                        style={{ width: '100%' }}
+                        value={value}
+                        dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                        placeholder="Please select"
+                        onChange={onChange}
+                        loadData={onLoadData}
+                        treeData={treeData}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Description"
+                      name="description"
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please enter a description',
+                        },
+                      ]}
+                    >
+                      <Input.TextArea
+                        placeholder="Enter the description"
+                        style={{ height: 100 }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={12}>
+                    <Form.Item label="Due Date" name="dueDate">
+                      <DatePicker style={{ width: '100%' }} />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={12}>
+                    <Form.Item label="Share to Everyone" name="everyone">
+                      <Switch
+                        defaultChecked
+                        onChange={(checked) => setShareToEveryone(checked)}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </div>
 
-            <Row gutter={24}>
-              <Col xs={12}>
-                <Form.Item label="Assign to" name="assignTo">
-                  <Select
-                    mode="multiple"
-                    style={{ width: '100%' }}
-                    placeholder="Please select"
-                  >
-                    <Select.Option value="1">Alice</Select.Option>
-                    <Select.Option value="2">Bob</Select.Option>
-                    <Select.Option value="3">Charlie</Select.Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
+              {!shareToEveryone && (
+                <>
+                  <div className="pl-4 border-l border-gray-200">
+                    <Row gutter={24}>
+                      <Col xs={24}>
+                        <Form.Item label="Share with Users" name="shareUsers">
+                          <Select mode="multiple" placeholder="Select users">
+                            <Select.Option value="pakLee">
+                              Pak Lee
+                            </Select.Option>
+                            <Select.Option value="alice">Alice</Select.Option>
+                            <Select.Option value="bob">Bob</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={24}>
+                      <Col xs={24}>
+                        <Form.Item label="Share with Groups" name="shareGroups">
+                          <Select mode="multiple" placeholder="Select groups">
+                            <Select.Option value="admins">Admins</Select.Option>
+                            <Select.Option value="developers">
+                              Developers
+                            </Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={24}>
+                      <Col xs={24}>
+                        <Form.Item
+                          label="Black List (Don't share with users)"
+                          name="blackList"
+                        >
+                          <Select
+                            mode="multiple"
+                            placeholder="Select users to exclude"
+                          >
+                            <Select.Option value="user1">User 1</Select.Option>
+                            <Select.Option value="user2">User 2</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </div>
+                </>
+              )}
+            </div>
           </Form>
         </Modal>
       </div>
