@@ -326,8 +326,24 @@ const Announcements = () => {
                     <Row gutter={24}>
                       <Col xs={24}>
                         <Form.Item
-                          label="Black List (Don't share with users)"
-                          name="blackList"
+                          label="User Black List (Don't share with users)"
+                          name="userBlackList"
+                        >
+                          <Select
+                            mode="multiple"
+                            placeholder="Select users to exclude"
+                          >
+                            <Select.Option value="user1">User 1</Select.Option>
+                            <Select.Option value="user2">User 2</Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Row gutter={24}>
+                      <Col xs={24}>
+                        <Form.Item
+                          label="Group Black List (Don't share with these groups)"
+                          name="groupBlackList"
                         >
                           <Select
                             mode="multiple"
