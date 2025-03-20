@@ -20,11 +20,62 @@ import {
   Switch,
   Avatar,
   TreeSelect,
+  Tag,
 } from 'antd';
 import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 import { useState } from 'react';
+
+const tagRender = (props) => {
+  const { label, closable, onClose } = props;
+  const firstLetter = label?.[0]?.toUpperCase() || '';
+
+  return (
+    <span
+      style={{ marginRight: 3, display: 'inline-flex', alignItems: 'center' }}
+    >
+      <Avatar
+        size={20}
+        style={{
+          marginRight: 5,
+          backgroundColor: '#1890ff',
+          color: '#fff',
+          fontSize: 12,
+        }}
+      >
+        {firstLetter}
+      </Avatar>
+      {label}
+      {closable && (
+        <span style={{ marginLeft: 4, cursor: 'pointer' }} onClick={onClose}>
+          ×
+        </span>
+      )}
+    </span>
+  );
+};
+const optionRender = (option) => {
+  const label = option.data.children; // Get the actual label text
+  const firstLetter = typeof label === 'string' ? label[0]?.toUpperCase() : '';
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Avatar
+        size={20}
+        style={{
+          marginRight: 8,
+          backgroundColor: '#1890ff',
+          color: '#fff',
+          fontSize: 12,
+        }}
+      >
+        {firstLetter}
+      </Avatar>
+      {label}
+    </div>
+  );
+};
 
 const columns = [
   {
@@ -339,22 +390,26 @@ const Announcements = () => {
                         </Form.Item>
                       </Col>
                     </Row>
-                    <Row gutter={24}>
-                      <Col xs={24}>
-                        <Form.Item
-                          label="Group Black List (Don't share with these groups)"
-                          name="groupBlackList"
-                        >
-                          <Select
-                            mode="multiple"
-                            placeholder="Select group to exclude"
-                          >
-                            <Select.Option value="user1">Group 1</Select.Option>
-                            <Select.Option value="user2">Group 2</Select.Option>
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
+                   <Row gutter={24}>
+  <Col xs={24}>
+    <Form.Item
+      label="Group Black List (Don't share with these groups)"
+      name="groupBlackList"
+    >
+      <Select
+        mode="multiple"
+        placeholder="Select group to exclude"
+        tagRender={tagRender}
+        optionRender={optionRender}
+      >
+        <Select.Option value="user1">Group 1</Select.Option>
+        <Select.Option value="user2">Group 2</Select.Option>
+        <Select.Option value="user3">Marketing Team</Select.Option>
+        <Select.Option value="user4">Sales Department</Select.Option>
+      </Select>
+    </Form.Item>
+  </Col>
+</Row>
                   </div>
                 </>
               )}
