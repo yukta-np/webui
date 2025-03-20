@@ -347,10 +347,10 @@ const Announcements = () => {
                         >
                           <Select
                             mode="multiple"
-                            placeholder="Select users to exclude"
+                            placeholder="Select group to exclude"
                           >
-                            <Select.Option value="user1">User 1</Select.Option>
-                            <Select.Option value="user2">User 2</Select.Option>
+                            <Select.Option value="user1">Group 1</Select.Option>
+                            <Select.Option value="user2">Group 2</Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
