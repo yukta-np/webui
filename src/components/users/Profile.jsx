@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Layout,
   Breadcrumb,
@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import { Camera, Mail, MapPin } from 'lucide-react';
 import { useAppContext } from '@/app-context';
+import { useMe } from '@/hooks/useMe';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -27,17 +28,23 @@ const Profile = () => {
   } = theme.useToken();
 
   const [form] = Form.useForm();
-  const fetchSelfUser = async () => {
-    try {
-      const { data } = await axios.get(`${constants.urls.users}/me`, {
-        headers,
+  const { me } = useMe();
+  console.log(me);
+
+  useEffect(() => {
+    if (me) {
+      form.setFieldsValue({
+        firstName: me.firstName || '',
+        middleName: me.middleName || '',
+        lastName: me.lastName || '',
+        phoneNumber: me.phoneNumber || '',
+        email: me.email || '',
+        address1: me.address1 || '',
+        address2: me.address2 || '',
+        mobileNumber: me.mobileNumber || '',
       });
-      console.log(data);
-    } catch (error) {
-      console.log(error);
     }
-  };
-  fetchSelfUser();
+  }, [me, form]);
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
@@ -64,13 +71,11 @@ const Profile = () => {
         <div className="p-4">
           <Row>
             <Avatar
-              style={{
-                backgroundColor: '#fde3cf',
-                color: '#f56a00',
-              }}
+              src={me?.avatarUrl}
+              style={{ backgroundColor: '#87d068' }}
               size={80}
             >
-              A
+              {!me?.avatarUrl && me?.firstName?.toUpperCase()[0]}
             </Avatar>
             <div className="ml-3 mt-8">
               <Upload>
@@ -82,7 +87,7 @@ const Profile = () => {
           </Row>
         </div>
         <Space className="p-4">
-          <Form layout="vertical">
+          <Form layout="vertical" form={form}>
             <Row gutter={24}>
               <Col xs={24} sm={12}>
                 <Form.Item
@@ -97,7 +102,7 @@ const Profile = () => {
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item label="Middle Name" name="middleName">
-                  <Input placeholder="Enter your middle name" />
+                  <Input />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
@@ -123,10 +128,7 @@ const Profile = () => {
                     { type: 'email', message: 'Please enter a valid email' },
                   ]}
                 >
-                  <Input
-                    prefix={<Mail size={18} />}
-                    placeholder="Enter your email"
-                  />
+                  <Input disabled prefix={<Mail size={18} />} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
