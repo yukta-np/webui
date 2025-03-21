@@ -598,17 +598,21 @@ const TaskList = ({
               onChange={(values) => filterByCreator(values)}
             >
               {users?.map((u) => (
-                <Option key={u.id} value={`${u.id} `} label={`${u.fullName} `}>
+                <Option
+                  key={u?.id}
+                  value={`${u?.id} `}
+                  label={`${u?.fullName} `}
+                >
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                     }}
                   >
-                    <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                      {!u.avatar && `${u.firstName[0]}`}{' '}
+                    <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                      {!u?.avatar && `${u?.firstName[0]}`}{' '}
                     </Avatar>
-                    <span>{`${u.fullName} `}</span>
+                    <span>{`${u?.fullName} `}</span>
                   </div>
                 </Option>
               ))}
@@ -632,9 +636,9 @@ const TaskList = ({
               >
                 {users?.map((u) => (
                   <Option
-                    key={u.id}
-                    value={`${u.id} `}
-                    label={`${u.fullName} `}
+                    key={u?.id}
+                    value={`${u?.id} `}
+                    label={`${u?.fullName} `}
                   >
                     <div
                       style={{
@@ -642,10 +646,10 @@ const TaskList = ({
                         alignItems: 'center',
                       }}
                     >
-                      <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                        {!u.avatar && `${u.firstName[0]}`}{' '}
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {!u?.avatar && `${u?.firstName[0]}`}{' '}
                       </Avatar>
-                      <span>{`${u.fullName} `}</span>
+                      <span>{`${u?.fullName} `}</span>
                     </div>
                   </Option>
                 ))}
@@ -666,8 +670,8 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={taskStatus?.map((ts) => ({
-                label: ts.name,
-                value: ts.name,
+                label: ts?.name,
+                value: ts?.name,
               }))}
               onChange={(value) => filterByStatus(value)}
             />
@@ -832,8 +836,8 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskStatus?.map((ts) => ({
-                          label: ts.name,
-                          value: ts.name,
+                          label: ts?.name,
+                          value: ts?.name,
                         }))}
                       />
                     </Form.Item>
@@ -853,9 +857,9 @@ const TaskList = ({
                         <Select optionLabelProp="label">
                           {users?.map((u) => (
                             <Option
-                              key={u.id}
-                              value={u.id}
-                              label={`${u.fullName}`}
+                              key={u?.id}
+                              value={u?.id}
+                              label={`${u?.fullName}`}
                             >
                               <div
                                 style={{
@@ -864,12 +868,12 @@ const TaskList = ({
                                 }}
                               >
                                 <Avatar
-                                  src={u.avatar}
+                                  src={u?.avatar}
                                   style={{ marginRight: 8 }}
                                 >
-                                  {!u.avatar && `${u.firstName[0]}`}{' '}
+                                  {!u?.avatar && `${u?.firstName[0]}`}{' '}
                                 </Avatar>
-                                <span>{`${u.fullName} `}</span>
+                                <span>{`${u?.fullName} `}</span>
                               </div>
                             </Option>
                           ))}
@@ -910,8 +914,8 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskCategory?.map((tc) => ({
-                          label: tc.name,
-                          value: tc.name,
+                          label: tc?.name,
+                          value: tc?.name,
                         }))}
                       />
                     </Form.Item>
@@ -933,8 +937,8 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskPriority?.map((tp) => ({
-                          label: tp.name,
-                          value: tp.name,
+                          label: tp?.name,
+                          value: tp?.name,
                         }))}
                       />
                     </Form.Item>
@@ -1019,13 +1023,13 @@ const TaskList = ({
                   options={users?.map((u) => ({
                     label: (
                       <Space>
-                        <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                          {!u.avatar && `${u.firstName[0]}`}{' '}
+                        <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                          {!u?.avatar && `${u?.firstName[0]}`}{' '}
                         </Avatar>
-                        <span>{u.fullName}</span>
+                        <span>{u?.fullName}</span>
                       </Space>
                     ),
-                    value: `${u.fullName}`,
+                    value: `${u?.fullName}`,
                   }))}
                 />
               </Form.Item>
