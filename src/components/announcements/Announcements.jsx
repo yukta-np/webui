@@ -423,14 +423,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">Group 1</Select.Option>
-                            <Select.Option value="user2">Group 2</Select.Option>
-                            <Select.Option value="user3">
-                              Marketing Team
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              Sales Department
-                            </Select.Option>
+                            {groups?.map((group) => (
+                              <Select.Option key={group.id} value={group.id}>
+                                {group.name}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
@@ -447,14 +444,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">User 1</Select.Option>
-                            <Select.Option value="user2">User 2</Select.Option>
-                            <Select.Option value="user3">
-                              Dip Ojha
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              John Doe
-                            </Select.Option>
+                            {users?.map((user) => (
+                              <Select.Option key={user.id} value={user.id}>
+                                {user.fullName}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
@@ -471,14 +465,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">Group 1</Select.Option>
-                            <Select.Option value="user2">Group 2</Select.Option>
-                            <Select.Option value="user3">
-                              Marketing Team
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              Sales Department
-                            </Select.Option>
+                            {groups?.map((group) => (
+                              <Select.Option key={group.id} value={group.id}>
+                                {group.name}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>

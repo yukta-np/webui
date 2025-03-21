@@ -9,7 +9,7 @@ export function useGroups(params) {
       return new URLSearchParams(params).toString();
    }, [params]);
 
-   const URL = constants.urls.groupsUrl;
+   const URL = constants.urls.groupUrl;
    const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
    const { disableAutoRefetch } = params || {};
@@ -25,7 +25,7 @@ export function useGroups(params) {
    const revalidate = () => mutate(fullUrl);
 
    return {
-      groups: responseData?.data,
+      groups: responseData,
       meta: responseData?.meta,
       isLoading: isValidating,
       isError: error,
