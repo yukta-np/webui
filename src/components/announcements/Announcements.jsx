@@ -23,9 +23,20 @@ import {
   Tag,
 } from 'antd';
 import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
+import { useAnnouncement } from '@/hooks/useAnnouncement';
+import { useGroups } from '@/hooks/useGroup';
+import { useUsers } from '@/hooks/useUsers';
+import { constants } from '@/constants';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 import { useState } from 'react';
+
+
+// let params = {
+//   disableAutoRefetch: true,
+// };
+
+
 
 const tagRender = (props) => {
   const { label, closable, onClose } = props;
@@ -113,9 +124,7 @@ const columns = [
         <Popconfirm
           title="Delete the task"
           description="Are you sure to delete this task?"
-          okText="Yes"
-          cancelText="No"
-          onConfirm={() => onDeleteClick(record)}
+          onConfirm={() => handleDelete(record.id)}
         >
           <Button type="link" icon={<Trash2Icon stroke="red" size={18} />} />
         </Popconfirm>
@@ -176,6 +185,31 @@ const Announcements = () => {
       isLeaf: true,
     },
   ]);
+
+  const {
+    announcements,
+    isLoading: announcementsLoading,
+    isError: announcementsError,
+    revalidate: revalidateAnnouncements,
+  } = useAnnouncement({
+    disableAutoRefetch: true,
+  });
+
+  // Fetch groups and users for select options
+  const { groups, isLoading: groupsLoading } = useGroups();
+  const { users, isLoading: usersLoading } = useUsers();
+
+  // Delete handler using your existing API setup
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`${constants.urls.announcementUrl}/${id}`, {
+        method: 'DELETE',
+      });
+      revalidateAnnouncements();
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+  };
 
   const genTreeNode = (parentId, isLeaf = false) => {
     const random = Math.random().toString(36).substring(2, 6);
@@ -351,24 +385,19 @@ const Announcements = () => {
                   <div className="pl-4 border-l border-gray-200">
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item
-                          label="Share with Users"
-                          name="shareUsers"
-                        >
+                        <Form.Item label="Share with Users" name="shareUsers">
                           <Select
                             mode="multiple"
                             placeholder="Select user to exclude"
                             tagRender={tagRender}
                             optionRender={optionRender}
+                            loading={usersLoading}
                           >
-                            <Select.Option value="user1">User 1</Select.Option>
-                            <Select.Option value="user2">User 2</Select.Option>
-                            <Select.Option value="user3">
-                              Dip Ojha
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              John Doe
-                            </Select.Option>
+                            {users?.map((user) => (
+                              <Select.Option key={user.id} value={user.id}>
+                                {user.fullName}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
