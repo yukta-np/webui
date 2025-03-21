@@ -27,6 +27,6 @@ export async function updateComment(id) {
   return axios.patch(`${URL}/${id}/comment`, { headers });
 }
 
-export async function deleteComment(id) {
-  return axios.delete(`${URL}/${id}/comment`, { headers });
+export async function deleteComment(id, commentId) {
+  return axios.delete(`${URL}/${id}/comment/${commentId}`, { headers });
 }

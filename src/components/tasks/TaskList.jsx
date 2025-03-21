@@ -982,7 +982,7 @@ const TaskList = ({
               paddingBottom: '80px',
             }}
           >
-            <CommentSection comments={comments} />
+            <CommentSection comments={comments} taskId={currentTaskId} />
           </div>
 
           <div
