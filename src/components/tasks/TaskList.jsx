@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Breadcrumb,
   Layout,
@@ -33,6 +33,7 @@ import {
   FileImage,
   MessageSquareText,
   FilePenLine,
+  CloudHail,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -53,18 +54,24 @@ import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import { useUsers } from '@/hooks/useUsers';
 import moment from 'moment/moment';
-import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
+import {
+  createTask,
+  updateTask,
+  deleteTask,
+  createComment,
+  getComments,
+} from '@/services/tasks.http';
 import {
   FileImageOutlined,
   FilePdfOutlined,
-  VideoCameraOutlined, // ✅ Use this for videos
+  VideoCameraOutlined,
   FileTextOutlined,
   FileOutlined,
 } from '@ant-design/icons';
 import { useAppContext } from '@/app-context';
 
 const getFileIcon = (fileName) => {
-  const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
+  const ext = fileName.split('.').pop().toLowerCase();
 
   switch (ext) {
     case 'jpg':
@@ -74,22 +81,22 @@ const getFileIcon = (fileName) => {
     case 'svg':
       return (
         <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-      ); // Blue for images
+      );
     case 'pdf':
-      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />; // Red for PDFs
+      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
     case 'mp4':
     case 'mkv':
     case 'avi':
     case 'mov':
       return (
         <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
-      ); // ✅ Yellow for videos
+      );
     case 'txt':
     case 'doc':
     case 'docx':
       return (
         <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
-      ); // Green for text files
+      );
     default:
       return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
   }
@@ -129,6 +136,11 @@ const TaskList = ({
   const [status, setStatus] = useState(null);
   const [assignedTo, setAssignedTo] = useState(null);
   const [createdBy, setCreatedBy] = useState(null);
+  const [editorContent, setEditorContent] = useState();
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState([]);
+  const [currentTaskId, setCurrentTaskId] = useState(null);
 
   const { loggedInUser } = useAppContext();
 
@@ -146,6 +158,14 @@ const TaskList = ({
     params.assignedTo = assignedTo;
   }
 
+  if (isMyTask) {
+    params.assignedTo = loggedInUser?.userId;
+  }
+
+  if (isMyTeamTask) {
+    params.createdBy = loggedInUser?.userId;
+  }
+
   const {
     taskList: tasks,
     revalidate: tasksRevalidate,
@@ -155,8 +175,6 @@ const TaskList = ({
   const { taskCategory } = useTaskCategory();
   const { taskPriority } = useTaskPriority();
   const { users } = useUsers();
-
-  const [editorContent, setEditorContent] = useState();
 
   const handleEditorChange = (content) => {
     setEditorContent(content);
@@ -387,7 +405,7 @@ const TaskList = ({
               color={
                 text === 'Completed'
                   ? 'green'
-                  : text === 'In-Progress'
+                  : text === 'In Progress'
                   ? 'orange'
                   : 'blue'
               }
@@ -441,7 +459,7 @@ const TaskList = ({
             <Button
               type="link"
               icon={<MessageSquareText size={18} />}
-              onClick={showCommentModal}
+              onClick={() => showCommentModal(record)}
             />
             {!isMyTask && (
               <>
@@ -490,65 +508,39 @@ const TaskList = ({
     },
   ];
 
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'John Doe',
-      content: 'This is a comment about the task.',
-      date: '2025-03-01 10:00 AM',
-    },
-    {
-      id: 2,
-      author: 'Jane Smith',
-      content: 'I have some updates on this task. Please review.',
-      date: '2025-03-02 11:00 AM',
-    },
-    {
-      id: 3,
-      author: 'Michael Johnson',
-      content: 'I will be working on this task tomorrow.',
-      date: '2025-03-03 09:30 AM',
-    },
-    {
-      id: 4,
-      author: 'Sarah Williams',
-      content: 'This task is progressing well, everything looks good.',
-      date: '2025-03-04 01:45 PM',
-    },
-    {
-      id: 5,
-      author: 'David Lee',
-      content: 'The task is on hold for now due to some blockers.',
-      date: '2025-03-05 03:00 PM',
-    },
-  ]);
+  const showCommentModal = async (record) => {
+    setCurrentTaskId(record.id);
+    const response = await getComments(record.id);
+    const data = response.data;
+    setComments(data);
+    setIsCommentModalVisible(true);
+  };
 
-  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [newComment, setNewComment] = useState('');
-
-  const handleNewComment = (comment) => {
-    setComments([
-      ...comments,
-      {
-        id: comments.length + 1,
-        author: 'Current User',
-        content: comment,
-        date: new Date().toLocaleString(),
-      },
-    ]);
-    setNewComment('');
+  const onCommentSubmit = async (newComment) => {
+    setIsProcessing(true);
+    const comment = {
+      comment: newComment,
+    };
+    try {
+      await createComment(currentTaskId, comment);
+      const response = await getComments(currentTaskId);
+      setComments(response.data);
+      setNewComment('');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      form.resetFields();
+    }
   };
 
   const onCommentChange = (value) => {
     setNewComment(value);
   };
 
-  const showCommentModal = () => {
-    setIsCommentModalVisible(true);
-  };
-
   const hideCommentModal = () => {
     setIsCommentModalVisible(false);
+    form.resetFields();
   };
 
   return (
@@ -824,30 +816,28 @@ const TaskList = ({
 
               <Col xs={24} lg={6}>
                 <Row gutter={[16, 16]}>
-                  {action === 'edit' && (
-                    <Col xs={24} md={12} lg={24}>
-                      <Form.Item
-                        label="Status"
-                        name="status"
-                        rules={[
-                          { required: true, message: 'Please select a status' },
-                        ]}
-                      >
-                        <Select
-                          defaultValue=""
-                          filterOption={(input, option) =>
-                            (option?.label ?? '')
-                              .toLowerCase()
-                              .includes(input.toLowerCase())
-                          }
-                          options={taskStatus?.map((ts) => ({
-                            label: ts.name,
-                            value: ts.name,
-                          }))}
-                        />
-                      </Form.Item>
-                    </Col>
-                  )}
+                  <Col xs={24} md={12} lg={24}>
+                    <Form.Item
+                      label="Status"
+                      name="status"
+                      rules={[
+                        { required: true, message: 'Please select a status' },
+                      ]}
+                    >
+                      <Select
+                        defaultValue=""
+                        filterOption={(input, option) =>
+                          (option?.label ?? '')
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        options={taskStatus?.map((ts) => ({
+                          label: ts.name,
+                          value: ts.name,
+                        }))}
+                      />
+                    </Form.Item>
+                  </Col>
 
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
@@ -978,9 +968,21 @@ const TaskList = ({
           title="Task Comments"
           open={isCommentModalVisible}
           onCancel={hideCommentModal}
-          footer={null}
+          on
+          footer={
+            <>
+              <Divider />
+              <Button className="mr-2" onClick={hideCommentModal}>
+                Cancel
+              </Button>
+              <Button type="primary" onClick={() => form.submit()}>
+                Comment
+              </Button>
+            </>
+          }
           style={{ top: 20 }}
         >
+          <Divider />
           <div
             style={{
               maxHeight: '500px',
@@ -988,7 +990,7 @@ const TaskList = ({
               paddingBottom: '80px',
             }}
           >
-            <CommentSection comments={comments} />
+            <CommentSection comments={comments} taskId={currentTaskId} />
           </div>
 
           <div
@@ -998,32 +1000,36 @@ const TaskList = ({
               width: '100%',
               background: 'white',
               padding: '16px',
-              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
             }}
           >
-            <Mentions
-              value={newComment}
-              onChange={onCommentChange}
-              placeholder="Add your comment"
-              style={{
-                width: '100%',
-                marginBottom: '8px',
-                minHeight: '80px',
-              }}
-              suggestions={[
-                { label: '@John Doe', value: '@John Doe' },
-                { label: '@Jane Smith', value: '@Jane Smith' },
-                { label: '@Michael Johnson', value: '@Michael Johnson' },
-              ]}
-            />
-            <Button
-              type="primary"
-              block
-              onClick={() => handleNewComment(newComment)}
-              disabled={!newComment.trim()}
+            <Form
+              form={form}
+              onFinish={() => onCommentSubmit(newComment)}
+              layout="vertical"
             >
-              Submit Comment
-            </Button>
+              <Form.Item name="comment">
+                <Mentions
+                  value={newComment}
+                  onChange={onCommentChange}
+                  placeholder="Add your comment"
+                  autoSize={{ minRows: 3, maxRows: 6 }}
+                  style={{
+                    width: '100%',
+                  }}
+                  options={users?.map((u) => ({
+                    label: (
+                      <Space>
+                        <Avatar src={u.avatar} style={{ marginRight: 8 }}>
+                          {!u.avatar && `${u.firstName[0]}`}{' '}
+                        </Avatar>
+                        <span>{u.fullName}</span>
+                      </Space>
+                    ),
+                    value: `${u.fullName}`,
+                  }))}
+                />
+              </Form.Item>
+            </Form>
           </div>
         </Modal>
       </div>
