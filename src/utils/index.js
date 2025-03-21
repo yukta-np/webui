@@ -172,3 +172,79 @@ export const dateRanges = {
   'This Month': [moment().startOf('month'), moment().endOf('month')],
   'This Year': [moment().startOf('year'), moment().endOf('year')],
 };
+
+
+/** Miscellanios */
+
+export function humanize(string) {
+  return string
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .replace(/^./, (str) => str.toUpperCase());
+}
+
+export function unflatten(data) {
+  var result = {};
+  for (var i in data) {
+    var keys = i.split('.');
+    keys.reduce(function (r, e, j) {
+      return (
+        r[e] ||
+        (r[e] = isNaN(Number(keys[j + 1]))
+          ? keys.length - 1 == j
+            ? data[i]
+            : {}
+          : [])
+      );
+    }, result);
+  }
+  return result;
+}
+
+export function flatten(oldObject) {
+  const newObject = {};
+
+  flattenHelper(oldObject, newObject, '');
+
+  return newObject;
+
+  function flattenHelper(currentObject, newObject, previousKeyName) {
+    for (let key in currentObject) {
+      let value = currentObject[key];
+
+      if (value.constructor !== Object) {
+        if (previousKeyName == null || previousKeyName == '') {
+          newObject[key] = value;
+        } else {
+          if (key == null || key == '') {
+            newObject[previousKeyName] = value;
+          } else {
+            newObject[previousKeyName + '.' + key] = value;
+          }
+        }
+      } else {
+        if (previousKeyName == null || previousKeyName == '') {
+          flattenHelper(value, newObject, key);
+        } else {
+          flattenHelper(value, newObject, previousKeyName + '.' + key);
+        }
+      }
+    }
+  }
+}
+
+export const Roles = {
+  // SYSTEM ADMIN
+  SYSADMIN: 'SYSADMIN',
+
+  // ACADEMIC STAFF
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  TEACHER: 'TEACHER',
+  STAFF: 'STAFF',
+
+  // STUDENT
+  PARENT: 'PARENT',
+  STUDENT: 'STUDENT',
+};
