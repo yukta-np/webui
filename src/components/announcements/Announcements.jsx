@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table,
   Space,
@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Popover,
   Modal,
-  Divider,
   Form,
   Row,
   Col,
@@ -20,19 +19,18 @@ import {
   Switch,
   Avatar,
   TreeSelect,
-  Tag,
 } from 'antd';
 import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useGroups } from '@/hooks/useGroup';
 import { useUsers } from '@/hooks/useUsers';
 import { constants, headers } from '@/constants';
-const { Content } = Layout;
-const { useBreakpoint } = Grid;
-import { useState } from 'react';
 import { openNotification } from '@/utils';
 import axios from 'axios';
 import moment from 'moment';
+
+const { Content } = Layout;
+const { useBreakpoint } = Grid;
 
 const tagRender = (props) => {
   const { label, closable, onClose } = props;
@@ -62,8 +60,9 @@ const tagRender = (props) => {
     </span>
   );
 };
+
 const optionRender = (option) => {
-  const label = option.data.children; // Get the actual label text
+  const label = option.data.children;
   const firstLetter = typeof label === 'string' ? label[0]?.toUpperCase() : '';
 
   return (
@@ -84,54 +83,6 @@ const optionRender = (option) => {
   );
 };
 
-const columns = [
-  {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
-    width: '8%',
-    render: (text, record) => <a className="text-blue-600">ANC-{text}</a>,
-  },
-  {
-    title: 'Title',
-    dataIndex: 'title',
-    key: 'title',
-  },
-  {
-    title: 'Created By',
-    dataIndex: 'createdBy',
-    key: 'createdBy',
-    render: (text, record) =>
-      record.creator ? `${record.creator?.fullName}` : 'N/A',
-  },
-  {
-    title: 'Due Date',
-    dataIndex: 'dueDate',
-    key: 'dueDate',
-    render: (text) => moment(text).format('DD/MM/YYYY hh:mm a'),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    width: '10%',
-    render: (_, record) => (
-      <Space size="middle">
-        <Popover content={`Acknowledge by `} trigger="hover">
-          <Button type="link" icon={<Handshake size={18} />} />
-        </Popover>
-        <Button type="link" icon={<FilePenLine size={18} />} />
-        <Popconfirm
-          title="Delete the task"
-          description="Are you sure to delete this task?"
-          onConfirm={() => handleDelete(record.id)}
-        >
-          <Button type="link" icon={<Trash2Icon stroke="red" size={18} />} />
-        </Popconfirm>
-      </Space>
-    ),
-  },
-];
-
 const Announcements = () => {
   const screens = useBreakpoint();
   const { colorBgContainer, borderRadiusLG } = theme.useToken();
@@ -144,49 +95,57 @@ const Announcements = () => {
   const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
   const [treeData, setTreeData] = useState([
     {
-      id: 1,
-      pId: 0,
+      id: '1',
+      pId: null,
       value: '1',
       title: 'Expand to load',
     },
-    {
-      id: 2,
-      pId: 0,
-      value: '2',
-      title: 'Expand to load',
-    },
-    {
-      id: 3,
-      pId: 0,
-      value: '3',
-      title: 'Tree Node',
-      isLeaf: true,
-    },
   ]);
-
-  const announcementUrl = constants.urls.announcementUrl;
 
   const {
     announcements,
     isLoading: announcementsLoading,
-    isError: announcementsError,
     revalidate: revalidateAnnouncements,
-  } = useAnnouncement({
-    disableAutoRefetch: true,
-  });
+  } = useAnnouncement();
 
-  // Fetch groups and users for select options
   const { groups, isLoading: groupsLoading } = useGroups();
   const { users, isLoading: usersLoading } = useUsers();
 
-  // Delete handler using your existing API setup
+  useEffect(() => {
+    if (!shareToEveryone) {
+      form.setFieldsValue({
+        shareUsers: [],
+        shareGroups: [],
+        userBlackList: [],
+        groupBlackList: [],
+      });
+    }
+  }, [shareToEveryone, form]);
+
+  const handleEditClick = (record) => {
+    setAction('edit');
+    setCurrentAnnouncement(record);
+
+    const initialValues = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+      shareToEveryone: record.everyone,
+    };
+
+    form.setFieldsValue(initialValues);
+    setShareToEveryone(record.everyone);
+    setIsModalVisible(true);
+  };
+
   const handleDelete = async (id) => {
     try {
-      await fetch(`${constants.urls.announcementUrl}/${id}`, {
-        method: 'DELETE',
+      await axios.delete(`${constants.urls.announcementUrl}/${id}`, {
+        headers,
       });
+      openNotification('Announcement deleted successfully');
       revalidateAnnouncements();
     } catch (error) {
+      openNotification('Failed to delete announcement', true);
       console.error('Delete failed:', error);
     }
   };
@@ -205,64 +164,102 @@ const Announcements = () => {
   const onLoadData = ({ id }) =>
     new Promise((resolve) => {
       setTimeout(() => {
-        setTreeData(
-          treeData.concat([
+        setTreeData((prev) =>
+          prev.concat([
             genTreeNode(id, false),
             genTreeNode(id, true),
             genTreeNode(id, true),
           ])
         );
-        resolve(undefined);
+        resolve();
       }, 300);
     });
-
-  const onChange = (newValue) => {
-    setValue(newValue);
-  };
-
-  const openModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setIsModalVisible(false);
-  };
 
   const onFinish = async (values) => {
     try {
       setIsProcessing(true);
-      if (action === 'add') {
-        console.log('ma yua chu');
-        console.log('url', announcementUrl);
-        console.log('values', values);
-        const res = await axios.post(announcementUrl, values, { headers });
-        console.log('res', res);
-        console.log('aba');
-        openNotification('Announcement added successfully.');
-      } else if (action === 'edit' && currentAnnouncement?.id) {
-        console.log('ma yua pani chu');
-        await axios.patch(
-          `${announcementUrl}/${currentAnnouncement.id}`,
-          values,
-          {
-            headers,
-          }
-        );
-        openNotification('Announcement updated successfully.');
-      }
-      mutate(announcementUrl);
-      // closeModal();
-    } catch (e) {
-      openNotification('Failed to save announcement.', true);
+      const url =
+        action === 'edit'
+          ? `${constants.urls.announcementUrl}/${currentAnnouncement.id}`
+          : constants.urls.announcementUrl;
+
+      const method = action === 'edit' ? 'patch' : 'post';
+      const payload = {
+        ...values,
+        dueDate: values.dueDate?.toISOString(),
+      };
+
+      await axios[method](url, payload, { headers });
+      openNotification(
+        `Announcement ${action === 'edit' ? 'updated' : 'added'} successfully`
+      );
+      revalidateAnnouncements();
+      setIsModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      openNotification(`Failed to ${action} announcement`, true);
+      console.error('Submission error:', error);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const onAddClick = () => {
-    openModal();
-    setAction('add');
-  };
+  const columns = useMemo(
+    () => [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: '8%',
+        render: (text) => <a className="text-blue-600">ANC-{text}</a>,
+      },
+      {
+        title: 'Title',
+        dataIndex: 'title',
+        key: 'title',
+      },
+      {
+        title: 'Created By',
+        dataIndex: 'createdBy',
+        key: 'createdBy',
+        render: (_, record) => record.creator?.fullName || 'N/A',
+      },
+      {
+        title: 'Due Date',
+        dataIndex: 'dueDate',
+        key: 'dueDate',
+        render: (text) => moment(text).format('DD/MM/YYYY hh:mm a'),
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        width: '10%',
+        render: (_, record) => (
+          <Space size="middle">
+            <Popover content="Acknowledge by" trigger="hover">
+              <Button type="link" icon={<Handshake size={18} />} />
+            </Popover>
+            <Button
+              type="link"
+              icon={<FilePenLine size={18} />}
+              onClick={() => handleEditClick(record)}
+            />
+            <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete this task?"
+              onConfirm={() => handleDelete(record.id)}
+            >
+              <Button
+                type="link"
+                icon={<Trash2Icon stroke="red" size={18} />}
+              />
+            </Popconfirm>
+          </Space>
+        ),
+      },
+    ],
+    [handleDelete]
+  );
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
@@ -288,7 +285,7 @@ const Announcements = () => {
           }}
         >
           <p className="text-xl font-bold">Announcements</p>
-          <Button type="primary" onClick={onAddClick}>
+          <Button type="primary" onClick={() => setIsModalVisible(true)}>
             Add New
           </Button>
         </div>
@@ -304,19 +301,20 @@ const Announcements = () => {
           }}
         />
         <Modal
-          title="Add Announcement"
-          open={isModalVisible}
-          onCancel={closeModal}
-          onOk={closeModal}
+          title={`${action === 'add' ? 'Add' : 'Edit'} Announcement`}
           width={shareToEveryone ? 500 : 1000}
+          open={isModalVisible}
+          onCancel={() => {
+            setIsModalVisible(false);
+            form.resetFields();
+          }}
           footer={
             <>
-              {/* <Divider /> */}
-              <Button className="mr-2" onClick={closeModal}>
+              <Button className="mr-2" onClick={() => setIsModalVisible(false)}>
                 Cancel
               </Button>
               <Button type="primary" onClick={() => form.submit()}>
-                Add
+                {action === 'add' ? 'Add' : 'Update'}
               </Button>
             </>
           }
@@ -349,7 +347,7 @@ const Announcements = () => {
                         value={value}
                         dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                         placeholder="Please select"
-                        onChange={onChange}
+                        // onChange={onChange}
                         loadData={onLoadData}
                         treeData={treeData}
                       />
