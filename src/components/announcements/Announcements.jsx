@@ -26,17 +26,13 @@ import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
 import { useGroups } from '@/hooks/useGroup';
 import { useUsers } from '@/hooks/useUsers';
-import { constants } from '@/constants';
+import { constants, headers } from '@/constants';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 import { useState } from 'react';
-
-
-// let params = {
-//   disableAutoRefetch: true,
-// };
-
-
+import { openNotification } from '@/utils';
+import axios from 'axios';
+import moment from 'moment';
 
 const tagRender = (props) => {
   const { label, closable, onClose } = props;
@@ -105,11 +101,14 @@ const columns = [
     title: 'Created By',
     dataIndex: 'createdBy',
     key: 'createdBy',
+    render: (text, record) =>
+      record.creator ? `${record.creator?.fullName}` : 'N/A',
   },
   {
     title: 'Due Date',
     dataIndex: 'dueDate',
     key: 'dueDate',
+    render: (text) => moment(text).format('DD/MM/YYYY hh:mm a'),
   },
   {
     title: 'Action',
@@ -133,37 +132,16 @@ const columns = [
   },
 ];
 
-const data = [
-  {
-    key: '1',
-    id: 1,
-    title: 'Announcement 1',
-    createdBy: 'Alice',
-    dueDate: '2024-03-01 12:00 AM',
-  },
-  {
-    key: '2',
-    id: 2,
-    title: 'Announcement 2',
-    createdBy: 'Bob',
-    dueDate: '2024-03-15 01:00 PM',
-  },
-  {
-    key: '3',
-    id: 3,
-    title: 'Announcement 3',
-    createdBy: 'Charlie',
-    dueDate: '2024-04-01 08:00 AM',
-  },
-];
-
 const Announcements = () => {
   const screens = useBreakpoint();
   const { colorBgContainer, borderRadiusLG } = theme.useToken();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [shareToEveryone, setShareToEveryone] = useState(true);
+  const [action, setAction] = useState('add');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [value, setValue] = useState();
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
   const [treeData, setTreeData] = useState([
     {
       id: 1,
@@ -185,6 +163,8 @@ const Announcements = () => {
       isLeaf: true,
     },
   ]);
+
+  const announcementUrl = constants.urls.announcementUrl;
 
   const {
     announcements,
@@ -248,8 +228,40 @@ const Announcements = () => {
     setIsModalVisible(false);
   };
 
+  const onFinish = async (values) => {
+    try {
+      setIsProcessing(true);
+      if (action === 'add') {
+        console.log('ma yua chu');
+        console.log('url', announcementUrl);
+        console.log('values', values);
+        const res = await axios.post(announcementUrl, values, { headers });
+        console.log('res', res);
+        console.log('aba');
+        openNotification('Announcement added successfully.');
+      } else if (action === 'edit' && currentAnnouncement?.id) {
+        console.log('ma yua pani chu');
+        await axios.patch(
+          `${announcementUrl}/${currentAnnouncement.id}`,
+          values,
+          {
+            headers,
+          }
+        );
+        openNotification('Announcement updated successfully.');
+      }
+      mutate(announcementUrl);
+      // closeModal();
+    } catch (e) {
+      openNotification('Failed to save announcement.', true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const onAddClick = () => {
     openModal();
+    setAction('add');
   };
 
   return (
@@ -282,7 +294,7 @@ const Announcements = () => {
         </div>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={announcements}
           scroll={{ x: 'max-content' }}
           bordered
           size={screens.xs ? 'small' : 'middle'}
@@ -309,7 +321,7 @@ const Announcements = () => {
             </>
           }
         >
-          <Form form={form} onFinish={closeModal} layout="vertical">
+          <Form form={form} onFinish={onFinish} layout="vertical">
             <div className={shareToEveryone ? '' : 'grid grid-cols-2 gap-4'}>
               <div>
                 <Row gutter={24}>

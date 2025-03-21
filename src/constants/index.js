@@ -28,7 +28,7 @@ export const constants = {
     leaveTypesUrl: `${URL}/leave-types`,
     notificationUrl: `${URL}/notification`,
     groupUrl: `${URL}/group`,
-    announcementUrl: `${URL}/announcement`,
+    announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
   },
 };
