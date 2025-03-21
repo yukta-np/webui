@@ -17,6 +17,7 @@ import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
 import { fetcher } from '@/utils';
 import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
+import { useRouter } from 'next/router';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -34,6 +35,7 @@ const TopHeader = () => {
 
   const meUrl = constants.urls.meUrl;
   const { data: userData } = useSWRImmutable(meUrl, fetcher);
+  const router = useRouter();
 
   useEffect(() => {
     if (userData) {
@@ -79,9 +81,9 @@ const TopHeader = () => {
 
   const menuItems = [
     {
-      key: '1',
+      key: 'profile',
       label: 'Profile',
-      onClick: () => console.log('Profile Clicked'),
+      href: '/users',
     },
     {
       key: '2',

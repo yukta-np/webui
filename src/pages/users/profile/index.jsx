@@ -1,7 +1,8 @@
+import Profile from '@/components/users/Profile';
 import React from 'react';
 
 const index = () => {
-  return <div>index</div>;
+  return <Profile />;
 };
 
 export default index;
