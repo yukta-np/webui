@@ -23,9 +23,16 @@ import {
   Tag,
 } from 'antd';
 import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
+import { useAnnouncement } from '@/hooks/useAnnouncement';
+import { useGroups } from '@/hooks/useGroup';
+import { useUsers } from '@/hooks/useUsers';
+import { constants, headers } from '@/constants';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 import { useState } from 'react';
+import { openNotification } from '@/utils';
+import axios from 'axios';
+import moment from 'moment';
 
 const tagRender = (props) => {
   const { label, closable, onClose } = props;
@@ -94,11 +101,14 @@ const columns = [
     title: 'Created By',
     dataIndex: 'createdBy',
     key: 'createdBy',
+    render: (text, record) =>
+      record.creator ? `${record.creator?.fullName}` : 'N/A',
   },
   {
     title: 'Due Date',
     dataIndex: 'dueDate',
     key: 'dueDate',
+    render: (text) => moment(text).format('DD/MM/YYYY hh:mm a'),
   },
   {
     title: 'Action',
@@ -113,38 +123,12 @@ const columns = [
         <Popconfirm
           title="Delete the task"
           description="Are you sure to delete this task?"
-          okText="Yes"
-          cancelText="No"
-          onConfirm={() => onDeleteClick(record)}
+          onConfirm={() => handleDelete(record.id)}
         >
           <Button type="link" icon={<Trash2Icon stroke="red" size={18} />} />
         </Popconfirm>
       </Space>
     ),
-  },
-];
-
-const data = [
-  {
-    key: '1',
-    id: 1,
-    title: 'Announcement 1',
-    createdBy: 'Alice',
-    dueDate: '2024-03-01 12:00 AM',
-  },
-  {
-    key: '2',
-    id: 2,
-    title: 'Announcement 2',
-    createdBy: 'Bob',
-    dueDate: '2024-03-15 01:00 PM',
-  },
-  {
-    key: '3',
-    id: 3,
-    title: 'Announcement 3',
-    createdBy: 'Charlie',
-    dueDate: '2024-04-01 08:00 AM',
   },
 ];
 
@@ -154,7 +138,10 @@ const Announcements = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [shareToEveryone, setShareToEveryone] = useState(true);
+  const [action, setAction] = useState('add');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [value, setValue] = useState();
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(null);
   const [treeData, setTreeData] = useState([
     {
       id: 1,
@@ -176,6 +163,33 @@ const Announcements = () => {
       isLeaf: true,
     },
   ]);
+
+  const announcementUrl = constants.urls.announcementUrl;
+
+  const {
+    announcements,
+    isLoading: announcementsLoading,
+    isError: announcementsError,
+    revalidate: revalidateAnnouncements,
+  } = useAnnouncement({
+    disableAutoRefetch: true,
+  });
+
+  // Fetch groups and users for select options
+  const { groups, isLoading: groupsLoading } = useGroups();
+  const { users, isLoading: usersLoading } = useUsers();
+
+  // Delete handler using your existing API setup
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`${constants.urls.announcementUrl}/${id}`, {
+        method: 'DELETE',
+      });
+      revalidateAnnouncements();
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+  };
 
   const genTreeNode = (parentId, isLeaf = false) => {
     const random = Math.random().toString(36).substring(2, 6);
@@ -214,8 +228,40 @@ const Announcements = () => {
     setIsModalVisible(false);
   };
 
+  const onFinish = async (values) => {
+    try {
+      setIsProcessing(true);
+      if (action === 'add') {
+        console.log('ma yua chu');
+        console.log('url', announcementUrl);
+        console.log('values', values);
+        const res = await axios.post(announcementUrl, values, { headers });
+        console.log('res', res);
+        console.log('aba');
+        openNotification('Announcement added successfully.');
+      } else if (action === 'edit' && currentAnnouncement?.id) {
+        console.log('ma yua pani chu');
+        await axios.patch(
+          `${announcementUrl}/${currentAnnouncement.id}`,
+          values,
+          {
+            headers,
+          }
+        );
+        openNotification('Announcement updated successfully.');
+      }
+      mutate(announcementUrl);
+      // closeModal();
+    } catch (e) {
+      openNotification('Failed to save announcement.', true);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const onAddClick = () => {
     openModal();
+    setAction('add');
   };
 
   return (
@@ -248,7 +294,7 @@ const Announcements = () => {
         </div>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={announcements}
           scroll={{ x: 'max-content' }}
           bordered
           size={screens.xs ? 'small' : 'middle'}
@@ -275,7 +321,7 @@ const Announcements = () => {
             </>
           }
         >
-          <Form form={form} onFinish={closeModal} layout="vertical">
+          <Form form={form} onFinish={onFinish} layout="vertical">
             <div className={shareToEveryone ? '' : 'grid grid-cols-2 gap-4'}>
               <div>
                 <Row gutter={24}>
@@ -351,24 +397,19 @@ const Announcements = () => {
                   <div className="pl-4 border-l border-gray-200">
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item
-                          label="Share with Users"
-                          name="shareUsers"
-                        >
+                        <Form.Item label="Share with Users" name="shareUsers">
                           <Select
                             mode="multiple"
                             placeholder="Select user to exclude"
                             tagRender={tagRender}
                             optionRender={optionRender}
+                            loading={usersLoading}
                           >
-                            <Select.Option value="user1">User 1</Select.Option>
-                            <Select.Option value="user2">User 2</Select.Option>
-                            <Select.Option value="user3">
-                              Dip Ojha
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              John Doe
-                            </Select.Option>
+                            {users?.map((user) => (
+                              <Select.Option key={user.id} value={user.id}>
+                                {user.fullName}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
@@ -382,14 +423,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">Group 1</Select.Option>
-                            <Select.Option value="user2">Group 2</Select.Option>
-                            <Select.Option value="user3">
-                              Marketing Team
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              Sales Department
-                            </Select.Option>
+                            {groups?.map((group) => (
+                              <Select.Option key={group.id} value={group.id}>
+                                {group.name}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
@@ -406,14 +444,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">User 1</Select.Option>
-                            <Select.Option value="user2">User 2</Select.Option>
-                            <Select.Option value="user3">
-                              Dip Ojha
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              John Doe
-                            </Select.Option>
+                            {users?.map((user) => (
+                              <Select.Option key={user.id} value={user.id}>
+                                {user.fullName}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>
@@ -430,14 +465,11 @@ const Announcements = () => {
                             tagRender={tagRender}
                             optionRender={optionRender}
                           >
-                            <Select.Option value="user1">Group 1</Select.Option>
-                            <Select.Option value="user2">Group 2</Select.Option>
-                            <Select.Option value="user3">
-                              Marketing Team
-                            </Select.Option>
-                            <Select.Option value="user4">
-                              Sales Department
-                            </Select.Option>
+                            {groups?.map((group) => (
+                              <Select.Option key={group.id} value={group.id}>
+                                {group.name}
+                              </Select.Option>
+                            ))}
                           </Select>
                         </Form.Item>
                       </Col>

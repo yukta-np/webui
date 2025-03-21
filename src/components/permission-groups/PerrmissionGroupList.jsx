@@ -72,16 +72,6 @@ const PermissionGroupList = () => {
     fetchData();
   }, [groupStatus]);
 
-  // const onEditClick = async (id) => {
-  //   setAction('edit');
-  //   setId(id);
-  //   const res = await axios.get(`${constants.urls.permissionGroupUrl}/${id}`, {
-  //     headers,
-  //   });
-  //   const { data } = res;
-  //   form.setFieldsValue(data);
-  //   setIsModalVisible(true);
-  // };
 
   const onDeleteClick = async (id) => {
     try {
@@ -200,16 +190,6 @@ const PermissionGroupList = () => {
       }
     },
     render: (text) => text,
-    // searchedColumn === dataIndex ? (
-    //   <Highlighter
-    //     highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-    //     searchWords={[searchText]}
-    //     autoEscape
-    //     textToHighlight={text ? text.toString() : ''}
-    //   />
-    // ) : (
-    //   text
-    // ),
   });
 
   const columns = [
