@@ -351,13 +351,24 @@ const Announcements = () => {
                   <div className="pl-4 border-l border-gray-200">
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item label="Share with Users" name="shareUsers">
-                          <Select mode="multiple" placeholder="Select users">
-                            <Select.Option value="pakLee">
-                              Pak Lee
+                        <Form.Item
+                          label="Share with Users"
+                          name="shareUsers"
+                        >
+                          <Select
+                            mode="multiple"
+                            placeholder="Select user to exclude"
+                            tagRender={tagRender}
+                            optionRender={optionRender}
+                          >
+                            <Select.Option value="user1">User 1</Select.Option>
+                            <Select.Option value="user2">User 2</Select.Option>
+                            <Select.Option value="user3">
+                              Dip Ojha
                             </Select.Option>
-                            <Select.Option value="alice">Alice</Select.Option>
-                            <Select.Option value="bob">Bob</Select.Option>
+                            <Select.Option value="user4">
+                              John Doe
+                            </Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
@@ -365,10 +376,19 @@ const Announcements = () => {
                     <Row gutter={24}>
                       <Col xs={24}>
                         <Form.Item label="Share with Groups" name="shareGroups">
-                          <Select mode="multiple" placeholder="Select groups">
-                            <Select.Option value="admins">Admins</Select.Option>
-                            <Select.Option value="developers">
-                              Developers
+                          <Select
+                            mode="multiple"
+                            placeholder="Select group to exclude"
+                            tagRender={tagRender}
+                            optionRender={optionRender}
+                          >
+                            <Select.Option value="user1">Group 1</Select.Option>
+                            <Select.Option value="user2">Group 2</Select.Option>
+                            <Select.Option value="user3">
+                              Marketing Team
+                            </Select.Option>
+                            <Select.Option value="user4">
+                              Sales Department
                             </Select.Option>
                           </Select>
                         </Form.Item>
@@ -377,39 +397,51 @@ const Announcements = () => {
                     <Row gutter={24}>
                       <Col xs={24}>
                         <Form.Item
-                          label="User Black List (Don't share with users)"
+                          label="User Black List (Don't share with these users)"
                           name="userBlackList"
                         >
                           <Select
                             mode="multiple"
-                            placeholder="Select users to exclude"
+                            placeholder="Select user to exclude"
+                            tagRender={tagRender}
+                            optionRender={optionRender}
                           >
                             <Select.Option value="user1">User 1</Select.Option>
                             <Select.Option value="user2">User 2</Select.Option>
+                            <Select.Option value="user3">
+                              Dip Ojha
+                            </Select.Option>
+                            <Select.Option value="user4">
+                              John Doe
+                            </Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
                     </Row>
-                   <Row gutter={24}>
-  <Col xs={24}>
-    <Form.Item
-      label="Group Black List (Don't share with these groups)"
-      name="groupBlackList"
-    >
-      <Select
-        mode="multiple"
-        placeholder="Select group to exclude"
-        tagRender={tagRender}
-        optionRender={optionRender}
-      >
-        <Select.Option value="user1">Group 1</Select.Option>
-        <Select.Option value="user2">Group 2</Select.Option>
-        <Select.Option value="user3">Marketing Team</Select.Option>
-        <Select.Option value="user4">Sales Department</Select.Option>
-      </Select>
-    </Form.Item>
-  </Col>
-</Row>
+                    <Row gutter={24}>
+                      <Col xs={24}>
+                        <Form.Item
+                          label="Group Black List (Don't share with these groups)"
+                          name="groupBlackList"
+                        >
+                          <Select
+                            mode="multiple"
+                            placeholder="Select group to exclude"
+                            tagRender={tagRender}
+                            optionRender={optionRender}
+                          >
+                            <Select.Option value="user1">Group 1</Select.Option>
+                            <Select.Option value="user2">Group 2</Select.Option>
+                            <Select.Option value="user3">
+                              Marketing Team
+                            </Select.Option>
+                            <Select.Option value="user4">
+                              Sales Department
+                            </Select.Option>
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
                   </div>
                 </>
               )}
