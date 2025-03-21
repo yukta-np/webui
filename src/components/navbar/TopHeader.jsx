@@ -18,6 +18,7 @@ import { fetcher } from '@/utils';
 import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -81,9 +82,8 @@ const TopHeader = () => {
 
   const menuItems = [
     {
+      label: <Link href="/users/profile">Profile</Link>,
       key: 'profile',
-      label: 'Profile',
-      href: '/users',
     },
     {
       key: '2',
