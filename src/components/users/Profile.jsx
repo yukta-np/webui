@@ -17,6 +17,8 @@ import {
 import { Camera, Mail, MapPin } from 'lucide-react';
 import { useAppContext } from '@/app-context';
 import { useMe } from '@/hooks/useMe';
+import axios from 'axios';
+import { constants, headers } from '@/constants';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -29,7 +31,7 @@ const Profile = () => {
 
   const [form] = Form.useForm();
   const { me } = useMe();
-  console.log(me);
+  const userId = me?.id;
 
   useEffect(() => {
     if (me) {
@@ -39,12 +41,28 @@ const Profile = () => {
         lastName: me.lastName || '',
         phoneNumber: me.phoneNumber || '',
         email: me.email || '',
-        address1: me.address1 || '',
+        address: me.address || '',
         address2: me.address2 || '',
-        mobileNumber: me.mobileNumber || '',
+        mobile: me.mobile || '',
       });
     }
   }, [me, form]);
+
+  const handleOnSubmit = async (values) => {
+    console.log(values);
+    const { address2, phoneNumber, ...deletedValue } = values;
+    const myValues = {
+      ...deletedValue,
+    };
+    console.log(myValues);
+    try {
+      await axios.patch(`${constants.urls.usersUrl}/${userId}`, myValues, {
+        headers,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
@@ -87,7 +105,7 @@ const Profile = () => {
           </Row>
         </div>
         <Space className="p-4">
-          <Form layout="vertical" form={form}>
+          <Form layout="vertical" form={form} onFinish={handleOnSubmit}>
             <Row gutter={24}>
               <Col xs={24} sm={12}>
                 <Form.Item
@@ -132,16 +150,7 @@ const Profile = () => {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Phone Number"
-                  name="phoneNumber"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please enter your phone number',
-                    },
-                  ]}
-                >
+                <Form.Item label="Phone Number" name="phoneNumber">
                   <Input
                     addonBefore="+977"
                     placeholder="Enter your phone number"
@@ -149,16 +158,7 @@ const Profile = () => {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Mobile Number"
-                  name="mobileNumber"
-                  rules={[
-                    {
-                      required: true,
-                      message: 'Please enter your mobile number',
-                    },
-                  ]}
-                >
+                <Form.Item label="Mobile Number" name="mobile">
                   <Input
                     addonBefore="+977"
                     placeholder="Enter your mobile number"
@@ -167,7 +167,7 @@ const Profile = () => {
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item label="Address 1" name="address1">
+                <Form.Item label="Address 1" name="address">
                   <Input
                     prefix={<MapPin size={18} />}
                     placeholder="Address 1"
@@ -189,6 +189,7 @@ const Profile = () => {
                   type="primary"
                   htmlType="submit"
                   className="btn-primary"
+                  onClick={() => form.submit()}
                 >
                   Save
                 </Button>
