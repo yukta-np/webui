@@ -111,7 +111,6 @@ const Announcements = () => {
   const { groups, isLoading: groupsLoading } = useGroups();
   const { users, isLoading: usersLoading } = useUsers();
 
-
   useEffect(() => {
     if (!shareToEveryone) {
       form.setFieldsValue({
@@ -130,7 +129,7 @@ const Announcements = () => {
     const initialValues = {
       ...record,
       dueDate: record.dueDate ? moment(record.dueDate) : null,
-      shareToEveryone: record.everyone,
+      everyone: record.everyone,
     };
 
     form.setFieldsValue(initialValues);
@@ -138,26 +137,18 @@ const Announcements = () => {
     setIsModalVisible(true);
   };
 
-  
+  const onViewClick = (record) => {
+    const newRecord = {
+      ...record,
+      dueDate: record.dueDate ? moment(record.dueDate) : null,
+      everyone: record.everyone,
+    };
 
- const onViewClick = (record) => {
-   const newRecord = {
-     title: record?.title,
-     description: record?.description,
-     dueDate: record?.dueDate ? moment(record?.dueDate) : null,
-     shareToEveryone: record?.everyone,
-     shareUsers: record?.shareUsers,
-     shareGroups: record?.shareGroups,
-     userBlackList: record?.userBlackList,
-     groupBlackList: record?.groupBlackList,
-     documents: record?.documents,
-   };
-
-   setAction('view');
-   setCurrentAnnouncement(announcements);
-   form.setFieldsValue(newRecord);
-   setIsModalVisible(true);
- };
+    setAction('view');
+    setCurrentAnnouncement(record);
+    form.setFieldsValue(newRecord);
+    setIsModalVisible(true);
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -213,7 +204,7 @@ const Announcements = () => {
 
       await axios[method](url, payload, { headers });
       openNotification(
-        `Announcement ${ action === 'edit' ? 'updated' : 'added'} successfully`
+        `Announcement ${action === 'edit' ? 'updated' : 'added'} successfully`
       );
       revalidateAnnouncements();
       setIsModalVisible(false);
@@ -234,11 +225,8 @@ const Announcements = () => {
         key: 'id',
         width: '8%',
         render: (text, record) => (
-          <a
-            className="text-blue-600"
-            onClick={() => onViewClick(record)}
-          >
-            {announcements?.displayId}{' '}ANC-{text}
+          <a className="text-blue-600" onClick={() => onViewClick(record)}>
+            ANC-{text}
           </a>
         ),
       },
@@ -251,7 +239,7 @@ const Announcements = () => {
         title: 'Created By',
         dataIndex: 'createdBy',
         key: 'createdBy',
-        render: (_, record) => record.creator?.fullName || 'N/A',
+        render: (_, record) => record.createdBy?.fullName || 'N/A',
       },
       {
         title: 'Due Date',
@@ -274,8 +262,8 @@ const Announcements = () => {
               onClick={() => handleEditClick(record)}
             />
             <Popconfirm
-              title="Delete the task"
-              description="Are you sure to delete this task?"
+              title="Delete the announcement"
+              description="Are you sure to delete this announcement?"
               onConfirm={() => handleDelete(record.id)}
             >
               <Button
@@ -314,8 +302,15 @@ const Announcements = () => {
           }}
         >
           <p className="text-xl font-bold">Announcements</p>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}
-           >
+          <Button
+            type="primary"
+            onClick={() => {
+              setAction('add');
+              setIsModalVisible(true);
+              form.resetFields();
+              setShareToEveryone(true);
+            }}
+          >
             Add New
           </Button>
         </div>
@@ -332,19 +327,24 @@ const Announcements = () => {
         />
         <Modal
           title={`${
-            action === 'add' ? 'Add' : action === 'edit' ? 'Edit' : action === 'add' ? 'Add' : 'Edit'
+            action === 'add' ? 'Add' : action === 'edit' ? 'Edit' : 'View'
           } Announcement`}
           width={shareToEveryone ? 500 : 1000}
           open={isModalVisible}
           onCancel={() => {
             setIsModalVisible(false);
             form.resetFields();
+            setAction('add'); // Reset to default action
+            setShareToEveryone(true);
           }}
           footer={
             action === 'add' ? (
               <>
                 <Divider />
-                <Button className="mr-2" onClick={isModalVisible}>
+                <Button
+                  className="mr-2"
+                  onClick={() => setIsModalVisible(false)}
+                >
                   Cancel
                 </Button>
                 <Button type="primary" onClick={() => form.submit()}>
@@ -377,7 +377,11 @@ const Announcements = () => {
             onFinish={onFinish}
             layout="vertical"
             disabled={action === 'view'}
-            
+            onValuesChange={(changedValues) => {
+              if ('everyone' in changedValues) {
+                setShareToEveryone(changedValues.everyone);
+              }
+            }}
           >
             <div className={shareToEveryone ? '' : 'grid grid-cols-2 gap-4'}>
               <div>
@@ -390,7 +394,7 @@ const Announcements = () => {
                         { required: true, message: 'Please enter a title' },
                       ]}
                     >
-                      <Input placeholder="Enter task title" />
+                      <Input placeholder="Enter announcement title" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -406,7 +410,6 @@ const Announcements = () => {
                         value={value}
                         dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
                         placeholder="Please select"
-                        // onChange={onChange}
                         loadData={onLoadData}
                         treeData={treeData}
                       />
@@ -440,10 +443,7 @@ const Announcements = () => {
                   </Col>
                   <Col xs={12}>
                     <Form.Item label="Share to Everyone" name="everyone">
-                      <Switch
-                        defaultChecked
-                        onChange={(checked) => setShareToEveryone(checked)}
-                      />
+                      <Switch />
                     </Form.Item>
                   </Col>
                 </Row>
