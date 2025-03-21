@@ -16,8 +16,6 @@ const { Text } = Typography;
 const CommentSection = ({ comments, taskId }) => {
   const [reactions, setReactions] = useState({});
   const [comment, setComment] = useState([]);
-  console.log(taskId);
-
   useEffect(() => {
     setComment(comments);
   }, [comments]);

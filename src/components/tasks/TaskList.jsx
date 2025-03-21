@@ -158,6 +158,14 @@ const TaskList = ({
     params.assignedTo = assignedTo;
   }
 
+  if (isMyTask) {
+    params.assignedTo = loggedInUser?.userId;
+  }
+
+  if (isMyTeamTask) {
+    params.createdBy = loggedInUser?.userId;
+  }
+
   const {
     taskList: tasks,
     revalidate: tasksRevalidate,
