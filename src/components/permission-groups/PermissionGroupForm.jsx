@@ -199,7 +199,7 @@ const PermissionGroupForm = () => {
   };
 
   return (
-    <div style={{ paddingLeft: 20, paddingRight: 20 }}>
+    <div style={{ paddingLeft: 25, paddingRight: 25, marginTop: 25 }}>
       <Typography.Title level={3}>
         {action === 'add' ? 'Add' : 'Edit'} Permission Group
       </Typography.Title>

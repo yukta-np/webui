@@ -30,40 +30,17 @@ export const resources = [
       ],
    },
    {
-      title: 'Task Types',
-      namespace: 'TaskType',
-      name: Resources.taskTypes,
+      title: 'Classroom',
+      namespace: 'Classroom',
+      name: Resources.classroom,
       actions: [
          ResourceActions.create,
          ResourceActions.update,
          ResourceActions.list,
          ResourceActions.view,
          ResourceActions.delete,
-      ],
-   },
-   {
-      title: 'Leave Requests',
-      namespace: 'LeaveRequest',
-      name: Resources.leaveRequest,
-      actions: [
-         ResourceActions.create,
-         ResourceActions.update,
-         ResourceActions.list,
-         ResourceActions.view,
-         ResourceActions.delete,
-         ResourceActions.cancel,
-      ],
-   },
-   {
-      title: 'Leave Types',
-      namespace: 'LeaveType',
-      name: Resources.leaveTypes,
-      actions: [
-         ResourceActions.create,
-         ResourceActions.update,
-         ResourceActions.list,
-         ResourceActions.view,
-         ResourceActions.delete,
+         ResourceActions.import,
+         ResourceActions.export,
       ],
    },
    {
@@ -75,17 +52,6 @@ export const resources = [
          ResourceActions.update,
          ResourceActions.import,
          ResourceActions.export,
-      ],
-   },
-   {
-      title: 'Notifications',
-      namespace: 'Notification',
-      name: Resources.notification,
-      actions: [
-         ResourceActions.list,
-         ResourceActions.view,
-         ResourceActions.delete,
-         ResourceActions.acknowledegedByList,
       ],
    },
    {
@@ -115,6 +81,33 @@ export const resources = [
       ],
    },
    {
+      title: 'Leave Requests',
+      namespace: 'LeaveRequest',
+      name: Resources.leaveRequest,
+      actions: [
+         ResourceActions.create,
+         ResourceActions.update,
+         ResourceActions.list,
+         ResourceActions.view,
+         ResourceActions.delete,
+         ResourceActions.cancel,
+      ],
+   },
+  
+   {
+      title: 'Notifications',
+      namespace: 'Notification',
+      name: Resources.notification,
+      actions: [
+         ResourceActions.list,
+         ResourceActions.view,
+         ResourceActions.delete,
+         ResourceActions.acknowledegedByList,
+      ],
+   },
+
+
+   {
       title: 'Permission Groups',
       namespace: 'PermissionGroup',
       name: Resources.permissionGroups,
@@ -127,19 +120,30 @@ export const resources = [
       ],
    },
    {
-      title: 'Classroom',
-      namespace: 'Classroom',
-      name: Resources.classroom,
+      title: 'Task Types',
+      namespace: 'TaskType',
+      name: Resources.taskTypes,
       actions: [
          ResourceActions.create,
          ResourceActions.update,
          ResourceActions.list,
          ResourceActions.view,
          ResourceActions.delete,
-         ResourceActions.import,
-         ResourceActions.export,
       ],
    },
+   {
+      title: 'Leave Types',
+      namespace: 'LeaveType',
+      name: Resources.leaveTypes,
+      actions: [
+         ResourceActions.create,
+         ResourceActions.update,
+         ResourceActions.list,
+         ResourceActions.view,
+         ResourceActions.delete,
+      ],
+   },
+
    {
       title: 'Settings',
       namespace: 'Setting',
