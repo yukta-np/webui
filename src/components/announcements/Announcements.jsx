@@ -19,6 +19,7 @@ import {
   Switch,
   Avatar,
   TreeSelect,
+  Divider,
 } from 'antd';
 import { FilePenLine, Handshake, Trash2Icon } from 'lucide-react';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
@@ -107,9 +108,9 @@ const Announcements = () => {
     isLoading: announcementsLoading,
     revalidate: revalidateAnnouncements,
   } = useAnnouncement();
-
   const { groups, isLoading: groupsLoading } = useGroups();
   const { users, isLoading: usersLoading } = useUsers();
+
 
   useEffect(() => {
     if (!shareToEveryone) {
@@ -136,6 +137,27 @@ const Announcements = () => {
     setShareToEveryone(record.everyone);
     setIsModalVisible(true);
   };
+
+  
+
+ const onViewClick = (record) => {
+   const newRecord = {
+     title: record?.title,
+     description: record?.description,
+     dueDate: record?.dueDate ? moment(record?.dueDate) : null,
+     shareToEveryone: record?.everyone,
+     shareUsers: record?.shareUsers,
+     shareGroups: record?.shareGroups,
+     userBlackList: record?.userBlackList,
+     groupBlackList: record?.groupBlackList,
+     documents: record?.documents,
+   };
+
+   setAction('view');
+   setCurrentAnnouncement(announcements);
+   form.setFieldsValue(newRecord);
+   setIsModalVisible(true);
+ };
 
   const handleDelete = async (id) => {
     try {
@@ -191,7 +213,7 @@ const Announcements = () => {
 
       await axios[method](url, payload, { headers });
       openNotification(
-        `Announcement ${action === 'edit' ? 'updated' : 'added'} successfully`
+        `Announcement ${ action === 'edit' ? 'updated' : 'added'} successfully`
       );
       revalidateAnnouncements();
       setIsModalVisible(false);
@@ -211,7 +233,14 @@ const Announcements = () => {
         dataIndex: 'id',
         key: 'id',
         width: '8%',
-        render: (text) => <a className="text-blue-600">ANC-{text}</a>,
+        render: (text, record) => (
+          <a
+            className="text-blue-600"
+            onClick={() => onViewClick(record)}
+          >
+            {announcements?.displayId}{' '}ANC-{text}
+          </a>
+        ),
       },
       {
         title: 'Title',
@@ -285,7 +314,8 @@ const Announcements = () => {
           }}
         >
           <p className="text-xl font-bold">Announcements</p>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
+          <Button type="primary" onClick={() => setIsModalVisible(true)}
+           >
             Add New
           </Button>
         </div>
@@ -301,7 +331,9 @@ const Announcements = () => {
           }}
         />
         <Modal
-          title={`${action === 'add' ? 'Add' : 'Edit'} Announcement`}
+          title={`${
+            action === 'add' ? 'Add' : action === 'edit' ? 'Edit' : action === 'add' ? 'Add' : 'Edit'
+          } Announcement`}
           width={shareToEveryone ? 500 : 1000}
           open={isModalVisible}
           onCancel={() => {
@@ -309,17 +341,44 @@ const Announcements = () => {
             form.resetFields();
           }}
           footer={
-            <>
-              <Button className="mr-2" onClick={() => setIsModalVisible(false)}>
-                Cancel
-              </Button>
-              <Button type="primary" onClick={() => form.submit()}>
-                {action === 'add' ? 'Add' : 'Update'}
-              </Button>
-            </>
+            action === 'add' ? (
+              <>
+                <Divider />
+                <Button className="mr-2" onClick={isModalVisible}>
+                  Cancel
+                </Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Add
+                </Button>
+              </>
+            ) : action === 'edit' ? (
+              <>
+                <Divider />
+                <Button
+                  className="mr-2"
+                  onClick={() => setIsModalVisible(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Update
+                </Button>
+              </>
+            ) : (
+              <>
+                <Divider />
+                <Button onClick={() => setIsModalVisible(false)}>Cancel</Button>
+              </>
+            )
           }
         >
-          <Form form={form} onFinish={onFinish} layout="vertical">
+          <Form
+            form={form}
+            onFinish={onFinish}
+            layout="vertical"
+            disabled={action === 'view'}
+            
+          >
             <div className={shareToEveryone ? '' : 'grid grid-cols-2 gap-4'}>
               <div>
                 <Row gutter={24}>
