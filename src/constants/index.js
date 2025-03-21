@@ -28,6 +28,7 @@ export const constants = {
     leaveTypesUrl: `${URL}/leave-types`,
     notificationUrl: `${URL}/notification`,
     groupUrl: `${URL}/group`,
+    permissionGroupUrl: `${URL}/permission-groups`,
   },
 };
 
@@ -37,17 +38,41 @@ export const headers = {
 
 export const COOKIE_SIDEBER_COLLAPSED = 'yukta.ui.sidebar.collapsed';
 
-export const ROLES = {
-  // SYSTEM ADMIN
-  SYSTADMIN: 'SYSTADMIN',
-
-  // ACADEMIC STAFF
-  ORG_ADMIN: 'ORGADMIN',
-  ORG_MANAGER: 'ORGMANAGER',
-  TEACHER: 'TEACHER',
-  STAFF: 'STAFF',
-
-  // STUDENT
-  PARENT: 'PARENT',
-  STUDENT: 'STUDENT',
+export const Actions = {
+  add: 'add',
+  edit: 'edit',
+  view: 'view',
+  clone: 'clon',
 };
+
+export const Resources = {
+  routines: 'routines',
+  tasks: 'tasks',
+  taskTypes: 'taskTypes',
+  leaveRequest: 'leaveRequest',
+  leaveTypes: 'leaveTypes',
+  calender: 'calender',
+  notification: 'notification',
+  users: 'users',
+  announcments: 'announcments',
+  permissionGroups: 'permissionGroups',
+  classroom: 'classroom',
+  settings: 'settings',
+}
+
+export const ResourceActions = {
+  create: 'create',
+  list: 'list',
+  view: 'view',
+  update: 'update',
+  publish: 'publish',
+  import: 'import',
+  export: 'export',
+  download: 'download',
+  upload: 'upload',
+  delete: 'delete',
+  cancel: 'cancel',
+  archive: 'archive',
+  restore: 'restore',
+  acknowledegedByList: 'acknowledegedByList',
+}

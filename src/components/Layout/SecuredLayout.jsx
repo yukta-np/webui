@@ -144,6 +144,12 @@ const SecuredLayout = ({ children }) => {
       href: '/settings',
     },
     {
+      label: 'Permission Groups',
+      key: 'permission-groups',
+      icon: <PanelLeftClose size={18} />,
+      href: '/permission-groups',
+    },
+    {
       label: 'Feedback',
       key: 'feedback',
       icon: <MessageCircle size={18} />,
