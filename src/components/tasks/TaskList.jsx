@@ -394,7 +394,7 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={taskStatus?.map((ts) => ({
-                label: ts.name.toUpperCase(),
+                label: ts?.name.toUpperCase(),
                 value: ts.name,
               }))}
               onChange={(value) => onColumnStatusChange(tasks.id, value)}
