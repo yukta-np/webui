@@ -37,7 +37,6 @@ export default function App({ Component, pageProps }) {
    }
 
    return (
-      <Suspense fallback={<Spin size="large" />}>
          <UserWrapper>
             <AppWrapper>
                {isLoginPage ? (
@@ -49,6 +48,5 @@ export default function App({ Component, pageProps }) {
                )}
             </AppWrapper>
          </UserWrapper>
-      // </Suspense>
    );
 }
