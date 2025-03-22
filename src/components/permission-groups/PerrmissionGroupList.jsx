@@ -317,7 +317,7 @@ const PermissionGroupList = () => {
             </Row>
           </Col>
           <Col span={3} style={{ textAlign: 'right' }}>
-            {(loggedInUser?.role === Roles.ORGADMIN ||
+            {(loggedInUser?.role === Roles.ADMIN ||
               loggedInUser?.permissions?.permissionGroup?.create === true) && (
               <Button type="primary" href="/permission-groups/new">
                 Add New
