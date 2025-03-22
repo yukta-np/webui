@@ -111,27 +111,38 @@ const Announcements = () => {
   const { groups, isLoading: groupsLoading } = useGroups();
   const { users, isLoading: usersLoading } = useUsers();
 
-  useEffect(() => {
-    if (!shareToEveryone) {
-      form.setFieldsValue({
-        allowedUserIds: [],
-        allowedGroupIds: [],
-        deniedUserIds: [],
-        deniedGroupIds: [],
-      });
-    }
-  }, [shareToEveryone, form]);
-
   const handleEditClick = (record) => {
     setAction('edit');
     setCurrentAnnouncement(record);
+   const allowedUserIds =
+     record.announcementUsers
+       ?.filter((user) => user.allowDenyStatus === 'allow')?.map((user) => user.user.id) || [];
+
+const deniedUserIds =  record.announcementUsers
+    ?.filter((user) => user.allowDenyStatus === 'deny')
+    ?.map((user) => user.user.id) || [];
+
+  
+
+    const allowedGroupIds =
+      record.announcementGroups
+        ?.filter((group) => group.allowDenyStatus === 'allow')
+        ?.map((group) => group.group.id) || [];
+
+    const deniedGroupIds =
+      record.announcementGroups
+        ?.filter((group) => group.allowDenyStatus === 'deny')
+        ?.map((group) => group.group.id) || [];
 
     const initialValues = {
       ...record,
       dueDate: record.dueDate ? moment(record.dueDate) : null,
       everyone: record.everyone,
+      allowedGroupIds: allowedGroupIds,
+      deniedUserIds: deniedUserIds,
+      allowedUserIds: allowedUserIds,
+      deniedGroupIds: deniedGroupIds,
     };
-
     form.setFieldsValue(initialValues);
     setShareToEveryone(record.everyone);
     setIsModalVisible(true);
@@ -189,7 +200,6 @@ const Announcements = () => {
     });
 
   const onFinish = async (values) => {
-    console.log('Form values:', values);
     try {
       setIsProcessing(true);
       const url =
