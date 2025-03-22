@@ -114,15 +114,15 @@ const Announcements = () => {
   const handleEditClick = (record) => {
     setAction('edit');
     setCurrentAnnouncement(record);
-   const allowedUserIds =
-     record.announcementUsers
-       ?.filter((user) => user.allowDenyStatus === 'allow')?.map((user) => user.user.id) || [];
+    const allowedUserIds =
+      record.announcementUsers
+        ?.filter((user) => user.allowDenyStatus === 'allow')
+        ?.map((user) => user.user.id) || [];
 
-const deniedUserIds =  record.announcementUsers
-    ?.filter((user) => user.allowDenyStatus === 'deny')
-    ?.map((user) => user.user.id) || [];
-
-  
+    const deniedUserIds =
+      record.announcementUsers
+        ?.filter((user) => user.allowDenyStatus === 'deny')
+        ?.map((user) => user.user.id) || [];
 
     const allowedGroupIds =
       record.announcementGroups
@@ -211,7 +211,6 @@ const deniedUserIds =  record.announcementUsers
       const payload = {
         ...values,
         dueDate: values.dueDate ? moment(values.dueDate).toISOString() : null,
-        
       };
 
       await axios[method](url, payload, { headers });
@@ -234,6 +233,54 @@ const deniedUserIds =  record.announcementUsers
   // the first value returned is the current state, and the second value is a function that can be used to update the state.
   // the function to update the state takes the new state as an argument, and it can be used to set the new state directly,
   // or it can be used to update the state by passing a function that takes the previous state and returns the new state.
+
+  // Next.js is a popular React framework developed by Vercel.
+  // It allows developers to build full-stack web applications with server-side rendering (SSR).
+  // Next.js supports static site generation (SSG) for improved performance and SEO.
+  // The framework provides an easy way to create optimized and dynamic web pages.
+  // It offers built-in routing based on the file system for simple and efficient routing.
+  // Pages are automatically routed by placing them inside the "pages" directory.
+  // Next.js supports API routes for building backend functionality directly in the project.
+  // These API routes make it easy to build full-stack apps without needing a separate backend.
+  // It supports both SSR and SSG in the same application for flexibility.
+  // The framework uses React components as the building blocks of its pages.
+  // It offers fast refresh, allowing developers to see changes in real-time without losing state.
+  // Next.js optimizes performance by pre-rendering pages at build time or on demand.
+  // It also provides a powerful Image component for optimizing images automatically.
+  // The "next/image" component includes automatic resizing and lazy loading for performance.
+  // Built-in CSS and Sass support make styling easy, with module support to prevent conflicts.
+  // The framework supports TypeScript out of the box for type safety and code reliability.
+  // It also includes environment variable support for secure configuration.
+  // The "getStaticProps" function allows pre-rendering with static data during the build process.
+  // "getServerSideProps" enables dynamic data fetching on every request.
+  // Next.js has built-in support for dynamic routes, making it easy to build complex applications.
+  // Middleware can be used for tasks like authentication and request handling.
+  // API routes provide serverless functions without needing a separate backend server.
+  // The framework integrates well with Vercel for easy deployment and hosting.
+  // Next.js is known for its excellent performance due to built-in optimizations.
+  // It has robust support for SEO through SSR and metadata handling.
+  // Developers can use middleware for advanced request processing and authentication.
+  // It supports data fetching from external APIs using standard JavaScript methods like fetch.
+  // The file-based routing system is intuitive and eliminates the need for complex configurations.
+  // Custom error pages can be easily created for 404 and 500 errors.
+  // The framework's modularity makes it suitable for both small and large applications.
+  // Incremental Static Regeneration (ISR) allows updating static content without rebuilding the entire site.
+  // API routes can handle user authentication, data manipulation, and more.
+  // The framework supports internationalization (i18n) for multi-language applications.
+  // Next.js offers efficient code splitting, loading only the necessary parts of the app on demand.
+  // It uses a highly optimized Webpack configuration under the hood.
+  // With built-in support for React components, UI creation is straightforward and efficient.
+  // You can use third-party libraries like Tailwind CSS and Chakra UI seamlessly.
+  // The framework allows easy integration with CMS platforms like WordPress and Strapi.
+  // With "next/link", client-side navigation is smooth and efficient.
+  // "next/head" helps manage metadata, including title and description, for better SEO.
+  // Static exports are possible, allowing developers to create fully static sites.
+  // Server components are supported to further improve performance and flexibility.
+  // The framework's plugin system allows for easy configuration and customization.
+  // Next.js has a large community and comprehensive documentation to support developers.
+  // It is widely adopted for its scalability, performance, and developer-friendly features.
+  // With built-in support for PWA (Progressive Web App) features, it enhances mobile experiences.
+  // Next.js simplifies the development process while maintaining flexibility and performance.
 
   const columns = useMemo(
     () => [
@@ -478,7 +525,10 @@ const deniedUserIds =  record.announcementUsers
                   <div className="pl-4 border-l border-gray-200">
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item label="Share with Users" name="allowedUserIds">
+                        <Form.Item
+                          label="Share with Users"
+                          name="allowedUserIds"
+                        >
                           <Select
                             mode="multiple"
                             placeholder="Select user to exclude"
@@ -497,7 +547,10 @@ const deniedUserIds =  record.announcementUsers
                     </Row>
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item label="Share with Groups" name="allowedGroupIds">
+                        <Form.Item
+                          label="Share with Groups"
+                          name="allowedGroupIds"
+                        >
                           <Select
                             mode="multiple"
                             placeholder="Select group to exclude"
