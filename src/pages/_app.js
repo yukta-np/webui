@@ -12,17 +12,12 @@ export default function App({ Component, pageProps }) {
    const path = router.pathname;
    const isLoginPage = path === "/auth/login";
 
-   useEffect(() => {
-      if (!getLoggedInUser()?.userId) {
-         clearStorageAndRedirect();
-      }
-   }, []);
-
    if (
       path.endsWith("/") ||
       path.endsWith("/auth/login") ||
+      path.endsWith("/auth/register") ||
       path.endsWith("/auth/verify") ||
-      path.endsWith("/auth/set-password") ||
+      path.endsWith("/auth/password") ||
       path.endsWith("/auth/reset-password")
    ) {
       return (
@@ -31,22 +26,21 @@ export default function App({ Component, pageProps }) {
          </AppWrapper>
       );
    }
-
-   if (!getLoggedInUser()?.userId) {
-      return null; 
-   }
-
-   return (
-         <UserWrapper>
-            <AppWrapper>
-               {isLoginPage ? (
+   else if (!getLoggedInUser()?.userId) {
+      clearStorageAndRedirect()
+      return null;
+   } else return (
+      
+      <UserWrapper>
+         <AppWrapper>
+            {isLoginPage ? (
+               <Component {...pageProps} />
+            ) : (
+               <SecuredLayout>
                   <Component {...pageProps} />
-               ) : (
-                  <SecuredLayout>
-                     <Component {...pageProps} />
-                  </SecuredLayout>
-               )}
-            </AppWrapper>
-         </UserWrapper>
+               </SecuredLayout>
+            )}
+         </AppWrapper>
+      </UserWrapper>
    );
 }
