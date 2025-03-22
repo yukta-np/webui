@@ -116,11 +116,11 @@ const AcademicCalendarEditor = () => {
     const currentYear = currentMonth.getYear();
 
     return (
-      <div className="mt-8 bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">
+      <div className="p-6 mt-8 bg-white rounded-lg shadow">
+        <h3 className="mb-4 text-xl font-semibold text-gray-800">
           {currentYear} (B.S.) Academic Year Overview
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 12 }, (_, i) => {
             const monthDate = new NepaliDate(currentYear, i, 1);
             const monthEvents = Object.entries(events)
@@ -131,8 +131,8 @@ const AcademicCalendarEditor = () => {
               .flatMap(([_, events]) => events);
 
             return (
-              <div key={i} className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">
+              <div key={i} className="p-4 rounded-lg bg-gray-50">
+                <h4 className="mb-2 font-medium text-gray-700">
                   {monthDate.format('MMMM')}
                 </h4>
                 {monthEvents.length > 0 ? (
@@ -149,7 +149,7 @@ const AcademicCalendarEditor = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">No events scheduled</p>
+                  <p className="text-sm text-gray-400">No events scheduled</p>
                 )}
               </div>
             );
@@ -164,10 +164,10 @@ const AcademicCalendarEditor = () => {
 
     return (
       <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200">
-        {['आइत', 'सोम', 'मङ्गल', 'बुध', 'बिही', 'शुक्र', 'शनि'].map((day) => (
+        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
           <div
             key={day}
-            className="bg-white p-2 text-center font-medium text-gray-600"
+            className="p-2 font-medium text-center text-gray-600 bg-white"
           >
             {day}
           </div>
@@ -180,7 +180,7 @@ const AcademicCalendarEditor = () => {
             return (
               <div
                 key={idx}
-                className="min-h-24 bg-white p-2 border-b border-r border-gray-100"
+                className="p-2 bg-white border-b border-r border-gray-100 min-h-24"
               ></div>
             );
           }
@@ -204,7 +204,7 @@ const AcademicCalendarEditor = () => {
                   : 'bg-white'
               }`}
             >
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center justify-between mb-1">
                 <div className="text-sm">
                   <div className={isToday ? 'text-gray-100' : 'text-gray-800'}>
                     {day.date.getDate()}
@@ -251,9 +251,9 @@ const AcademicCalendarEditor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
               shape="circle"
