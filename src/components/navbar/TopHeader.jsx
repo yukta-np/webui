@@ -197,7 +197,6 @@ const TopHeader = () => {
           <Input
             placeholder="Search..."
             allowClear
-            enterButton
             prefix={<SearchIcon stroke={colorTextSecondary} />}
             style={{
               borderRadius: borderRadiusLG,
@@ -220,7 +219,6 @@ const TopHeader = () => {
         <Input.Search
           placeholder="Type to search..."
           allowClear
-          enterButton
           onSearch={(value) => console.log(value)}
         />
       </Modal>
