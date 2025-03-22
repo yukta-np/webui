@@ -229,6 +229,12 @@ const deniedUserIds =  record.announcementUsers
     }
   };
 
+  // useState is a hook that allows you to add react state to functional components.
+  // it takes an initial value and returns an array with the current value and a function to update it.
+  // the first value returned is the current state, and the second value is a function that can be used to update the state.
+  // the function to update the state takes the new state as an argument, and it can be used to set the new state directly,
+  // or it can be used to update the state by passing a function that takes the previous state and returns the new state.
+
   const columns = useMemo(
     () => [
       {
