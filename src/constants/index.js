@@ -30,6 +30,10 @@ export const constants = {
     groupUrl: `${URL}/groups`,
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
+    groupUrl: `${URL}/group`,
+
+    // Socket
+    notificationGateway: `${API_URL}/notifications`,
   },
 };
 
@@ -59,7 +63,7 @@ export const Resources = {
   permissionGroups: 'permissionGroups',
   classroom: 'classroom',
   settings: 'settings',
-}
+};
 
 export const ResourceActions = {
   create: 'create',
@@ -76,4 +80,4 @@ export const ResourceActions = {
   archive: 'archive',
   restore: 'restore',
   acknowledegedByList: 'acknowledegedByList',
-}
+};

@@ -19,6 +19,7 @@ import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import useWebSocket from '@/hooks/useWebsocket';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -33,32 +34,7 @@ const TopHeader = () => {
   const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] =
     useState(false);
   const [loggedInUser, setLoggedInUser] = useState();
-
-  const meUrl = constants.urls.meUrl;
-  const { data: userData } = useSWRImmutable(meUrl, fetcher);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (userData) {
-      setLoggedInUser(userData);
-    }
-  }, [userData]);
-
-  // Dummy data
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: 'System Update',
-      description: 'Planned maintenance on Friday at 10 PM',
-      date: '2024-02-15',
-    },
-    {
-      id: 2,
-      title: 'New Message',
-      description: 'You have a new message from support',
-      date: '2024-02-14',
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const [announcements] = useState([
     {
@@ -74,6 +50,30 @@ const TopHeader = () => {
       date: '2024-02-18',
     },
   ]);
+
+  const meUrl = constants.urls.meUrl;
+  const { data: userData } = useSWRImmutable(meUrl, fetcher);
+
+  const { socket, socketConnected } = useWebSocket();
+
+  useEffect(() => {
+    if (userData) {
+      setLoggedInUser(userData);
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (socket) {
+      console.log({ socket, socketConnected });
+      if (socketConnected) {
+        socket.on('onNotification', (data) => {
+          console.log('Notification received:', data);
+
+          setNotifications((prev) => [data, ...prev]);
+        });
+      }
+    }
+  }, [socket, socketConnected]);
 
   const {
     token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
