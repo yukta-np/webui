@@ -443,7 +443,7 @@ const Announcements = () => {
                   </Col>
                   <Col xs={12}>
                     <Form.Item label="Share to Everyone" name="everyone">
-                      <Switch />
+                      <Switch defaultChecked />
                     </Form.Item>
                   </Col>
                 </Row>
