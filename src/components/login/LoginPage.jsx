@@ -4,6 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { constants } from '@/constants';
 import { setSessionStorageData } from '@/utils';
+import YuktaLogo from '@/svgs/yukta';
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
@@ -60,7 +61,7 @@ const LoginPage = () => {
       });
       const { token } = response.data;
       setSessionStorageData(token);
-       window.location.href = '/dashboard';
+      window.location.href = '/dashboard';
     } catch (e) {
       if (e.response) {
         const msg = e.response.data.message;
@@ -158,12 +159,8 @@ const LoginPage = () => {
           </Form>
 
           {/* Improved Powered By Section */}
-          <div className="absolute left-0 right-0 flex items-center justify-center gap-2 px-4 py-2 bottom-6">
-            <img
-              src="/yuktaLogo.png"
-              alt="YUKTA Logo"
-              className="w-10 h-10 transition-opacity opacity-90 hover:opacity-100"
-            />
+          <div className="absolute left-0 right-0 flex items-center justify-center gap-2 px-4 py-2 bottom-6  text-gray-600">
+            <YuktaLogo height="24px" />
             <div className="flex flex-col items-start">
               <span className="text-xs font-light text-gray-400">
                 Powered by

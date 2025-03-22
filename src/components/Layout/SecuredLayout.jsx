@@ -25,6 +25,7 @@ import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
 import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
 import { CloseOutlined } from '@ant-design/icons';
+import YuktaLogo from '@/svgs/yukta';
 
 const { Content } = Layout;
 
@@ -177,40 +178,33 @@ const SecuredLayout = ({ children }) => {
         position: 'fixed',
         left: 0,
         transition: 'all 0.3s ease-in-out',
+        padding: '1.5rem 0',
       }}
     >
       <div>
-        <Link href="/">
-          {/* <img
-            src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
-            height={44}
-            style={{ marginTop: '8px', transition: 'width 0.3s ease-in-out' }}
-            alt="Yukta"
-          /> */}
-          <svg
-            width="35"
-            height="100"
-            viewBox="0 0 599 770"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <Link href="/" className={`block mx-auto mb-6 w-max text-gray-100 `}>
+          <YuktaLogo
+            height="40px"
             style={{
-              marginLeft: '23px',
-              transition: 'width 0.3s ease-in-out',
+              transition: 'all 0.3s ease-in-out',
+              display: 'inline-block',
+              transform: collapsed
+                ? 'translateX(14px) scale(0.8)'
+                : 'translateX(0) scale(1)',
+            }}
+          />
+          <h1
+            className="inline-block text-3xl font-bold text-current"
+            style={{
+              transition: 'all 0.3s ease-in-out',
+              verticalAlign: 'middle',
+              transform: collapsed ? 'scaleY(0)' : 'scaleY(1)',
+              opacity: collapsed ? '0' : '1',
+              visibility: collapsed ? 'hidden' : 'visible',
             }}
           >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M71.3432 478.832C68.219 475.708 68.2189 470.642 71.3431 467.518L305.205 233.657C308.329 230.532 313.394 230.532 316.518 233.657L550.38 467.518C553.504 470.642 553.504 475.708 550.38 478.832L424.771 604.441C422.199 607.012 421.686 610.995 423.52 614.134L491.332 730.169C495.791 737.798 493.22 747.597 485.591 752.056L456.801 768.881C452.986 771.11 448.087 769.825 445.857 766.01L383.716 659.679C381.071 655.153 374.86 654.352 371.153 658.059L316.518 712.693C313.394 715.817 308.329 715.817 305.205 712.693L251.24 658.729C247.533 655.022 241.322 655.823 238.676 660.349L176.927 766.01C174.697 769.825 169.798 771.11 165.983 768.881L137.193 752.056C129.564 747.597 126.993 737.798 131.452 730.169L198.872 614.804C200.707 611.664 200.193 607.682 197.622 605.111L71.3432 478.832Z"
-              fill="white"
-            />
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M84.2393 219.811C84.184 219.756 84.184 219.666 84.2393 219.611V219.611C84.2946 219.555 84.2946 219.466 84.2393 219.41L2.34314 137.514C-0.781049 134.39 -0.781047 129.325 2.34314 126.2L31.5793 96.9643C34.7035 93.8401 39.7688 93.8401 42.893 96.9643L119.232 173.304C122.357 176.428 127.422 176.428 130.546 173.304L301.507 2.34315C304.631 -0.781046 309.696 -0.781052 312.82 2.34314L483.686 173.209C486.81 176.333 491.876 176.333 495 173.209L555.474 112.734C558.599 109.61 563.664 109.61 566.788 112.734L596.024 141.971C599.148 145.095 599.149 150.16 596.024 153.284L530.04 219.268C529.959 219.35 529.959 219.482 530.04 219.563V219.563C530.122 219.645 530.122 219.777 530.04 219.858L312.82 437.078C309.696 440.202 304.631 440.202 301.507 437.078L84.2393 219.811ZM292 201.686C292 221.016 276.33 236.686 257 236.686C237.67 236.686 222 221.016 222 201.686C222 182.356 237.67 166.686 257 166.686C276.33 166.686 292 182.356 292 201.686ZM364 236.686C383.33 236.686 399 221.016 399 201.686C399 182.356 383.33 166.686 364 166.686C344.67 166.686 329 182.356 329 201.686C329 221.016 344.67 236.686 364 236.686Z"
-              fill="white"
-            />
-          </svg>
+            Yukta
+          </h1>
         </Link>
       </div>
       <Menu
