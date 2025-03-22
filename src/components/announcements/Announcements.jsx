@@ -114,10 +114,10 @@ const Announcements = () => {
   useEffect(() => {
     if (!shareToEveryone) {
       form.setFieldsValue({
-        shareUsers: [],
-        shareGroups: [],
-        userBlackList: [],
-        groupBlackList: [],
+        allowedUserIds: [],
+        allowedGroupIds: [],
+        deniedUserIds: [],
+        deniedGroupIds: [],
       });
     }
   }, [shareToEveryone, form]);
@@ -189,6 +189,7 @@ const Announcements = () => {
     });
 
   const onFinish = async (values) => {
+    console.log('Form values:', values);
     try {
       setIsProcessing(true);
       const url =
@@ -199,7 +200,8 @@ const Announcements = () => {
       const method = action === 'edit' ? 'patch' : 'post';
       const payload = {
         ...values,
-        dueDate: values.dueDate?.toISOString(),
+        dueDate: values.dueDate ? moment(values.dueDate).toISOString() : null,
+        
       };
 
       await axios[method](url, payload, { headers });
@@ -239,13 +241,19 @@ const Announcements = () => {
         title: 'Created By',
         dataIndex: 'createdBy',
         key: 'createdBy',
-        render: (_, record) => record.createdBy?.fullName || 'N/A',
+        render: (_, record) => record.creator?.fullName || 'N/A',
       },
       {
         title: 'Due Date',
         dataIndex: 'dueDate',
         key: 'dueDate',
-        render: (text) => moment(text).format('DD/MM/YYYY hh:mm a'),
+        render: (text) => moment(text).format('DD/MM/YYYY'),
+      },
+      {
+        title: 'Created At',
+        dataIndex: 'createdAt',
+        key: 'createdAt',
+        render: (text) => moment(text).format('DD/MM/YYYY hh:mm A'),
       },
       {
         title: 'Action',
@@ -454,7 +462,7 @@ const Announcements = () => {
                   <div className="pl-4 border-l border-gray-200">
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item label="Share with Users" name="shareUsers">
+                        <Form.Item label="Share with Users" name="allowedUserIds">
                           <Select
                             mode="multiple"
                             placeholder="Select user to exclude"
@@ -473,7 +481,7 @@ const Announcements = () => {
                     </Row>
                     <Row gutter={24}>
                       <Col xs={24}>
-                        <Form.Item label="Share with Groups" name="shareGroups">
+                        <Form.Item label="Share with Groups" name="allowedGroupIds">
                           <Select
                             mode="multiple"
                             placeholder="Select group to exclude"
@@ -493,7 +501,7 @@ const Announcements = () => {
                       <Col xs={24}>
                         <Form.Item
                           label="User Black List (Don't share with these users)"
-                          name="userBlackList"
+                          name="deniedUserIds"
                         >
                           <Select
                             mode="multiple"
@@ -514,7 +522,7 @@ const Announcements = () => {
                       <Col xs={24}>
                         <Form.Item
                           label="Group Black List (Don't share with these groups)"
-                          name="groupBlackList"
+                          name="deniedGroupIds"
                         >
                           <Select
                             mode="multiple"
