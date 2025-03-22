@@ -4,11 +4,37 @@ import SecuredLayout from "@/components/Layout/SecuredLayout";
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { Spin } from "antd";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { clearStorageAndRedirect, getLoggedInUser } from "@/utils";
 
 export default function App({ Component, pageProps }) {
    const router = useRouter();
-   const isLoginPage = router.pathname === "/auth/login";
+   const path = router.pathname;
+   const isLoginPage = path === "/auth/login";
+
+   useEffect(() => {
+      if (!getLoggedInUser()?.userId) {
+         clearStorageAndRedirect();
+      }
+   }, []);
+
+   if (
+      path.endsWith("/") ||
+      path.endsWith("/auth/login") ||
+      path.endsWith("/auth/verify") ||
+      path.endsWith("/auth/set-password") ||
+      path.endsWith("/auth/reset-password")
+   ) {
+      return (
+         <AppWrapper>
+            <Component {...pageProps} />
+         </AppWrapper>
+      );
+   }
+
+   if (!getLoggedInUser()?.userId) {
+      return null; 
+   }
 
    return (
       <Suspense fallback={<Spin size="large" />}>
@@ -23,6 +49,6 @@ export default function App({ Component, pageProps }) {
                )}
             </AppWrapper>
          </UserWrapper>
-      </Suspense>
+      // </Suspense>
    );
 }

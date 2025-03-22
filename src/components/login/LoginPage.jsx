@@ -60,7 +60,7 @@ const LoginPage = () => {
       });
       const { token } = response.data;
       setSessionStorageData(token);
-       window.location.href = '/dashboard';
+      window.location.href = '/dashboard';
     } catch (e) {
       if (e.response) {
         const msg = e.response.data.message;
