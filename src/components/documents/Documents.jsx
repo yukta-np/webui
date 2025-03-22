@@ -14,8 +14,11 @@ import {
   Tabs,
   Divider,
   Upload,
-  message,
   Popconfirm,
+  Row,
+  Col,
+  Dropdown,
+  Menu,
 } from 'antd';
 import {
   Folder,
@@ -28,6 +31,9 @@ import {
   Trash2,
   ArrowLeft,
   Inbox,
+  List,
+  Grid as GridIcon,
+  MoreVertical,
 } from 'lucide-react';
 
 const { useBreakpoint } = Grid;
@@ -45,6 +51,7 @@ const Documents = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
+  const [viewMode, setViewMode] = useState('list'); // State for view mode (list or icon)
 
   // Dummy data for My Files
   const myFilesDataSource = [
@@ -109,21 +116,22 @@ const Documents = () => {
     return filename.split('.').pop().toLowerCase();
   };
 
-  const renderFileIcon = (filename) => {
+  // Render file icon with custom size
+  const renderFileIcon = (filename, size = 18) => {
     const extension = getFileExtension(filename);
 
     switch (extension) {
       case 'pdf':
-        return <FileText size={18} />;
+        return <FileText size={size} />;
       case 'jpg':
       case 'jpeg':
       case 'png':
       case 'gif':
-        return <Image size={18} />;
+        return <Image size={size} />;
       case 'txt':
-        return <FileText size={18} />;
+        return <FileText size={size} />;
       default:
-        return <File size={18} />;
+        return <File size={size} />;
     }
   };
 
@@ -150,7 +158,11 @@ const Documents = () => {
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (text, record) => (
         <Space>
-          {record.type === 'file' ? renderFileIcon(text) : <Folder size={18} />}
+          {record.type === 'file' ? (
+            renderFileIcon(text, 18) // Use smaller icon size for List View
+          ) : (
+            <Folder size={18} />
+          )}
           {text}
         </Space>
       ),
@@ -209,6 +221,86 @@ const Documents = () => {
 
   const closeUploadModal = () => {
     setIsUploadModalOpen(false);
+  };
+
+  // Action menu for icon view
+  const actionMenu = (record) => (
+    <Menu>
+      <Menu.Item key="download" icon={<Download size={16} />}>
+        Download
+      </Menu.Item>
+      <Menu.Item key="share" icon={<Share2 size={16} />}>
+        Share
+      </Menu.Item>
+      <Menu.Item
+        key="delete"
+        icon={<Trash2 size={16} />}
+        danger
+        onClick={() => {
+          // Handle delete action
+          console.log('Delete:', record.name);
+        }}
+      >
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Render files/folders in icon view
+  const renderIconView = () => {
+    const data = getCurrentFolderData();
+    return (
+      <Row gutter={[16, 16]}>
+        {data.map((item) => (
+          <Col key={item.key} xs={12} sm={8} md={6} lg={4} xl={3}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                padding: 16, // Increased padding
+                border: '1px solid #f0f0f0',
+                borderRadius: 8,
+                cursor: 'pointer',
+                position: 'relative',
+                height: '100%', // Ensure all items have the same height
+              }}
+              onClick={() => {
+                if (item.type === 'folder') {
+                  handleFolderClick(item);
+                }
+              }}
+            >
+              {/* File/Folder Icon */}
+              {item.type === 'file' ? (
+                renderFileIcon(item.name, 48) // Use larger icon size for Icon View
+              ) : (
+                <Folder size={48} /> // Increased icon size
+              )}
+
+              {/* Name and Size */}
+              <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
+              <p style={{ fontSize: 12, color: '#666' }}>{item.size}</p>
+
+              {/* Action Menu (3 vertical dots) */}
+              <Dropdown overlay={actionMenu(item)} trigger={['click']}>
+                <Button
+                  type="text"
+                  icon={<MoreVertical size={16} />}
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                  }}
+                  onClick={(e) => e.stopPropagation()} // Prevent folder navigation
+                />
+              </Dropdown>
+            </div>
+          </Col>
+        ))}
+      </Row>
+    );
   };
 
   return (
@@ -298,33 +390,48 @@ const Documents = () => {
           </Button>
         )}
 
-        <Tabs defaultActiveKey="myFiles">
-          <TabPane tab="My Files" key="myFiles">
-            <Table
-              rowSelection={{ type: 'checkbox' }}
-              dataSource={getCurrentFolderData()}
-              columns={columns}
-              pagination={false}
-              rowKey="key"
-              onRow={(record) => ({
-                onClick: () => {
-                  if (record.type === 'folder') {
-                    handleFolderClick(record);
-                  }
-                },
-              })}
-            />
-          </TabPane>
-          <TabPane tab="Shared Files" key="sharedFiles">
-            <Table
-              rowSelection={{ type: 'checkbox' }}
-              dataSource={[]}
-              columns={columns}
-              pagination={false}
-              rowKey="key"
-            />
-          </TabPane>
-        </Tabs>
+        {/* Tabs with View Toggle Button */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Tabs defaultActiveKey="myFiles">
+            <TabPane tab="My Files" key="myFiles" />
+            <TabPane tab="Shared Files" key="sharedFiles" />
+          </Tabs>
+          <Button
+            type="default"
+            icon={
+              viewMode === 'list' ? <GridIcon size={18} /> : <List size={18} />
+            }
+            onClick={() => setViewMode(viewMode === 'list' ? 'icon' : 'list')}
+          >
+            {viewMode === 'list' ? 'Icon View' : 'List View'}
+          </Button>
+        </div>
+
+        {/* Content based on View Mode */}
+        {viewMode === 'list' ? (
+          <Table
+            rowSelection={{ type: 'checkbox' }}
+            dataSource={getCurrentFolderData()}
+            columns={columns}
+            pagination={false}
+            rowKey="key"
+            onRow={(record) => ({
+              onClick: () => {
+                if (record.type === 'folder') {
+                  handleFolderClick(record);
+                }
+              },
+            })}
+          />
+        ) : (
+          renderIconView()
+        )}
 
         {/* Add Folder Modal */}
         <Modal
