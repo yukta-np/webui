@@ -19,6 +19,7 @@ import {
   Col,
   Dropdown,
   Menu,
+  Radio,
 } from 'antd';
 import {
   Folder,
@@ -159,7 +160,7 @@ const Documents = () => {
       render: (text, record) => (
         <Space>
           {record.type === 'file' ? (
-            renderFileIcon(text, 18) // Use smaller icon size for List View
+            renderFileIcon(text, 18)
           ) : (
             <Folder size={18} />
           )}
@@ -223,7 +224,6 @@ const Documents = () => {
     setIsUploadModalOpen(false);
   };
 
-  // Action menu for icon view
   const actionMenu = (record) => (
     <Menu>
       <Menu.Item key="download" icon={<Download size={16} />}>
@@ -237,7 +237,6 @@ const Documents = () => {
         icon={<Trash2 size={16} />}
         danger
         onClick={() => {
-          // Handle delete action
           console.log('Delete:', record.name);
         }}
       >
@@ -246,7 +245,6 @@ const Documents = () => {
     </Menu>
   );
 
-  // Render files/folders in icon view
   const renderIconView = () => {
     const data = getCurrentFolderData();
     return (
@@ -259,12 +257,12 @@ const Documents = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 textAlign: 'center',
-                padding: 16, // Increased padding
+                padding: 16,
                 border: '1px solid #f0f0f0',
                 borderRadius: 8,
                 cursor: 'pointer',
                 position: 'relative',
-                height: '100%', // Ensure all items have the same height
+                height: '100%',
               }}
               onClick={() => {
                 if (item.type === 'folder') {
@@ -272,18 +270,15 @@ const Documents = () => {
                 }
               }}
             >
-              {/* File/Folder Icon */}
               {item.type === 'file' ? (
-                renderFileIcon(item.name, 48) // Use larger icon size for Icon View
+                renderFileIcon(item.name, 48)
               ) : (
-                <Folder size={48} /> // Increased icon size
+                <Folder size={48} />
               )}
 
-              {/* Name and Size */}
               <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
               <p style={{ fontSize: 12, color: '#666' }}>{item.size}</p>
 
-              {/* Action Menu (3 vertical dots) */}
               <Dropdown overlay={actionMenu(item)} trigger={['click']}>
                 <Button
                   type="text"
@@ -293,7 +288,7 @@ const Documents = () => {
                     top: 8,
                     right: 8,
                   }}
-                  onClick={(e) => e.stopPropagation()} // Prevent folder navigation
+                  onClick={(e) => e.stopPropagation()}
                 />
               </Dropdown>
             </div>
@@ -390,7 +385,6 @@ const Documents = () => {
           </Button>
         )}
 
-        {/* Tabs with View Toggle Button */}
         <div
           style={{
             display: 'flex',
@@ -402,15 +396,17 @@ const Documents = () => {
             <TabPane tab="My Files" key="myFiles" />
             <TabPane tab="Shared Files" key="sharedFiles" />
           </Tabs>
-          <Button
-            type="default"
-            icon={
-              viewMode === 'list' ? <GridIcon size={18} /> : <List size={18} />
-            }
-            onClick={() => setViewMode(viewMode === 'list' ? 'icon' : 'list')}
+          <Radio.Group
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value)}
           >
-            {viewMode === 'list' ? 'Icon View' : 'List View'}
-          </Button>
+            <Radio.Button value="list">
+              <List className="mt-1" size={18} />
+            </Radio.Button>
+            <Radio.Button value="icon">
+              <GridIcon className="mt-1" size={18} />
+            </Radio.Button>
+          </Radio.Group>
         </div>
 
         {/* Content based on View Mode */}
