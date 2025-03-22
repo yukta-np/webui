@@ -33,15 +33,13 @@ const SecuredLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
-  const cookies = new Cookies();
   const size = useWindowSize();
 
   useEffect(() => {
-    setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
+    setCollapsed(true);
   }, []);
 
   const onCollapse = (value) => {
-    cookies.set(COOKIE_SIDEBER_COLLAPSED, value, { path: '/' });
     setCollapsed(value);
   };
 

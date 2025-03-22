@@ -24,48 +24,6 @@ export function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-export const extractTokenFromQueryString = () => {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('token');
-  }
-  return null;
-};
-
-/** ========================== Storage Functions ========================== */
-// export const setSessionStorageData = (token) => {
-//   const {
-//     id: userId,
-//     firstName,
-//     lastName,
-//     email,
-//     phone,
-//     role,
-//     preferences,
-//     organisationId: orgId,
-//     isVerified,
-//     isActive,
-//     createdAt,
-//     updatedAt,
-//   } = parseJwt(token);
-
-//   const yukta = {
-//     token,
-//     userId,
-//     subId,
-//     fullName: `${firstName} ${lastName}`,
-//     email,
-//     phone,
-//     role,
-//     orgId,
-//     preferences: preferences ? JSON.parse(preferences) : {},
-//     isVerified,
-//     isActive,
-//     createdAt,
-//     updatedAt,
-//   };
-//   window.localStorage.setItem('yukta', JSON.stringify(yukta));
-// };
 
 export const setSessionStorageData = (token) => {
   const {
@@ -94,31 +52,43 @@ export const setSessionStorageData = (token) => {
     window.localStorage.setItem('yukta', JSON.stringify(yukta));
   }
 };
+// export const getLoggedInUser = () => {
+//   try {
+//     const yuktaStr = window.localStorage.getItem('yukta');
+//     if (yuktaStr && isJsonParsable(yuktaStr)) {
+//       return JSON.parse(yuktaStr);
+//     }
+//   } catch (error) {
+//     console.error('Error parsing user data from localStorage', error);
+//   }
+
+//   return null;
+// };
 export const getLoggedInUser = () => {
-  try {
-    const yuktaStr = window.localStorage.getItem('yukta');
-    if (yuktaStr && isJsonParsable(yuktaStr)) {
-      return JSON.parse(yuktaStr);
-    }
-  } catch (error) {
-    console.error('Error parsing user data from localStorage', error);
+  const yuktaStr = typeof window !== 'undefined' && window.localStorage.getItem('yukta');
+  let yukta;
+  if (yuktaStr && isJsonParsable(yuktaStr)) {
+    yukta = JSON.parse(yuktaStr);
   }
-  return null;
+  return yukta;
 };
 
+
 export const getToken = () => {
-  const yukta = getLoggedInUser() || extractTokenFromQueryString();
+  const yukta = getLoggedInUser()  //|| extractTokenFromQueryString();
   return yukta?.token;
 };
 
 export const clearStorageAndRedirect = (returnUrl) => {
-  window.localStorage.removeItem('yukta');
-  window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(
-    returnUrl
-  )
-    ? '/auth/login'
-    : `/auth/login?return=${returnUrl}`;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('yukta');
+    window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(returnUrl)
+      ? '/auth/login'
+      : `/auth/login?return=${returnUrl}`;
+  }
+  return null;
 };
+
 
 /** ========================== API Functions ========================== */
 export const fetcher = (url, params) => {

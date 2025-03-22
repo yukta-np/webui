@@ -14,7 +14,7 @@ import {
   List,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
-import { fetcher } from '@/utils';
+import { clearStorageAndRedirect, fetcher } from '@/utils';
 import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
 import { useRouter } from 'next/router';
@@ -80,6 +80,10 @@ const TopHeader = () => {
   } = theme.useToken();
   const screens = useBreakpoint();
 
+  const onLogout = () => {
+    clearStorageAndRedirect();
+  };
+
   const menuItems = [
     {
       label: <Link href="/users/profile">Profile</Link>,
@@ -94,7 +98,7 @@ const TopHeader = () => {
       key: '3',
       label: 'Logout',
       danger: true,
-      onClick: () => console.log('Logout Clicked'),
+      onClick: onLogout,
     },
   ];
 
