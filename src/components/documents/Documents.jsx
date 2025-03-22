@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Layout,
   Grid,
@@ -10,6 +10,7 @@ import {
   Breadcrumb,
   Card,
   Input,
+  Modal,
 } from 'antd';
 import {
   Folder,
@@ -31,6 +32,7 @@ const Documents = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
 
   //dummy data
   const dataSource = [
@@ -163,6 +165,14 @@ const Documents = () => {
     console.log('Search value:', value);
   };
 
+  const openAddFolderModal = () => {
+    setIsAddFolderModalOpen(true);
+  };
+
+  const closeAddFolderModal = () => {
+    setIsAddFolderModalOpen(false);
+  };
+
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -228,6 +238,7 @@ const Documents = () => {
               size="large"
               type="default"
               icon={<Folder size={18} className="mt-1" />}
+              onClick={() => openAddFolderModal}
             >
               Add Folder
             </Button>
@@ -241,6 +252,16 @@ const Documents = () => {
           pagination={false}
           rowKey="key"
         />
+        <Modal
+          title="Basic Modal"
+          open={isAddFolderModalOpen}
+          //   onOk={handleOk}
+          //   onCancel={handleCancel}
+        >
+          <p>Some contents...</p>
+          <p>Some contents...</p>
+          <p>Some contents...</p>
+        </Modal>
       </div>
     </Content>
   );
