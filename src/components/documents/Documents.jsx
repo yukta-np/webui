@@ -11,21 +11,30 @@ import {
   Card,
   Input,
   Modal,
+  Tabs,
+  Divider,
+  Upload,
+  message,
+  Popconfirm,
 } from 'antd';
 import {
   Folder,
-  Upload,
+  Upload as UploadIcon,
   File,
   FileText,
   Image,
   Download,
   Share2,
   Trash2,
+  ArrowLeft,
+  Inbox,
 } from 'lucide-react';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 const { Search } = Input;
+const { TabPane } = Tabs;
+const { Dragger } = Upload;
 
 const Documents = () => {
   const screens = useBreakpoint();
@@ -33,9 +42,12 @@ const Documents = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [currentFolder, setCurrentFolder] = useState(null);
+  const [folderStack, setFolderStack] = useState([]);
 
-  //dummy data
-  const dataSource = [
+  // Dummy data for My Files
+  const myFilesDataSource = [
     {
       key: '1',
       name: 'Document 1.pdf',
@@ -49,22 +61,18 @@ const Documents = () => {
       type: 'folder',
       size: '4.5 MB',
       date: '2023-10-02',
-    },
-    {
-      key: '3',
-      name: 'Image 1.png',
-      type: 'file',
-      size: '2.3 MB',
-      date: '2023-10-03',
-    },
-    {
-      key: '4',
-      name: 'Photo.jpg',
-      type: 'file',
-      size: '3.1 MB',
-      date: '2023-10-04',
+      children: [
+        {
+          key: '2-1',
+          name: 'Nested Document 1.pdf',
+          type: 'file',
+          size: '1.1 MB',
+          date: '2023-10-03',
+        },
+      ],
     },
   ];
+
   const totalStorage = '5 GB';
   const sizeUnits = {
     B: 1,
@@ -80,7 +88,7 @@ const Documents = () => {
   };
 
   const totalStorageBytes = convertToBytes(totalStorage);
-  const usedStorageBytes = dataSource
+  const usedStorageBytes = myFilesDataSource
     .map((item) => convertToBytes(item.size))
     .reduce((acc, val) => acc + val, 0);
 
@@ -119,6 +127,21 @@ const Documents = () => {
     }
   };
 
+  const handleFolderClick = (folder) => {
+    setFolderStack([...folderStack, currentFolder]);
+    setCurrentFolder(folder);
+  };
+
+  const handleGoBack = () => {
+    const parentFolder = folderStack.pop();
+    setCurrentFolder(parentFolder);
+    setFolderStack([...folderStack]);
+  };
+
+  const getCurrentFolderData = () => {
+    return currentFolder ? currentFolder.children : myFilesDataSource;
+  };
+
   const columns = [
     {
       title: 'Name',
@@ -154,8 +177,15 @@ const Documents = () => {
       render: () => (
         <Space>
           <Button type="link" icon={<Download stroke="#1890ff" size={18} />} />
-          <Button type="link" icon={<Share2 size={18} />} />
-          <Button type="link" danger icon={<Trash2 size={18} />} />
+          <Button type="link" icon={<Share2 stroke="#808080" size={18} />} />
+          <Popconfirm
+            title="Delete the file"
+            description="Are you sure?"
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="link" danger icon={<Trash2 size={18} />} />
+          </Popconfirm>
         </Space>
       ),
     },
@@ -173,11 +203,22 @@ const Documents = () => {
     setIsAddFolderModalOpen(false);
   };
 
+  const openUploadModal = () => {
+    setIsUploadModalOpen(true);
+  };
+
+  const closeUploadModal = () => {
+    setIsUploadModalOpen(false);
+  };
+
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
         <Breadcrumb.Item>Home</Breadcrumb.Item>
         <Breadcrumb.Item>Documents</Breadcrumb.Item>
+        {currentFolder && (
+          <Breadcrumb.Item>{currentFolder.name}</Breadcrumb.Item>
+        )}
       </Breadcrumb>
 
       <div
@@ -230,7 +271,8 @@ const Documents = () => {
             <Button
               size="large"
               type="primary"
-              icon={<Upload size={18} className="mt-1" />}
+              icon={<UploadIcon size={18} className="mt-1" />}
+              onClick={openUploadModal}
             >
               Upload
             </Button>
@@ -238,29 +280,104 @@ const Documents = () => {
               size="large"
               type="default"
               icon={<Folder size={18} className="mt-1" />}
-              onClick={() => openAddFolderModal}
+              onClick={openAddFolderModal}
             >
               Add Folder
             </Button>
           </Space>
         </div>
 
-        <Table
-          rowSelection={{ type: 'checkbox' }}
-          dataSource={dataSource}
-          columns={columns}
-          pagination={false}
-          rowKey="key"
-        />
+        {currentFolder && (
+          <Button
+            type="default"
+            icon={<ArrowLeft size={18} />}
+            onClick={handleGoBack}
+            style={{ marginBottom: 16 }}
+          >
+            Back
+          </Button>
+        )}
+
+        <Tabs defaultActiveKey="myFiles">
+          <TabPane tab="My Files" key="myFiles">
+            <Table
+              rowSelection={{ type: 'checkbox' }}
+              dataSource={getCurrentFolderData()}
+              columns={columns}
+              pagination={false}
+              rowKey="key"
+              onRow={(record) => ({
+                onClick: () => {
+                  if (record.type === 'folder') {
+                    handleFolderClick(record);
+                  }
+                },
+              })}
+            />
+          </TabPane>
+          <TabPane tab="Shared Files" key="sharedFiles">
+            <Table
+              rowSelection={{ type: 'checkbox' }}
+              dataSource={[]}
+              columns={columns}
+              pagination={false}
+              rowKey="key"
+            />
+          </TabPane>
+        </Tabs>
+
+        {/* Add Folder Modal */}
         <Modal
-          title="Basic Modal"
+          title="Add Folder"
           open={isAddFolderModalOpen}
-          //   onOk={handleOk}
-          //   onCancel={handleCancel}
+          onCancel={closeAddFolderModal}
+          footer={[
+            <>
+              <Divider />
+              <Button key="cancel" onClick={closeAddFolderModal}>
+                Cancel
+              </Button>
+              <Button key="submit" type="primary" onClick={closeAddFolderModal}>
+                Add
+              </Button>
+            </>,
+          ]}
         >
-          <p>Some contents...</p>
-          <p>Some contents...</p>
-          <p>Some contents...</p>
+          <Input className="mt-3 mb-3" placeholder="Folder Name" />
+        </Modal>
+
+        {/* Upload Modal */}
+        <Modal
+          title="Upload Files"
+          open={isUploadModalOpen}
+          onCancel={closeUploadModal}
+          footer={[
+            <>
+              <Divider />
+              <Button key="cancel" onClick={closeUploadModal}>
+                Cancel
+              </Button>
+              <Button key="submit" type="primary" onClick={closeUploadModal}>
+                Upload
+              </Button>
+            </>,
+          ]}
+        >
+          <Dragger style={{ marginTop: '20px' }}>
+            <p className="ant-upload-drag-icon">
+              <Inbox
+                size={30}
+                className="mx-auto"
+                style={{ display: 'flex', justifyContent: 'center' }}
+              />
+            </p>
+            <p className="ant-upload-text">
+              Click or drag files to this area to upload
+            </p>
+            <p className="ant-upload-hint">
+              Support for a single or bulk upload.
+            </p>
+          </Dragger>
         </Modal>
       </div>
     </Content>
