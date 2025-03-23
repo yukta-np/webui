@@ -20,6 +20,11 @@ import {
   Dropdown,
   Menu,
   Radio,
+  Switch,
+  Form,
+  Select,
+  Avatar,
+  message,
 } from 'antd';
 import {
   Folder,
@@ -36,6 +41,7 @@ import {
   Grid as GridIcon,
   MoreVertical,
 } from 'lucide-react';
+import { useUsers } from '@/hooks/useUsers';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -50,12 +56,12 @@ const Documents = () => {
   } = theme.useToken();
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
-  const [viewMode, setViewMode] = useState('list'); // State for view mode (list or icon)
-
-  // Dummy data for My Files
-  const myFilesDataSource = [
+  const [viewMode, setViewMode] = useState('list');
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [myFilesDataSource, setMyFilesDataSource] = useState([
     {
       key: '1',
       name: 'Document 1.pdf',
@@ -79,7 +85,10 @@ const Documents = () => {
         },
       ],
     },
-  ];
+  ]);
+  const [sharedFilesDataSource, setSharedFilesDataSource] = useState([]);
+  const [newFolderName, setNewFolderName] = useState('');
+  const { users } = useUsers();
 
   const totalStorage = '5 GB';
   const sizeUnits = {
@@ -88,67 +97,6 @@ const Documents = () => {
     MB: 1024 ** 2,
     GB: 1024 ** 3,
     TB: 1024 ** 4,
-  };
-
-  const convertToBytes = (size) => {
-    const [_, num, unit] = size.match(/([\d.]+)\s*([A-Za-z]+)/) || [];
-    return num ? parseFloat(num) * (sizeUnits[unit] || 1) : 0;
-  };
-
-  const totalStorageBytes = convertToBytes(totalStorage);
-  const usedStorageBytes = myFilesDataSource
-    .map((item) => convertToBytes(item.size))
-    .reduce((acc, val) => acc + val, 0);
-
-  const formatSize = (bytes) => {
-    if (bytes >= sizeUnits.TB) return (bytes / sizeUnits.TB).toFixed(2) + ' TB';
-    if (bytes >= sizeUnits.GB) return (bytes / sizeUnits.GB).toFixed(2) + ' GB';
-    if (bytes >= sizeUnits.MB) return (bytes / sizeUnits.MB).toFixed(2) + ' MB';
-    if (bytes >= sizeUnits.KB) return (bytes / sizeUnits.KB).toFixed(2) + ' KB';
-    return bytes + ' B';
-  };
-
-  const progressPercentage = (
-    (usedStorageBytes / totalStorageBytes) *
-    100
-  ).toFixed(2);
-
-  const getFileExtension = (filename) => {
-    return filename.split('.').pop().toLowerCase();
-  };
-
-  // Render file icon with custom size
-  const renderFileIcon = (filename, size = 18) => {
-    const extension = getFileExtension(filename);
-
-    switch (extension) {
-      case 'pdf':
-        return <FileText size={size} />;
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-      case 'gif':
-        return <Image size={size} />;
-      case 'txt':
-        return <FileText size={size} />;
-      default:
-        return <File size={size} />;
-    }
-  };
-
-  const handleFolderClick = (folder) => {
-    setFolderStack([...folderStack, currentFolder]);
-    setCurrentFolder(folder);
-  };
-
-  const handleGoBack = () => {
-    const parentFolder = folderStack.pop();
-    setCurrentFolder(parentFolder);
-    setFolderStack([...folderStack]);
-  };
-
-  const getCurrentFolderData = () => {
-    return currentFolder ? currentFolder.children : myFilesDataSource;
   };
 
   const columns = [
@@ -187,15 +135,25 @@ const Documents = () => {
       title: 'Actions',
       key: 'actions',
       width: '18%',
-      render: () => (
+      render: (_, record) => (
         <Space>
           <Button type="link" icon={<Download stroke="#1890ff" size={18} />} />
-          <Button type="link" icon={<Share2 stroke="#808080" size={18} />} />
+          <Button
+            type="link"
+            icon={
+              <Share2
+                stroke="#808080"
+                onClick={() => openShareModal(record)}
+                size={18}
+              />
+            }
+          />
           <Popconfirm
             title="Delete the file"
             description="Are you sure?"
             okText="Yes"
             cancelText="No"
+            onConfirm={() => handleDelete(record)}
           >
             <Button type="link" danger icon={<Trash2 size={18} />} />
           </Popconfirm>
@@ -203,6 +161,65 @@ const Documents = () => {
       ),
     },
   ];
+
+  const convertToBytes = (size) => {
+    const [_, num, unit] = size.match(/([\d.]+)\s*([A-Za-z]+)/) || [];
+    return num ? parseFloat(num) * (sizeUnits[unit] || 1) : 0;
+  };
+
+  const totalStorageBytes = convertToBytes(totalStorage);
+  const usedStorageBytes = myFilesDataSource
+    .map((item) => convertToBytes(item.size))
+    .reduce((acc, val) => acc + val, 0);
+
+  const formatSize = (bytes) => {
+    if (bytes >= sizeUnits.TB) return (bytes / sizeUnits.TB).toFixed(2) + ' TB';
+    if (bytes >= sizeUnits.GB) return (bytes / sizeUnits.GB).toFixed(2) + ' GB';
+    if (bytes >= sizeUnits.MB) return (bytes / sizeUnits.MB).toFixed(2) + ' MB';
+    if (bytes >= sizeUnits.KB) return (bytes / sizeUnits.KB).toFixed(2) + ' KB';
+    return bytes + ' B';
+  };
+
+  const progressPercentage = (
+    (usedStorageBytes / totalStorageBytes) *
+    100
+  ).toFixed(2);
+
+  const getFileExtension = (filename) => {
+    return filename.split('.').pop().toLowerCase();
+  };
+
+  const renderFileIcon = (filename, size = 18) => {
+    const extension = getFileExtension(filename);
+    switch (extension) {
+      case 'pdf':
+        return <FileText size={size} />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+        return <Image size={size} />;
+      case 'txt':
+        return <FileText size={size} />;
+      default:
+        return <File size={size} />;
+    }
+  };
+
+  const handleFolderClick = (folder) => {
+    setFolderStack([...folderStack, currentFolder]);
+    setCurrentFolder(folder);
+  };
+
+  const handleGoBack = () => {
+    const parentFolder = folderStack.pop();
+    setCurrentFolder(parentFolder);
+    setFolderStack([...folderStack]);
+  };
+
+  const getCurrentFolderData = () => {
+    return currentFolder ? currentFolder.children : myFilesDataSource;
+  };
 
   const handleSearch = (value) => {
     console.log('Search value:', value);
@@ -214,6 +231,41 @@ const Documents = () => {
 
   const closeAddFolderModal = () => {
     setIsAddFolderModalOpen(false);
+    setNewFolderName('');
+  };
+
+  const handleAddFolder = () => {
+    if (!newFolderName.trim()) {
+      message.error('Folder name cannot be empty!');
+      return;
+    }
+    const newFolder = {
+      key: `folder-${Date.now()}`,
+      name: newFolderName,
+      type: 'folder',
+      size: '0 B',
+      date: new Date().toISOString().split('T')[0],
+      children: [],
+    };
+
+    if (currentFolder) {
+      // Add the new folder to the current folder's children
+      const updatedCurrentFolder = {
+        ...currentFolder,
+        children: [...currentFolder.children, newFolder],
+      };
+      setMyFilesDataSource((prev) =>
+        prev.map((item) =>
+          item.key === currentFolder.key ? updatedCurrentFolder : item
+        )
+      );
+    } else {
+      // Add the new folder to the root
+      setMyFilesDataSource([...myFilesDataSource, newFolder]);
+    }
+
+    closeAddFolderModal();
+    message.success('Folder created successfully!');
   };
 
   const openUploadModal = () => {
@@ -224,26 +276,76 @@ const Documents = () => {
     setIsUploadModalOpen(false);
   };
 
-  const actionMenu = (record) => (
-    <Menu>
-      <Menu.Item key="download" icon={<Download size={16} />}>
-        Download
-      </Menu.Item>
-      <Menu.Item key="share" icon={<Share2 size={16} />}>
-        Share
-      </Menu.Item>
-      <Menu.Item
-        key="delete"
-        icon={<Trash2 size={16} />}
-        danger
-        onClick={() => {
-          console.log('Delete:', record.name);
-        }}
-      >
-        Delete
-      </Menu.Item>
-    </Menu>
-  );
+  const handleUpload = (file) => {
+    const newFile = {
+      key: `file-${Date.now()}`,
+      name: file.name,
+      type: 'file',
+      size: `${(file.size / 1024).toFixed(2)} KB`,
+      date: new Date().toISOString().split('T')[0],
+    };
+
+    if (currentFolder) {
+      // Add the new file to the current folder's children
+      const updatedCurrentFolder = {
+        ...currentFolder,
+        children: [...currentFolder.children, newFile],
+      };
+      setMyFilesDataSource((prev) =>
+        prev.map((item) =>
+          item.key === currentFolder.key ? updatedCurrentFolder : item
+        )
+      );
+    } else {
+      // Add the new file to the root
+      setMyFilesDataSource([...myFilesDataSource, newFile]);
+    }
+
+    closeUploadModal();
+    message.success('File uploaded successfully!');
+  };
+
+  const openShareModal = (item) => {
+    setSelectedItem(item);
+    setIsShareModalOpen(true);
+  };
+
+  const closeShareModal = () => {
+    setIsShareModalOpen(false);
+  };
+
+  const handleShare = () => {
+    if (!selectedItem) return;
+    setSharedFilesDataSource([...sharedFilesDataSource, selectedItem]);
+    setMyFilesDataSource((prev) =>
+      prev.filter((item) => item.key !== selectedItem.key)
+    );
+    closeShareModal();
+    message.success('File shared successfully!');
+  };
+
+  const handleDelete = (item) => {
+    if (currentFolder) {
+      // Delete the item from the current folder's children
+      const updatedCurrentFolder = {
+        ...currentFolder,
+        children: currentFolder.children.filter(
+          (child) => child.key !== item.key
+        ),
+      };
+      setMyFilesDataSource((prev) =>
+        prev.map((folder) =>
+          folder.key === currentFolder.key ? updatedCurrentFolder : folder
+        )
+      );
+    } else {
+      // Delete the item from the root
+      setMyFilesDataSource((prev) =>
+        prev.filter((folder) => folder.key !== item.key)
+      );
+    }
+    message.success('Item deleted successfully!');
+  };
 
   const renderIconView = () => {
     const data = getCurrentFolderData();
@@ -279,7 +381,44 @@ const Documents = () => {
               <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
               <p style={{ fontSize: 12, color: '#666' }}>{item.size}</p>
 
-              <Dropdown overlay={actionMenu(item)} trigger={['click']}>
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item
+                      key="share"
+                      icon={<Share2 size={16} />}
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation();
+                        openShareModal(item);
+                      }}
+                    >
+                      Share
+                    </Menu.Item>
+                    <Menu.Item
+                      key="download"
+                      icon={<Download size={16} />}
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation();
+                        console.log('Download:', item.name);
+                      }}
+                    >
+                      Download
+                    </Menu.Item>
+                    <Menu.Item
+                      key="delete"
+                      icon={<Trash2 size={16} />}
+                      danger
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation();
+                        handleDelete(item);
+                      }}
+                    >
+                      Delete
+                    </Menu.Item>
+                  </Menu>
+                }
+                trigger={['click']}
+              >
                 <Button
                   type="text"
                   icon={<MoreVertical size={16} />}
@@ -288,7 +427,9 @@ const Documents = () => {
                     top: 8,
                     right: 8,
                   }}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
                 />
               </Dropdown>
             </div>
@@ -440,13 +581,18 @@ const Documents = () => {
               <Button key="cancel" onClick={closeAddFolderModal}>
                 Cancel
               </Button>
-              <Button key="submit" type="primary" onClick={closeAddFolderModal}>
+              <Button key="submit" type="primary" onClick={handleAddFolder}>
                 Add
               </Button>
             </>,
           ]}
         >
-          <Input className="mt-3 mb-3" placeholder="Folder Name" />
+          <Input
+            className="mt-3 mb-3"
+            placeholder="Folder Name"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+          />
         </Modal>
 
         {/* Upload Modal */}
@@ -466,7 +612,13 @@ const Documents = () => {
             </>,
           ]}
         >
-          <Dragger style={{ marginTop: '20px' }}>
+          <Dragger
+            style={{ marginTop: '20px' }}
+            beforeUpload={(file) => {
+              handleUpload(file);
+              return false; // Prevent default upload behavior
+            }}
+          >
             <p className="ant-upload-drag-icon">
               <Inbox
                 size={30}
@@ -481,6 +633,82 @@ const Documents = () => {
               Support for a single or bulk upload.
             </p>
           </Dragger>
+        </Modal>
+
+        {/* Share Modal */}
+        <Modal
+          title={<p className="text-xl">Share Document</p>}
+          open={isShareModalOpen}
+          onCancel={closeShareModal}
+          footer={[
+            <>
+              <Divider />
+              <Button key="cancel" onClick={closeShareModal}>
+                Cancel
+              </Button>
+              <Button key="submit" type="primary" onClick={handleShare}>
+                Share
+              </Button>
+            </>,
+          ]}
+        >
+          <Divider />
+          {selectedItem && (
+            <p className="text-md font-semibold mt-1">{selectedItem.name}</p>
+          )}
+          <Form>
+            <Form.Item className="mt-5">
+              <p className="mb-2">Share with Everyone</p>
+              <Switch defaultChecked />
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Share with Users</p>
+              <Select
+                showSearch
+                optionFilterProp="label"
+                filterOption={(input, option) =>
+                  option?.label?.toLowerCase().includes(input.toLowerCase())
+                }
+                optionLabelProp="label"
+                mode="multiple"
+              >
+                {users?.map((u) => (
+                  <Option key={u?.id} value={u?.id} label={`${u?.fullName}`}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {u?.fullName
+                          ?.split(' ')
+                          .map((name) => name[0].toUpperCase())
+                          .join('')}
+                      </Avatar>
+                      <span>{`${u?.fullName} `}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Share with Groups</p>
+              <Select mode="multiple">
+                <Select.Option value="group1">Group 1</Select.Option>
+                <Select.Option value="group2">Group 2</Select.Option>
+                <Select.Option value="group3">Group 3</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Black List (Don't share with)</p>
+              <Select mode="multiple">
+                <Select.Option value="role1">Role 1</Select.Option>
+                <Select.Option value="role2">Role 2</Select.Option>
+                <Select.Option value="role3">Role 3</Select.Option>
+              </Select>
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </Content>
