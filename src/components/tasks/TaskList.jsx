@@ -136,6 +136,8 @@ const TaskList = ({
   const [status, setStatus] = useState(null);
   const [assignedTo, setAssignedTo] = useState(null);
   const [createdBy, setCreatedBy] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [editorContent, setEditorContent] = useState();
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -152,6 +154,11 @@ const TaskList = ({
 
   if (createdBy) {
     params.createdBy = createdBy;
+  }
+
+  if (startDate && endDate) {
+    params.startDate = startDate;
+    params.endDate = endDate;
   }
 
   if (assignedTo) {
@@ -266,6 +273,12 @@ const TaskList = ({
   };
 
   const filterByDateRange = (value) => {
+    if (!value) {
+      setStartDate(null);
+      setEndDate(null);
+      tasksRevalidate();
+      return;
+    }
     const startDate = value[0];
     const endDate = value[1];
     const formattedStartDate = startDate
@@ -277,6 +290,8 @@ const TaskList = ({
       startDate: formattedStartDate,
       endDate: formattedEndDate,
     };
+    setStartDate(formattedStartDate);
+    setEndDate(formattedEndDate);
     tasksRevalidate();
   };
 
@@ -450,6 +465,14 @@ const TaskList = ({
       render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
+      title: 'Created At',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      responsive: ['sm'],
+      render: (text) => moment(text).format('DD/MM/YYYY hh:mm A'),
+    },
+    {
       title: 'Action',
       key: 'action',
       width: '10%',
@@ -580,7 +603,11 @@ const TaskList = ({
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>Date Range</p>
-            <RangePicker presets={dateRanges} style={{ width: 385 }} />
+            <RangePicker
+              presets={dateRanges}
+              style={{ width: 385 }}
+              onChange={(value) => filterByDateRange(value)}
+            />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>By Creator </p>
@@ -808,7 +835,7 @@ const TaskList = ({
                       <Inbox
                         size={80}
                         strokeWidth={1}
-                        className="text-gray-300 mr-2"
+                        className="mr-2 text-gray-300"
                       />{' '}
                     </div>
                     <p className="ant-upload-text !text-gray-500">
