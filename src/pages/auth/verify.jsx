@@ -1,4 +1,5 @@
 import { VerifyTokenForm } from '@/components/auth/Verify';
+import CustomHead from '@/components/customHead/CustomHead';
 import { constants } from '@/constants';
 import { Alert, Card, Col, Row, Typography } from 'antd';
 import axios from 'axios';
