@@ -742,18 +742,20 @@ const TaskList = ({
         </Space>
 
         <Table
+          rowSelection={{ type: 'checkbox' }}
           columns={columns}
           dataSource={tasks}
           pagination={{
             total: taskMeta?.totalRows,
             pageSize: taskMeta?.pageSize,
-            pageSizeOptions: ['10', '20', '50'],
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
             responsive: true,
           }}
           rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
-          size={screens.xs ? 'small' : 'middle'}
+          size={screens.xs ? 'small' : 'size'}
           style={{
             minWidth: screens.xs ? '100%' : 'auto',
             overflowX: 'auto',
@@ -901,7 +903,17 @@ const TaskList = ({
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
                       ) : (
-                        <Select optionLabelProp="label">
+                        <Select
+                          showSearch
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            option?.label
+                              ?.toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          optionLabelProp="label"
+                          // mode='multiple' //! DONT DELETE
+                        >
                           {users?.map((u) => (
                             <Option
                               key={u?.id}
@@ -918,7 +930,10 @@ const TaskList = ({
                                   src={u?.avatar}
                                   style={{ marginRight: 8 }}
                                 >
-                                  {!u?.avatar && `${u?.firstName[0]}`}{' '}
+                                  {u?.fullName
+                                    ?.split(' ')
+                                    .map((name) => name[0].toUpperCase())
+                                    .join('')}
                                 </Avatar>
                                 <span>{`${u?.fullName} `}</span>
                               </div>

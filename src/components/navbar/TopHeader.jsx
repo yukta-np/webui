@@ -274,7 +274,10 @@ const TopHeader = () => {
             <Button type="text">
               <Space className="text-left">
                 <Avatar style={{ backgroundColor: '#87d068' }}>
-                  {loggedInUser?.fullName?.toUpperCase()[0]}
+                  {loggedInUser?.fullName
+                    ?.split(' ')
+                    .map((name) => name[0].toUpperCase())
+                    .join('')}
                 </Avatar>
                 <div
                   style={{
