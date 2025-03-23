@@ -21,10 +21,6 @@ const AcademicCalendarEditor = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    console.log(firstDayOfMonth);
-  }, [firstDayOfMonth]);
-
   const eventTypes = [
     { label: 'Holiday', value: 'holiday', color: 'bg-red-100' },
     { label: 'Exam', value: 'exam', color: 'bg-blue-100' },
@@ -39,6 +35,7 @@ const AcademicCalendarEditor = () => {
     const daysInMonth = new NepaliDate(year, month + 1, 0).getDate();
 
     const daysShift = Array.from({ length: firstDayOfMonth }).map(() => null);
+
     const calendarDays = Array.from({ length: daysInMonth }, (_, i) => {
       const date = new NepaliDate(year, month, i + 1);
       const dateKey = date.format('YYYY-MM-DD');
@@ -49,7 +46,12 @@ const AcademicCalendarEditor = () => {
       };
     });
 
-    return [...daysShift, ...calendarDays];
+    const totalCells = 7 * 6; // 7 days * 6 rows(max. weeks) = 42 cells
+    const emptyCellsAtEnd = Array.from({
+      length: totalCells - (daysShift.length + calendarDays.length),
+    }).map(() => null);
+
+    return [...daysShift, ...calendarDays, ...emptyCellsAtEnd];
   };
 
   const handleMonthChange = (offset) => {
@@ -163,11 +165,11 @@ const AcademicCalendarEditor = () => {
     const today = new NepaliDate();
 
     return (
-      <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200">
-        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => (
+      <div className="grid grid-cols-7  gap-px bg-gray-300">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div
             key={day}
-            className="p-2 font-medium text-center text-gray-600 bg-white"
+            className="p-3 pb-6 text-xl font-semibold text-center text-gray-600 bg-white"
           >
             {day}
           </div>
@@ -198,20 +200,18 @@ const AcademicCalendarEditor = () => {
                 setSelectedDate(day.date);
                 setIsModalVisible(true);
               }}
-              className={`min-h-24 p-2 border-b border-r border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                isToday
-                  ? 'bg-blue-400 border-4 border-blue-600 text-gray-100'
-                  : 'bg-white'
+              className={`min-h-24 p-2 border-b border-r border-gray-100 cursor-pointer ${
+                isToday ? 'bg-blue-600  text-gray-100' : 'bg-white'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <div className="text-sm">
+                <div className="text-lg font-semibold">
                   <div className={isToday ? 'text-gray-100' : 'text-gray-800'}>
                     {day.date.getDate()}
                   </div>
                   <div
                     className={`text-xs ${
-                      isToday ? 'text-gray-100' : 'text-gray-400'
+                      isToday ? 'text-gray-200' : 'text-gray-500'
                     }`}
                   >
                     {dayjs(gregorianDate).format('D MMM')}
@@ -251,9 +251,9 @@ const AcademicCalendarEditor = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gray-50">
+    <div className="min-h-screen max-w-3xl p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
               shape="circle"
