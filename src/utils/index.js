@@ -146,6 +146,11 @@ export const dateRanges = {
 
 /** Miscellanios */
 
+export const objectHasValue = (obj) => {
+  return obj && Object.values(obj).some(value => value !== null && value !== undefined);
+};
+
+
 export function humanize(string) {
   return string
     .replace(/([A-Z])/g, ' $1')

@@ -47,7 +47,7 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
-import { dateRanges, openNotification } from '@/utils';
+import { dateRanges, objectHasValue, openNotification } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
 import { useTaskPriority } from '@/hooks/useTaskPriority';
 import { useTaskCategory } from '@/hooks/useTaskCategory';
@@ -138,6 +138,7 @@ const TaskList = ({
   const [createdBy, setCreatedBy] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [tablePage, setTablePage] = useState({});
   const [editorContent, setEditorContent] = useState();
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -150,6 +151,14 @@ const TaskList = ({
 
   if (status) {
     params.status = status;
+  }
+
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
   }
 
   if (createdBy) {
@@ -270,6 +279,16 @@ const TaskList = ({
     } catch (error) {
       console.error('Error updating task status:', error);
     }
+  };
+
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
   };
 
   const filterByDateRange = (value) => {
@@ -726,9 +745,9 @@ const TaskList = ({
           columns={columns}
           dataSource={tasks}
           pagination={{
-            ...taskMeta,
+            total: taskMeta?.totalRows,
+            pageSize: taskMeta?.pageSize,
             pageSizeOptions: ['10', '20', '50'],
-            showSizeChanger: true,
             responsive: true,
           }}
           rowKey={(record) => record.id}
@@ -739,6 +758,7 @@ const TaskList = ({
             minWidth: screens.xs ? '100%' : 'auto',
             overflowX: 'auto',
           }}
+          onChange={onTableChange}
         />
 
         <Modal
