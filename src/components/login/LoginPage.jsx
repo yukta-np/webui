@@ -159,8 +159,8 @@ const LoginPage = () => {
           </Form>
 
           {/* Improved Powered By Section */}
-          <div className="absolute left-0 right-0 flex items-center justify-center gap-2 px-4 py-2 text-gray-600 bottom-6">
-            <YuktaLogo height="24px" />
+          <div className="absolute left-0 right-0 flex items-center justify-center gap-1 px-4 py-2 text-gray-600 bottom-6">
+            <YuktaLogo height="26px"  />
             <div className="flex flex-col items-start">
               <span className="text-xs font-light text-gray-400">
                 Powered by
