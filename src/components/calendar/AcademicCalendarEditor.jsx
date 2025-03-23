@@ -22,10 +22,10 @@ const AcademicCalendarEditor = () => {
   const [form] = Form.useForm();
 
   const eventTypes = [
-    { label: 'Holiday', value: 'holiday', color: 'bg-red-100' },
-    { label: 'Exam', value: 'exam', color: 'bg-blue-100' },
-    { label: 'Event', value: 'event', color: 'bg-green-100' },
-    { label: 'Deadline', value: 'deadline', color: 'bg-yellow-100' },
+    { label: 'Holiday', value: 'holiday', color: 'bg-red-300' },
+    { label: 'Exam', value: 'exam', color: 'bg-blue-300' },
+    { label: 'Event', value: 'event', color: 'bg-green-300' },
+    { label: 'Deadline', value: 'deadline', color: 'bg-yellow-300' },
   ];
 
   const generateCalendar = () => {
@@ -165,7 +165,7 @@ const AcademicCalendarEditor = () => {
     const today = new NepaliDate();
 
     return (
-      <div className="grid grid-cols-7  gap-px bg-gray-300">
+      <div className=" grid grid-cols-7  gap-px bg-gray-300">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div
             key={day}
@@ -218,8 +218,9 @@ const AcademicCalendarEditor = () => {
                   </div>
                 </div>
                 {day.events.length > 0 && (
-                  <span className="text-xs text-gray-400">
-                    {day.events.length} event(s)
+                  <span className="text-xs text-gray-500">
+                    {day.events.length}{' '}
+                    {day.events.length > 1 ? 'events' : 'event'}
                   </span>
                 )}
               </div>
@@ -250,9 +251,26 @@ const AcademicCalendarEditor = () => {
     );
   };
 
+  const UpcomingEvents = () => {
+    return (
+      <div className="p-4 rounded-lg bg-gray-50">
+        <h4 className="mb-2 text-lg font-medium text-gray-700">
+          Upcoming Events
+        </h4>
+        {events.length > 0 ? (
+          <div className="space-y-2">
+            {/* TODO: map the upcoming events here, please... */}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400">No upcoming events</p>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen max-w-3xl p-8 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen p-8 bg-gray-50">
+      <div className=" mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
@@ -281,7 +299,13 @@ const AcademicCalendarEditor = () => {
           </Button>
         </div>
 
-        <CalendarGrid />
+        <section className="grid grid-cols-[75%_1fr] gap-12">
+          <CalendarGrid />
+          <aside className="border-l-2 border-gray-300">
+            <UpcomingEvents />
+          </aside>
+        </section>
+
         <YearlyOverview />
 
         <Modal
