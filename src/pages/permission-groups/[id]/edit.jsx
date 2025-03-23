@@ -2,7 +2,12 @@ import PermissionGroupForm from '@/components/permission-groups/PermissionGroupF
 import React from 'react';
 
 const index = () => {
-  return <PermissionGroupForm mode="edit" />;
+  return (
+    <>
+      <CustomHead actualTitle="Edit Permissions Group" />
+      <PermissionGroupForm mode="edit" />
+    </>
+  );
 };
 
 export default index;

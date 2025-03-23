@@ -1,4 +1,5 @@
 import AcademicCalendarEditor from '@/components/calendar/AcademicCalendarEditor';
+import CustomHead from '@/components/customHead/CustomHead';
 import NepaliDate from 'nepali-date-converter';
 import Head from 'next/head';
 import React from 'react';
@@ -8,9 +9,7 @@ const index = () => {
 
   return (
     <>
-      <Head>
-        <title>Yukta | {today.format('DD-MM-YYYY')}</title>
-      </Head>
+      <CustomHead actualTitle={today.format('DD-MM-YYYY')} />
       <AcademicCalendarEditor />
     </>
   );

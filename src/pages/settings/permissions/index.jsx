@@ -1,9 +1,13 @@
-import React from 'react'
+import CustomHead from '@/components/customHead/CustomHead';
+import React from 'react';
 
 const index = () => {
   return (
-    <div>index</div>
-  )
-}
+    <>
+      <CustomHead actualTitle="Permission settings" />
+      <div>index</div>
+    </>
+  );
+};
 
-export default index
+export default index;

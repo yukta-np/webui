@@ -1,8 +1,14 @@
+import CustomHead from '@/components/customHead/CustomHead';
 import Documents from '@/components/documents/Documents';
 import React from 'react';
 
 const index = () => {
-  return <Documents />;
+  return (
+    <>
+      <CustomHead actualTitle="Documents" />
+      <Documents />
+    </>
+  );
 };
 
 export default index;

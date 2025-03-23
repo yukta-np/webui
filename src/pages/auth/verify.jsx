@@ -31,46 +31,49 @@ const verify = () => {
   }, [token]);
 
   return (
-    <div className="login-page">
-      <Row>
-        <Col
-          span={12}
-          flex
-          style={{ flexDirection: 'column', background: '#f3f3f3' }}
-        >
-          <div style={{ width: '50%', margin: 'auto', marginTop: 250 }}>
-            <Card style={{ borderRadius: '6px' }}>
-              {msg ? (
-                <Alert description={msg} type="error" />
-              ) : (
-                <VerifyTokenForm
-                  token={token}
-                  msg={msg}
-                  email={email}
-                  type={type}
-                />
-              )}
-            </Card>
-            <Typography.Text level={5} className="block mt-5 text-center">
-              Powered by: <img src="/logo.svg" height={25} alt="Yukta" />
-            </Typography.Text>
-          </div>
-        </Col>
-        <Col span={12}>
-          <div className="auth-side-text">
-            <Typography.Title level={3}>
-              Welcome to Yukta Management Software
-            </Typography.Title>
-            <Typography.Title level={1}>
-              Get ready to collaborate using the Most Advanced Management
-              Software
-            </Typography.Title>
-          </div>
-          <div className="auth-side-mask"> </div>
-          <div className="auth-side"></div>
-        </Col>
-      </Row>
-    </div>
+    <>
+      <CustomHead actualTitle="Verify" />
+      <div className="login-page">
+        <Row>
+          <Col
+            span={12}
+            flex
+            style={{ flexDirection: 'column', background: '#f3f3f3' }}
+          >
+            <div style={{ width: '50%', margin: 'auto', marginTop: 250 }}>
+              <Card style={{ borderRadius: '6px' }}>
+                {msg ? (
+                  <Alert description={msg} type="error" />
+                ) : (
+                  <VerifyTokenForm
+                    token={token}
+                    msg={msg}
+                    email={email}
+                    type={type}
+                  />
+                )}
+              </Card>
+              <Typography.Text level={5} className="block mt-5 text-center">
+                Powered by: <img src="/logo.svg" height={25} alt="Yukta" />
+              </Typography.Text>
+            </div>
+          </Col>
+          <Col span={12}>
+            <div className="auth-side-text">
+              <Typography.Title level={3}>
+                Welcome to Yukta Management Software
+              </Typography.Title>
+              <Typography.Title level={1}>
+                Get ready to collaborate using the Most Advanced Management
+                Software
+              </Typography.Title>
+            </div>
+            <div className="auth-side-mask"> </div>
+            <div className="auth-side"></div>
+          </Col>
+        </Row>
+      </div>
+    </>
   );
 };
 

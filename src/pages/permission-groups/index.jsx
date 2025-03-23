@@ -2,7 +2,12 @@ import PerrmissionGroupList from '@/components/permission-groups/PerrmissionGrou
 import React from 'react';
 
 const index = () => {
-  return <PerrmissionGroupList />;
+  return (
+    <>
+      <CustomHead actualTitle="Permissions Group List" />
+      <PerrmissionGroupList />
+    </>
+  );
 };
 
 export default index;
