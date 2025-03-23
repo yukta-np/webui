@@ -8,6 +8,10 @@
   padding: 0;
 }
 
+body {
+  font-family: 'Inter', sans-serif;
+}
+
 .custom-search .ant-input {
   background: transparent !important;
   border-radius: 8px !important;

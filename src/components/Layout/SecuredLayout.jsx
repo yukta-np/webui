@@ -252,7 +252,8 @@ const SecuredLayout = ({ children }) => {
         <TopHeader />
         <Content className="content-container">{children}</Content>
         <Footer style={{ textAlign: 'center' }}>
-          ©{new Date().getFullYear()} Yukta
+          <p>&copy; {new Date().getFullYear()} Yukta. All rights reserved.</p>
+          <p>Precision. Strength. SaaS Solutions – The Ant Way.</p>
         </Footer>
       </Layout>
     </Layout>
