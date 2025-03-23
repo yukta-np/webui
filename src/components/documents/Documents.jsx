@@ -20,6 +20,10 @@ import {
   Dropdown,
   Menu,
   Radio,
+  Switch,
+  Form,
+  Select,
+  Avatar,
 } from 'antd';
 import {
   Folder,
@@ -36,6 +40,7 @@ import {
   Grid as GridIcon,
   MoreVertical,
 } from 'lucide-react';
+import { useUsers } from '@/hooks/useUsers';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -50,9 +55,12 @@ const Documents = () => {
   } = theme.useToken();
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
   const [viewMode, setViewMode] = useState('list'); // State for view mode (list or icon)
+  const [selectedItem, setSelectedItem] = useState(null);
+  const { users } = useUsers();
 
   // Dummy data for My Files
   const myFilesDataSource = [
@@ -187,10 +195,19 @@ const Documents = () => {
       title: 'Actions',
       key: 'actions',
       width: '18%',
-      render: () => (
+      render: (_, record) => (
         <Space>
           <Button type="link" icon={<Download stroke="#1890ff" size={18} />} />
-          <Button type="link" icon={<Share2 stroke="#808080" size={18} />} />
+          <Button
+            type="link"
+            icon={
+              <Share2
+                stroke="#808080"
+                onClick={() => openShareModal(record)}
+                size={18}
+              />
+            }
+          />
           <Popconfirm
             title="Delete the file"
             description="Are you sure?"
@@ -224,26 +241,14 @@ const Documents = () => {
     setIsUploadModalOpen(false);
   };
 
-  const actionMenu = (record) => (
-    <Menu>
-      <Menu.Item key="download" icon={<Download size={16} />}>
-        Download
-      </Menu.Item>
-      <Menu.Item key="share" icon={<Share2 size={16} />}>
-        Share
-      </Menu.Item>
-      <Menu.Item
-        key="delete"
-        icon={<Trash2 size={16} />}
-        danger
-        onClick={() => {
-          console.log('Delete:', record.name);
-        }}
-      >
-        Delete
-      </Menu.Item>
-    </Menu>
-  );
+  const openShareModal = (item) => {
+    setSelectedItem(item);
+    setIsShareModalOpen(true);
+  };
+
+  const closeShareModal = () => {
+    setIsShareModalOpen(false);
+  };
 
   const renderIconView = () => {
     const data = getCurrentFolderData();
@@ -279,7 +284,44 @@ const Documents = () => {
               <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
               <p style={{ fontSize: 12, color: '#666' }}>{item.size}</p>
 
-              <Dropdown overlay={actionMenu(item)} trigger={['click']}>
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item
+                      key="share"
+                      icon={<Share2 size={16} />}
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation(); // Prevent the dropdown from closing
+                        openShareModal(item);
+                      }}
+                    >
+                      Share
+                    </Menu.Item>
+                    <Menu.Item
+                      key="download"
+                      icon={<Download size={16} />}
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation();
+                        console.log('Download:', item.name);
+                      }}
+                    >
+                      Download
+                    </Menu.Item>
+                    <Menu.Item
+                      key="delete"
+                      icon={<Trash2 size={16} />}
+                      danger
+                      onClick={(e) => {
+                        e.domEvent.stopPropagation();
+                        console.log('Delete:', item.name);
+                      }}
+                    >
+                      Delete
+                    </Menu.Item>
+                  </Menu>
+                }
+                trigger={['click']}
+              >
                 <Button
                   type="text"
                   icon={<MoreVertical size={16} />}
@@ -288,7 +330,9 @@ const Documents = () => {
                     top: 8,
                     right: 8,
                   }}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent the parent onClick from firing
+                  }}
                 />
               </Dropdown>
             </div>
@@ -481,6 +525,81 @@ const Documents = () => {
               Support for a single or bulk upload.
             </p>
           </Dragger>
+        </Modal>
+
+        <Modal
+          title={<p className="text-xl">Share Document</p>}
+          open={isShareModalOpen}
+          onCancel={closeShareModal}
+          footer={[
+            <>
+              <Divider />
+              <Button key="cancel" onClick={closeShareModal}>
+                Cancel
+              </Button>
+              <Button key="submit" type="primary" onClick={closeShareModal}>
+                Share
+              </Button>
+            </>,
+          ]}
+        >
+          <Divider />
+          {selectedItem && (
+            <p className="text-md font-semibold mt-1">{selectedItem.name}</p>
+          )}
+          <Form>
+            <Form.Item className="mt-5">
+              <p className="mb-2">Share with Everyone</p>
+              <Switch defaultChecked />
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Share with Users</p>
+              <Select
+                showSearch
+                optionFilterProp="label"
+                filterOption={(input, option) =>
+                  option?.label?.toLowerCase().includes(input.toLowerCase())
+                }
+                optionLabelProp="label"
+                mode="multiple"
+              >
+                {users?.map((u) => (
+                  <Option key={u?.id} value={u?.id} label={`${u?.fullName}`}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {u?.fullName
+                          ?.split(' ')
+                          .map((name) => name[0].toUpperCase())
+                          .join('')}
+                      </Avatar>
+                      <span>{`${u?.fullName} `}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Share with Groups</p>
+              <Select mode="multiple">
+                <Select.Option value="group1">Group 1</Select.Option>
+                <Select.Option value="group2">Group 2</Select.Option>
+                <Select.Option value="group3">Group 3</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <p className="mb-1">Black List (Don't share with)</p>
+              <Select mode="multiple">
+                <Select.Option value="role1">Role 1</Select.Option>
+                <Select.Option value="role2">Role 2</Select.Option>
+                <Select.Option value="role3">Role 3</Select.Option>
+              </Select>
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </Content>
