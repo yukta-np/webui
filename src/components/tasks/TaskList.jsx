@@ -755,7 +755,7 @@ const TaskList = ({
           rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
-          size={screens.xs ? 'small' : 'size'}
+          size="small"
           style={{
             minWidth: screens.xs ? '100%' : 'auto',
             overflowX: 'auto',
