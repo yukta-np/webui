@@ -4,7 +4,7 @@ import SecuredLayout from "@/components/Layout/SecuredLayout";
 import "@/styles/globals.css";
 import { useRouter } from "next/router";
 import { Spin } from "antd";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { clearStorageAndRedirect, getLoggedInUser } from "@/utils";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -20,7 +20,6 @@ export default function App({ Component, pageProps }) {
    // Client-side only logic
    useEffect(() => {
       if (
-         !path.endsWith("/") &&
          !path.endsWith("/auth/login") &&
          !path.endsWith("/auth/register") &&
          !path.endsWith("/auth/verify") &&
@@ -35,7 +34,6 @@ export default function App({ Component, pageProps }) {
    }, [path]);
 
    if (
-      path.endsWith("/") ||
       path.endsWith("/auth/login") ||
       path.endsWith("/auth/register") ||
       path.endsWith("/auth/verify") ||
