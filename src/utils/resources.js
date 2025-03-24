@@ -16,6 +16,20 @@ export const resources = [
       ],
    },
    {
+      title: 'Documents',
+      namespace: 'Document',
+      name: 'documents',
+      actions: [
+         ResourceActions.create,
+         ResourceActions.update,
+         ResourceActions.list,
+         ResourceActions.view,
+         ResourceActions.delete,
+         ResourceActions.download,
+         ResourceActions.upload,
+      ]
+   },
+   {
       title: 'Tasks',
       namespace: 'Task',
       name: Resources.tasks,
@@ -78,6 +92,7 @@ export const resources = [
          ResourceActions.view,
          ResourceActions.delete,
          ResourceActions.publish,
+         ResourceActions.acknowledegedBy,
       ],
    },
    {
@@ -93,7 +108,7 @@ export const resources = [
          ResourceActions.cancel,
       ],
    },
-  
+
    {
       title: 'Notifications',
       namespace: 'Notification',

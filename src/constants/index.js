@@ -81,5 +81,5 @@ export const ResourceActions = {
   cancel: 'cancel',
   archive: 'archive',
   restore: 'restore',
-  acknowledegedByList: 'acknowledegedByList',
+  acknowledegedBy: 'acknowledegedBy',
 };
