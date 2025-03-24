@@ -1,4 +1,5 @@
 import PermissionGroupForm from '@/components/permission-groups/PermissionGroupForm';
+import CustomHead from '@/components/customHead/CustomHead';
 import React from 'react';
 
 const index = () => {

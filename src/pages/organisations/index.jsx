@@ -1,4 +1,5 @@
 import React from 'react';
+import CustomHead from '@/components/customHead/CustomHead';
 
 const index = () => {
   return (
