@@ -24,7 +24,6 @@ export function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-
 export const setSessionStorageData = (token) => {
   const {
     role,
@@ -65,7 +64,8 @@ export const setSessionStorageData = (token) => {
 //   return null;
 // };
 export const getLoggedInUser = () => {
-  const yuktaStr = typeof window !== 'undefined' && window.localStorage.getItem('yukta');
+  const yuktaStr =
+    typeof window !== 'undefined' && window.localStorage.getItem('yukta');
   let yukta;
   if (yuktaStr && isJsonParsable(yuktaStr)) {
     yukta = JSON.parse(yuktaStr);
@@ -73,22 +73,22 @@ export const getLoggedInUser = () => {
   return yukta;
 };
 
-
 export const getToken = () => {
-  const yukta = getLoggedInUser()  //|| extractTokenFromQueryString();
+  const yukta = getLoggedInUser(); //|| extractTokenFromQueryString();
   return yukta?.token;
 };
 
 export const clearStorageAndRedirect = (returnUrl) => {
   if (typeof window !== 'undefined') {
     window.localStorage.removeItem('yukta');
-    window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(returnUrl)
+    window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(
+      returnUrl
+    )
       ? '/auth/login'
       : `/auth/login?return=${returnUrl}`;
   }
   return null;
 };
-
 
 /** ========================== API Functions ========================== */
 export const fetcher = (url, params) => {
@@ -143,20 +143,23 @@ export const dateRanges = {
   'This Year': [moment().startOf('year'), moment().endOf('year')],
 };
 
-
 /** Miscellanios */
 
 export const objectHasValue = (obj) => {
-  return obj && Object.values(obj).some(value => value !== null && value !== undefined);
+  return (
+    obj &&
+    Object.values(obj).some((value) => value !== null && value !== undefined)
+  );
 };
 
-
 export function humanize(string) {
+  console.log(string);
   return string
     .replace(/([A-Z])/g, ' $1')
     .replace(/_/g, ' ')
     .replace(/-/g, ' ')
-    .replace(/^./, (str) => str.toUpperCase());
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
 }
 
 export function unflatten(data) {

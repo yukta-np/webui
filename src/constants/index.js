@@ -1,12 +1,11 @@
 import { getToken } from '@/utils';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  `http://localhost:${process.env.PORT || 3000}`;
 
 export const PREFIX = 'v1';
 export const URL = `${API_URL}/${PREFIX}`;
-
-// export const URL = 'https://yukta-cms.onrender.com';
-// export const URL = 'https://yukta-cms.onrender.com';
 
 export const constants = {
   urls: {
