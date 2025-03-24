@@ -464,7 +464,7 @@ const TaskList = ({
             dataIndex: 'assignedTo',
             key: 'assignedTo',
             responsive: ['md'],
-            render: (_, tasks) => tasks?.assignee.fullName,
+            render: (_, tasks) => tasks?.assignee?.fullName,
           },
         ]
       : []),
@@ -473,7 +473,7 @@ const TaskList = ({
       dataIndex: 'createdBy',
       key: 'createdBy',
       responsive: ['lg'],
-      render: (_, tasks) => tasks?.creator.fullName,
+      render: (_, tasks) => tasks?.creator?.fullName,
     },
     {
       title: 'Due Date',
