@@ -153,7 +153,6 @@ export const objectHasValue = (obj) => {
 };
 
 export function humanize(string) {
-  console.log(string);
   return string
     .replace(/([A-Z])/g, ' $1')
     .replace(/_/g, ' ')
