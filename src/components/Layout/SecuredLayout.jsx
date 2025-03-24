@@ -154,6 +154,12 @@ const SecuredLayout = ({ children }) => {
       icon: <MessageCircle size={18} />,
       href: '/feedback',
     },
+    {
+      label: 'Groups',
+      key: 'groups',
+      icon: <Users size={18} />,
+      href: '/groups',
+    }
   ];
 
   const renderMenu = (items) =>
