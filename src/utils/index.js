@@ -51,18 +51,7 @@ export const setSessionStorageData = (token) => {
     window.localStorage.setItem('yukta', JSON.stringify(yukta));
   }
 };
-// export const getLoggedInUser = () => {
-//   try {
-//     const yuktaStr = window.localStorage.getItem('yukta');
-//     if (yuktaStr && isJsonParsable(yuktaStr)) {
-//       return JSON.parse(yuktaStr);
-//     }
-//   } catch (error) {
-//     console.error('Error parsing user data from localStorage', error);
-//   }
 
-//   return null;
-// };
 export const getLoggedInUser = () => {
   const yuktaStr =
     typeof window !== 'undefined' && window.localStorage.getItem('yukta');
@@ -114,6 +103,23 @@ export const fetcher = (url, params) => {
 };
 
 export const token = getToken();
+
+export const getPermission = () => {
+  if (typeof window !== 'undefined') {
+    return '{}';
+  }
+
+  const yukta = getLoggedInUser();
+
+  const perms = yukta?.permissions;
+  if (!perms || perms === 'undefined') {
+    if (yukta) {
+      yukta.permissions = '{}';
+      window.localStorage.setItem('yukta', yukta);
+    }
+    return '{}';
+  }
+};
 
 /** ========================== UI Helpers ========================== */
 export const openNotification = (message, isError, description = '') => {
