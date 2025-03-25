@@ -190,19 +190,24 @@ const SecuredLayout = ({ children }) => {
 
   function renderMenu(items) {
     return items.map(({ label, key, icon, href = '', isDefault, children }) => {
+      const isAdmin = loggedInUser.role === Roles.ADMIN;
       const hasMenuPermission =
-        loggedInUser.role === Roles.ADMIN ||
-        studentPermission[key]?.[ResourceActions.menu] === true;
+        isAdmin || studentPermission[key]?.[ResourceActions.menu] === true;
 
       if (hasMenuPermission || isDefault) {
         if (children) {
           // Filter children based on their default status and the parent's permission
-          const filteredChildren = children.filter(
-            (child) =>
+          const filteredChildren = children.filter((child) => {
+            if (isAdmin) {
+              return true;
+            }
+
+            return (
               child.isDefault &&
               studentPermission[child.parentKey]?.[ResourceActions.menu] ===
                 true
-          );
+            );
+          });
 
           // Only render the parent with children if there are valid children
           if (filteredChildren.length > 0) {
