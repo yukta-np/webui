@@ -23,6 +23,7 @@ import {
   Popconfirm,
   Divider,
   Avatar,
+  Checkbox,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -64,11 +65,11 @@ import {
 import {
   FileImageOutlined,
   FilePdfOutlined,
-  VideoCameraOutlined,
   FileTextOutlined,
   FileOutlined,
 } from '@ant-design/icons';
 import { useAppContext } from '@/app-context';
+import { Actions } from '@/constants';
 
 const getFileIcon = (fileName) => {
   const ext = fileName.split('.').pop().toLowerCase();
@@ -77,23 +78,13 @@ const getFileIcon = (fileName) => {
     case 'jpg':
     case 'jpeg':
     case 'png':
-    case 'gif':
-    case 'svg':
       return (
         <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
       );
     case 'pdf':
       return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
-    case 'mp4':
-    case 'mkv':
-    case 'avi':
-    case 'mov':
-      return (
-        <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
-      );
+
     case 'txt':
-    case 'doc':
-    case 'docx':
       return (
         <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
       );
@@ -130,7 +121,7 @@ const TaskList = ({
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [action, setAction] = useState('add');
+  const [action, setAction] = useState(Actions.add);
   const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [status, setStatus] = useState(null);
@@ -144,6 +135,7 @@ const TaskList = ({
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [currentTaskId, setCurrentTaskId] = useState(null);
+  const [createAnother, setCreateAnother] = useState(false);
 
   const { loggedInUser } = useAppContext();
 
@@ -203,12 +195,17 @@ const TaskList = ({
 
   const closeModal = () => {
     form.resetFields();
+    setEditorContent('');
     setIsModalVisible(false);
   };
 
   const onAddClick = () => {
-    setAction('add');
+    setAction(Actions.add);
     openModal();
+  };
+
+  const onCreateAnotherChange = (e) => {
+    setCreateAnother(e.target.checked);
   };
   const onEditClick = (record) => {
     const newRecord = {
@@ -217,7 +214,7 @@ const TaskList = ({
     };
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
-    setAction('edit');
+    setAction(Actions.edit);
     openModal();
   };
 
@@ -236,7 +233,7 @@ const TaskList = ({
       assignedTo: tasks?.assignee?.fullName,
       dueDate: tasks?.dueDate ? moment(tasks?.dueDate) : null,
     };
-    setAction('view');
+    setAction(Actions.view);
     form.setFieldsValue(newRecord);
 
     openModal();
@@ -255,19 +252,25 @@ const TaskList = ({
       taskUsers: [],
     };
     try {
-      if (action === 'edit') {
-        await updateTask(editingData.id, values);
-        openNotification('Task updated successfully');
-      } else {
-        await createTask(myValues);
-        openNotification('Task added successfully');
-      }
+      const response =
+        Actions.edit === action
+          ? await updateTask(editingData?.id, myValues)
+          : await createTask(myValues);
+      openNotification(`Task ${action}ed successfully`);
       tasksRevalidate();
+      if (createAnother) {
+        openModal();
+        form.resetFields();
+        setEditorContent('');
+        setUploadedFiles([]);
+      } else {
+        closeModal();
+      }
     } catch (error) {
       console.log(error);
     } finally {
       setIsProcessing(false);
-      setIsModalVisible(false);
+      form.resetFields();
     }
   };
 
@@ -330,11 +333,11 @@ const TaskList = ({
   };
 
   const getTitle = () => {
-    if (action === 'add') {
+    if (Actions.add === action) {
       return 'Add  Task';
-    } else if (action === 'edit') {
+    } else if (Actions.edit === action) {
       return 'Edit Task';
-    } else if (action === 'view') {
+    } else if (Actions.view === action) {
       return 'Task';
     }
   };
@@ -413,7 +416,7 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
-      width: 150,
+      width: 100,
 
       render: (text, tasks) => (
         <>
@@ -483,14 +486,7 @@ const TaskList = ({
       responsive: ['sm'],
       render: (text) => moment(text).format('DD/MM/YYYY'),
     },
-    {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      responsive: ['sm'],
-      render: (text) => moment(text).format('DD/MM/YYYY hh:mm A'),
-    },
+
     {
       title: 'Action',
       key: 'action',
@@ -768,9 +764,12 @@ const TaskList = ({
           open={isModalVisible}
           onCancel={closeModal}
           footer={
-            action === 'add' ? (
+            Actions.add === action ? (
               <>
                 <Divider />
+                <Checkbox onChange={onCreateAnotherChange} className="mr-2 ">
+                  Create another
+                </Checkbox>
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
@@ -778,7 +777,7 @@ const TaskList = ({
                   Add
                 </Button>
               </>
-            ) : action === 'edit' ? (
+            ) : Actions.edit === action ? (
               <>
                 <Divider />
                 <Button onClick={closeModal}>Cancel</Button>
@@ -802,7 +801,7 @@ const TaskList = ({
             form={form}
             layout="vertical"
             onFinish={onSubmit}
-            disabled={action === 'view'}
+            disabled={Actions.view === action}
           >
             <Row gutter={24}>
               <Col xs={24} lg={18}>
@@ -821,7 +820,7 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  {action === 'view' ? (
+                  {Actions.view === action ? (
                     <PreviewSection
                       content={form.getFieldValue('description')}
                     />
@@ -833,9 +832,7 @@ const TaskList = ({
                           onChange={handleEditorChange}
                           placeholder="Enter your task description"
                           setContents={
-                            action === 'edit' || action === 'view'
-                              ? form.getFieldValue('description')
-                              : tasks?.description
+                            action == Actions.edit ? tasks?.description : ''
                           }
                         />
                       </TabPane>
@@ -912,7 +909,6 @@ const TaskList = ({
                               .includes(input.toLowerCase())
                           }
                           optionLabelProp="label"
-                          // mode='multiple' //! DONT DELETE
                         >
                           {users?.map((u) => (
                             <Option
