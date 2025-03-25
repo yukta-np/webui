@@ -59,7 +59,7 @@ const Documents = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
-  const [viewMode, setViewMode] = useState('list');
+  const [viewMode, setViewMode] = useState('menu');
   const [selectedItem, setSelectedItem] = useState(null);
   const [myFilesDataSource, setMyFilesDataSource] = useState([
     {
@@ -551,7 +551,7 @@ const Documents = () => {
         </div>
 
         {/* Content based on View Mode */}
-        {viewMode === 'list' ? (
+        {viewMode === 'menu' ? (
           <Table
             rowSelection={{ type: 'checkbox' }}
             dataSource={getCurrentFolderData()}
