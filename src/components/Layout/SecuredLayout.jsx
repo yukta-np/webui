@@ -23,9 +23,13 @@ import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
-import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
+import { COOKIE_SIDEBER_COLLAPSED, ResourceActions } from '@/constants';
 import { CloseOutlined } from '@ant-design/icons';
 import YuktaLogo from '@/svgs/yukta';
+import { useUserContext } from '@/user-context';
+import { usePermissionGroup } from '@/hooks/usePermissionGroup';
+import { useAppContext } from '@/app-context';
+import { Roles } from '@/utils';
 
 const { Content } = Layout;
 
@@ -34,10 +38,28 @@ const SecuredLayout = ({ children }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
   const size = useWindowSize();
+  const { loggedInUser } = useAppContext();
+  const { permissionGroups } = usePermissionGroup(); // !important use the permissionGroups from the state(once available)
+
+  // TODO: remove this once the permissions backend is fixed to send only the ones associated with a user
+  const [studentPermission, setStudentPermission] = useState({});
 
   useEffect(() => {
     setCollapsed(true);
-  }, []);
+
+    if (permissionGroups && permissionGroups.length > 0) {
+      const studentPermission = permissionGroups.find(
+        (group) => group.name === 'Student'
+      );
+      setStudentPermission(
+        studentPermission ? studentPermission.permissions : {}
+      );
+    }
+  }, [permissionGroups]);
+
+  useEffect(() => {
+    console.log({ studentPermission });
+  }, [studentPermission]);
 
   const onCollapse = (value) => {
     setCollapsed(value);
@@ -54,7 +76,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Routine',
-      key: 'routine',
+      key: 'routines',
       icon: <CalendarDays size={18} />,
       href: '/routine',
     },
@@ -68,6 +90,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-task',
           icon: <CheckCircle size={18} />,
           href: '/tasks/my-task',
+          parentKey: 'tasks',
+          isDefault: true,
         },
         {
           label: "My Team's Tasks",
@@ -85,7 +109,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Leave Request',
-      key: 'leave-request',
+      key: 'leaveRequest',
       icon: <CalendarX size={18} />,
       children: [
         {
@@ -93,6 +117,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-leave-request',
           icon: <UserX size={18} />,
           href: '/leave-request/my-leave',
+          parentKey: 'leaveRequest',
+          isDefault: true,
         },
         {
           label: "Team's Request",
@@ -132,7 +158,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Class Room',
-      key: 'class-room',
+      key: 'classroom',
       icon: <PanelLeftOpen size={18} />,
       href: '/class-room',
     },
@@ -159,15 +185,51 @@ const SecuredLayout = ({ children }) => {
       key: 'groups',
       icon: <Users size={18} />,
       href: '/groups',
-    }
+    },
   ];
 
-  const renderMenu = (items) =>
-    items.map(({ label, key, icon, href, children }) =>
-      children
-        ? { label, key, icon, children: renderMenu(children) }
-        : { label: <Link href={href}>{label}</Link>, key, icon }
-    );
+  function renderMenu(items) {
+    return items.map(({ label, key, icon, href = '', isDefault, children }) => {
+      const isAdmin = loggedInUser.role === Roles.ADMIN;
+      const hasMenuPermission =
+        isAdmin || studentPermission[key]?.[ResourceActions.menu] === true;
+
+      if (hasMenuPermission || isDefault) {
+        if (children) {
+          // Filter children based on their default status and the parent's permission
+          const filteredChildren = children.filter((child) => {
+            if (isAdmin) {
+              return true;
+            }
+
+            return (
+              child.isDefault &&
+              studentPermission[child.parentKey]?.[ResourceActions.menu] ===
+                true
+            );
+          });
+
+          // Only render the parent with children if there are valid children
+          if (filteredChildren.length > 0) {
+            return {
+              label,
+              key,
+              icon,
+              children: renderMenu(filteredChildren),
+            };
+          }
+        }
+
+        return {
+          label: <Link href={href}>{label}</Link>,
+          key,
+          icon,
+        };
+      }
+
+      return null;
+    });
+  }
 
   const sidebar = (
     <Sider
@@ -215,7 +277,7 @@ const SecuredLayout = ({ children }) => {
         theme="dark"
         defaultSelectedKeys={[router.route]}
         mode="inline"
-        items={renderMenu(menuItems)}
+        items={studentPermission && renderMenu(menuItems)}
       />
     </Sider>
   );
