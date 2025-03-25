@@ -18,7 +18,7 @@ import {
   Divider,
 } from 'antd';
 import Link from 'next/link';
-import { UserOutlined } from '@ant-design/icons';
+import { BookOutlined, TeamOutlined, UserOutlined, CodeOutlined  } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -105,28 +105,22 @@ const settingsCards = [
     icon: <UserOutlined className="text-blue-500 text-2xl" />,
   },
   {
-    id: 'administration-staff',
-    title: 'Administration Staff',
-    description: 'Manage roles and permissions',
-    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+    id: 'student',
+    title: 'Student ',
+    description: 'Manage student roles and permissions',
+    icon: <BookOutlined className="text-blue-500 text-2xl" />,
   },
   {
-    id: 'administration-staff',
-    title: 'Administration Staff',
-    description: 'Manage roles and permissions',
-    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+    id: 'staff',
+    title: 'Staff',
+    description: 'Manage staff roles and permissions',
+    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
   },
   {
-    id: 'administration-staff',
-    title: 'Administration Staff',
-    description: 'Manage roles and permissions',
-    icon: <UserOutlined className="text-blue-500 text-2xl" />,
-  },
-  {
-    id: 'administration-staff',
-    title: 'Administration Staff',
-    description: 'Manage roles and permissions',
-    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+    id: 'teachers',
+    title: 'Teachers',
+    description: 'Manage teacher roles and permissions',
+    icon: <CodeOutlined className="text-blue-500 text-2xl" />,
   },
 ];
 
