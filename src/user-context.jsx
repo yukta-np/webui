@@ -8,7 +8,7 @@ export function UserWrapper({ children }) {
 
   const fetchSelfUser = async () => {
     try {
-      const { data } = await axios.get(`${constants.urls.users}/me`, {
+      const { data } = await axios.get(`${constants.urls.meUrl}`, {
         headers,
       });
 
