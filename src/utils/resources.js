@@ -60,7 +60,7 @@ export const resources = [
   {
     title: 'Calendar',
     namespace: 'Calendar',
-    name: Resources.calender,
+    name: Resources.calendar,
     actions: [
       ResourceActions.read,
       ResourceActions.update,
@@ -84,7 +84,7 @@ export const resources = [
   {
     title: 'Announcements',
     namespace: 'Announcement',
-    name: Resources.announcments,
+    name: Resources.announcements,
     actions: [
       ResourceActions.create,
       ResourceActions.update,
