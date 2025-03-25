@@ -104,6 +104,30 @@ const settingsCards = [
     description: 'Manage roles and permissions',
     icon: <UserOutlined className="text-blue-500 text-2xl" />,
   },
+  {
+    id: 'administration-staff',
+    title: 'Administration Staff',
+    description: 'Manage roles and permissions',
+    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+  },
+  {
+    id: 'administration-staff',
+    title: 'Administration Staff',
+    description: 'Manage roles and permissions',
+    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+  },
+  {
+    id: 'administration-staff',
+    title: 'Administration Staff',
+    description: 'Manage roles and permissions',
+    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+  },
+  {
+    id: 'administration-staff',
+    title: 'Administration Staff',
+    description: 'Manage roles and permissions',
+    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+  },
 ];
 
 const Settings = () => {
@@ -251,26 +275,30 @@ const Settings = () => {
             </Breadcrumb>
           </div>
 
-          <Row gutter={[24, 24]}>
-            {settingsCards.map((card) => (
-              <Col xs={24} sm={12} md={8} lg={6} xl={6} key={card.id}>
-                <Card
-                  className="h-full cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setCurrentSetting(card.id)}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">{card.icon}</div>
-                    <div>
-                      <Title level={5} className="m-0 text-blue-600">
-                        {card.title}
-                      </Title>
-                      <Text className="text-gray-500">{card.description}</Text>
+          <Card className="p-4   rounded-lg shadow-sm">
+            <Row gutter={[24, 24]}>
+              {settingsCards.map((card) => (
+                <Col xs={24} sm={12} md={8} lg={6} xl={6} key={card.id}>
+                  <Card
+                    className="h-full cursor-pointer hover:shadow-md transition-shadow bg-white border-1"
+                    onClick={() => setCurrentSetting(card.id)}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">{card.icon}</div>
+                      <div>
+                        <Title style={{ margin: 0, color: '#3182CE' }} level={5}>
+                          {card.title}
+                        </Title>
+                        <Text className="text-gray-500">
+                          {card.description}
+                        </Text>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Card>
         </div>
       );
     }
@@ -356,16 +384,35 @@ const Settings = () => {
                   </Col>
                 </Row>
 
-                <Form.Item
-                  name="email"
-                  label="Email"
-                  rules={[
-                    { required: true, message: 'Please enter email' },
-                    { type: 'email', message: 'Please enter a valid email' },
-                  ]}
-                >
-                  <Input placeholder="Enter email address" />
-                </Form.Item>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      name="email"
+                      label="Email"
+                      rules={[
+                        { required: true, message: 'Please enter email' },
+                        { type: 'email', message: 'Please enter a valid email' },
+                      ]}
+                    >
+                      <Input placeholder="Enter email address" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="role"
+                      label="Role"
+                      rules={[
+                        { required: true, message: 'Please select role' },
+                      ]}
+                    >
+                      <Select placeholder="Select role">
+                        <Select.Option value="student">Student</Select.Option>
+                        <Select.Option value="teacher">Teacher</Select.Option>
+                        <Select.Option value="admin">Admin</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
 
                 {/* <Row gutter={16}>
                   <Col span={12}>
@@ -467,7 +514,8 @@ const Settings = () => {
                   </Col>
                 </Row> */}
 
-                <Divider orientation="left">Contact</Divider>
+                <Divider/>
+                <Typography.Title level={5} style={{ marginBottom: '12px' }}>Contact Information</Typography.Title>
 
                 <Row gutter={16}>
                   <Col span={12}>
