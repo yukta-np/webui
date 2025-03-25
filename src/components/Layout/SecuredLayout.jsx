@@ -28,6 +28,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import YuktaLogo from '@/svgs/yukta';
 import { useUserContext } from '@/user-context';
 import { usePermissionGroup } from '@/hooks/usePermissionGroup';
+import { useAppContext } from '@/app-context';
+import { Roles } from '@/utils';
 
 const { Content } = Layout;
 
@@ -36,7 +38,8 @@ const SecuredLayout = ({ children }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
   const size = useWindowSize();
-  const { permissionGroups } = usePermissionGroup({ id: 3 });
+  const { loggedInUser } = useAppContext();
+  const { permissionGroups } = usePermissionGroup(); // !important use the permissionGroups from the state(once available)
 
   // TODO: remove this once the permissions backend is fixed to send only the ones associated with a user
   const [studentPermission, setStudentPermission] = useState({});
@@ -87,6 +90,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-task',
           icon: <CheckCircle size={18} />,
           href: '/tasks/my-task',
+          parentKey: 'tasks',
+          isDefault: true,
         },
         {
           label: "My Team's Tasks",
@@ -112,6 +117,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-leave-request',
           icon: <UserX size={18} />,
           href: '/leave-request/my-leave',
+          parentKey: 'leaveRequest',
+          isDefault: true,
         },
         {
           label: "Team's Request",
@@ -182,15 +189,40 @@ const SecuredLayout = ({ children }) => {
   ];
 
   function renderMenu(items) {
-    return items.map(({ label, key, icon, href, children }) => {
+    return items.map(({ label, key, icon, href = '', isDefault, children }) => {
       const hasMenuPermission =
+        loggedInUser.role === Roles.ADMIN ||
         studentPermission[key]?.[ResourceActions.menu] === true;
 
-      if (!hasMenuPermission) return null;
+      if (hasMenuPermission || isDefault) {
+        if (children) {
+          // Filter children based on their default status and the parent's permission
+          const filteredChildren = children.filter(
+            (child) =>
+              child.isDefault &&
+              studentPermission[child.parentKey]?.[ResourceActions.menu] ===
+                true
+          );
 
-      return children
-        ? { label, key, icon, children: renderMenu(children) }
-        : { label: <Link href={href}>{label}</Link>, key, icon };
+          // Only render the parent with children if there are valid children
+          if (filteredChildren.length > 0) {
+            return {
+              label,
+              key,
+              icon,
+              children: renderMenu(filteredChildren),
+            };
+          }
+        }
+
+        return {
+          label: <Link href={href}>{label}</Link>,
+          key,
+          icon,
+        };
+      }
+
+      return null;
     });
   }
 
