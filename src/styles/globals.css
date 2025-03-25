@@ -41,3 +41,56 @@ input[disabled],
 .ant-select-disabled {
   color: rgba(0, 0, 0, 0.75) !important;
 }
+
+.task-link-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.task-link-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.task-link-item:hover {
+  background-color: #fafafa;
+}
+
+.task-link-item.selected {
+  background-color: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.task-link-content {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.task-link-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.task-id {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.task-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.task-meta {
+  display: flex;
+  gap: 16px;
+  color: #666;
+  font-size: 13px;
+}

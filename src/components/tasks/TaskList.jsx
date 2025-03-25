@@ -24,6 +24,7 @@ import {
   Divider,
   Avatar,
   Checkbox,
+  Popover,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -35,6 +36,8 @@ import {
   MessageSquareText,
   FilePenLine,
   CloudHail,
+  ListTree,
+  Archive,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -130,12 +133,16 @@ const TaskList = ({
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [tablePage, setTablePage] = useState({});
+  const [archived, setArchived] = useState(false);
   const [editorContent, setEditorContent] = useState();
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [currentTaskId, setCurrentTaskId] = useState(null);
   const [createAnother, setCreateAnother] = useState(false);
+  const [isTaskLinkModalVisible, setIsTaskLinkModalVisible] = useState(false);
+  const [linkedTasks, setLinkedTasks] = useState([]);
+  const [selectedTaskId, setSelectedTaskId] = useState([]);
 
   const { loggedInUser } = useAppContext();
 
@@ -164,6 +171,9 @@ const TaskList = ({
 
   if (assignedTo) {
     params.assignedTo = assignedTo;
+  }
+  if (archived) {
+    params.archived = archived;
   }
 
   if (isMyTask) {
@@ -199,9 +209,45 @@ const TaskList = ({
     setIsModalVisible(false);
   };
 
+  const openTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(true);
+  };
+
+  const closeTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(false);
+  };
+
+  const toggleTaskSelection = (task) => {
+    setLinkedTasks((prev) => {
+      const exists = prev.some((t) => t.id === task.id);
+      return exists ? prev.filter((t) => t.id !== task.id) : [...prev, task];
+    });
+  };
+
+  const handleTaskLinkSubmit = () => {
+    console.log('Linked tasks:', linkedTasks);
+    closeTaskLinkModal();
+  };
+
   const onAddClick = () => {
     setAction(Actions.add);
     openModal();
+  };
+
+  const onArchiveClick = async (id) => {
+    setIsProcessing(true);
+    try {
+      const myValue = {
+        isArchived: true,
+      };
+      console.log(myValue);
+      await updateTask(id, myValue);
+      tasksRevalidate();
+    } catch (error) {
+      console.error('Error archiving tasks:', error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const onCreateAnotherChange = (e) => {
@@ -332,6 +378,11 @@ const TaskList = ({
     tasksRevalidate();
   };
 
+  const filterByArchived = (value) => {
+    setArchived(value);
+    tasksRevalidate();
+  };
+
   const getTitle = () => {
     if (Actions.add === action) {
       return 'Add  Task';
@@ -395,7 +446,7 @@ const TaskList = ({
           {tasks?.displayId}
         </a>
       ),
-      width: '5%',
+      width: 80,
     },
     {
       title: 'Title',
@@ -409,6 +460,7 @@ const TaskList = ({
       key: 'category',
       sorter: (a, b) => a.category.localeCompare(b.category),
       responsive: ['md'],
+      width: 120,
     },
     {
       title: 'Status',
@@ -459,6 +511,7 @@ const TaskList = ({
       key: 'priority',
       sorter: (a, b) => a.priority.localeCompare(b.priority),
       responsive: ['lg'],
+      width: 100,
     },
     ...(!isMyTask
       ? [
@@ -468,16 +521,11 @@ const TaskList = ({
             key: 'assignedTo',
             responsive: ['md'],
             render: (_, tasks) => tasks?.assignee?.fullName,
+            width: 150,
           },
         ]
       : []),
-    {
-      title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
-      responsive: ['lg'],
-      render: (_, tasks) => tasks?.creator?.fullName,
-    },
+
     {
       title: 'Due Date',
       dataIndex: 'dueDate',
@@ -485,6 +533,7 @@ const TaskList = ({
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
       render: (text) => moment(text).format('DD/MM/YYYY'),
+      width: 100,
     },
 
     {
@@ -610,9 +659,26 @@ const TaskList = ({
           <p className="text-xl font-bold">
             {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
           </p>
-          <Button type="primary" onClick={onAddClick}>
-            Add Task
-          </Button>
+          {selectedTaskId?.length > 0 ? (
+            <Popconfirm
+              placement="topLeft"
+              title={`Archive ${selectedTaskId.length} selected task?`}
+              onConfirm={() => onArchiveClick(selectedTaskId)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                type="primary"
+                icon={<Archive className="mt-1" size={16} />}
+              >
+                Archive
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" onClick={onAddClick}>
+              Add Task
+            </Button>
+          )}
         </div>
 
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
@@ -722,6 +788,7 @@ const TaskList = ({
             <p>Archived </p>
             <Select
               showSearch
+              allowClear
               style={{ width: 150 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
@@ -730,15 +797,20 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={[
-                { value: '1', label: 'No' },
-                { value: '2', label: 'Yes' },
+                { value: 'false', label: 'No' },
+                { value: 'true', label: 'Yes' },
               ]}
+              onChange={(value) => filterByArchived(value)}
             />
           </Space>
         </Space>
 
         <Table
-          rowSelection={{ type: 'checkbox' }}
+          rowSelection={{
+            type: 'checkbox',
+            selectedRowKeys: selectedTaskId,
+            onChange: (selectedRowKeys) => setSelectedTaskId(selectedRowKeys),
+          }}
           columns={columns}
           dataSource={tasks}
           pagination={{
@@ -772,6 +844,17 @@ const TaskList = ({
                 </Checkbox>
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
+                </Button>
+                <Button
+                  type="default"
+                  className=" left-4
+                  float-left"
+                  onClick={openTaskLinkModal}
+                  icon={
+                    <ListTree className="mt-1" stroke="#1890ff" size={18} />
+                  }
+                >
+                  Link Task
                 </Button>
                 <Button type="primary" onClick={() => form.submit()}>
                   Add
@@ -1026,6 +1109,86 @@ const TaskList = ({
             </Row>
           </Form>
         </Modal>
+        {isTaskLinkModalVisible && (
+          <Popover
+            title="Link Existing Tasks"
+            content={
+              <div className="task-link-list" style={{ width: 400 }}>
+                {tasks?.map((task) => (
+                  <div
+                    key={task.id}
+                    className={`task-link-item ${
+                      linkedTasks.some((t) => t.id === task.id)
+                        ? 'selected'
+                        : ''
+                    }`}
+                    onClick={() => toggleTaskSelection(task)}
+                  >
+                    <div className="task-link-content">
+                      <div className="task-link-header">
+                        <span className="task-id">{task.displayId}</span>
+                        <Tag
+                          color={
+                            task.status === 'Completed'
+                              ? 'green'
+                              : task.status === 'In Progress'
+                              ? 'orange'
+                              : 'blue'
+                          }
+                        >
+                          {task.status.toUpperCase()}
+                        </Tag>
+                      </div>
+                      <h4 className="task-title">{task.title}</h4>
+                      <div className="task-meta">
+                        <span>
+                          Due: {moment(task.dueDate).format('DD/MM/YYYY')}
+                        </span>
+                        <span>
+                          Assigned to: {task.assignee?.fullName || 'Unassigned'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Divider style={{ margin: '12px 0' }} />
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
+                  <Button
+                    type="text"
+                    onClick={closeTaskLinkModal}
+                    style={{ marginRight: 8 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={handleTaskLinkSubmit}
+                    disabled={linkedTasks.length === 0}
+                  >
+                    Link ({linkedTasks.length})
+                  </Button>
+                </div>
+              </div>
+            }
+            trigger="click"
+            open={isTaskLinkModalVisible}
+            onOpenChange={(visible) => {
+              if (!visible) closeTaskLinkModal();
+            }}
+            placement="topRight"
+            overlayClassName="task-link-popover"
+            overlayStyle={{
+              boxShadow:
+                '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
+              borderRadius: 8,
+            }}
+            arrow={false}
+          >
+            <div style={{ display: 'inline-block' }}></div>
+          </Popover>
+        )}
         <Modal
           title="Task Comments"
           open={isCommentModalVisible}
