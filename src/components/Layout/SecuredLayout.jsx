@@ -23,9 +23,11 @@ import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
-import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
+import { COOKIE_SIDEBER_COLLAPSED, ResourceActions } from '@/constants';
 import { CloseOutlined } from '@ant-design/icons';
 import YuktaLogo from '@/svgs/yukta';
+import { useUserContext } from '@/user-context';
+import { usePermissionGroup } from '@/hooks/usePermissionGroup';
 
 const { Content } = Layout;
 
@@ -34,10 +36,27 @@ const SecuredLayout = ({ children }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
   const size = useWindowSize();
+  const { permissionGroups } = usePermissionGroup({ id: 3 });
+
+  // TODO: remove this once the permissions backend is fixed to send only the ones associated with a user
+  const [studentPermission, setStudentPermission] = useState({});
 
   useEffect(() => {
     setCollapsed(true);
-  }, []);
+
+    if (permissionGroups && permissionGroups.length > 0) {
+      const studentPermission = permissionGroups.find(
+        (group) => group.name === 'Student'
+      );
+      setStudentPermission(
+        studentPermission ? studentPermission.permissions : {}
+      );
+    }
+  }, [permissionGroups]);
+
+  useEffect(() => {
+    console.log({ studentPermission });
+  }, [studentPermission]);
 
   const onCollapse = (value) => {
     setCollapsed(value);
@@ -54,7 +73,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Routine',
-      key: 'routine',
+      key: 'routines',
       icon: <CalendarDays size={18} />,
       href: '/routine',
     },
@@ -85,7 +104,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Leave Request',
-      key: 'leave-request',
+      key: 'leaveRequest',
       icon: <CalendarX size={18} />,
       children: [
         {
@@ -132,7 +151,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Class Room',
-      key: 'class-room',
+      key: 'classroom',
       icon: <PanelLeftOpen size={18} />,
       href: '/class-room',
     },
@@ -159,15 +178,21 @@ const SecuredLayout = ({ children }) => {
       key: 'groups',
       icon: <Users size={18} />,
       href: '/groups',
-    }
+    },
   ];
 
-  const renderMenu = (items) =>
-    items.map(({ label, key, icon, href, children }) =>
-      children
+  function renderMenu(items) {
+    return items.map(({ label, key, icon, href, children }) => {
+      const hasMenuPermission =
+        studentPermission[key]?.[ResourceActions.menu] === true;
+
+      if (!hasMenuPermission) return null;
+
+      return children
         ? { label, key, icon, children: renderMenu(children) }
-        : { label: <Link href={href}>{label}</Link>, key, icon }
-    );
+        : { label: <Link href={href}>{label}</Link>, key, icon };
+    });
+  }
 
   const sidebar = (
     <Sider
@@ -215,7 +240,7 @@ const SecuredLayout = ({ children }) => {
         theme="dark"
         defaultSelectedKeys={[router.route]}
         mode="inline"
-        items={renderMenu(menuItems)}
+        items={studentPermission && renderMenu(menuItems)}
       />
     </Sider>
   );
