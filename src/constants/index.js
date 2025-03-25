@@ -47,7 +47,7 @@ export const COOKIE_SIDEBER_COLLAPSED = 'yukta.ui.sidebar.collapsed';
 export const Actions = {
   add: 'add',
   edit: 'edit',
-  view: 'view',
+  read: 'read',
   clone: 'clon',
 };
 
@@ -68,8 +68,8 @@ export const Resources = {
 
 export const ResourceActions = {
   create: 'create',
-  list: 'list',
-  view: 'view',
+  menu: 'menu',
+  read: 'read',
   update: 'update',
   publish: 'publish',
   import: 'import',
