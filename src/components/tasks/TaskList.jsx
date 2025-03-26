@@ -25,6 +25,7 @@ import {
   Avatar,
   Checkbox,
   Popover,
+  Tooltip,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -35,9 +36,12 @@ import {
   FileImage,
   MessageSquareText,
   FilePenLine,
+  FileText,
+  File,
   CloudHail,
   ListTree,
   Archive,
+  X,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -65,12 +69,6 @@ import {
   createComment,
   getComments,
 } from '@/services/tasks.http';
-import {
-  FileImageOutlined,
-  FilePdfOutlined,
-  FileTextOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
 import { useAppContext } from '@/app-context';
 import { Actions } from '@/constants';
 
@@ -81,18 +79,14 @@ const getFileIcon = (fileName) => {
     case 'jpg':
     case 'jpeg':
     case 'png':
-      return (
-        <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-      );
+      return <FileImage style={{ color: '#1890ff', fontSize: '18px' }} />;
     case 'pdf':
-      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
+      return <FileText style={{ color: '#ff4d4f', fontSize: '18px' }} />;
 
     case 'txt':
-      return (
-        <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
-      );
+      return <FileText style={{ color: '#52c41a', fontSize: '18px' }} />;
     default:
-      return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+      return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
   }
 };
 
@@ -143,6 +137,7 @@ const TaskList = ({
   const [isTaskLinkModalVisible, setIsTaskLinkModalVisible] = useState(false);
   const [linkedTasks, setLinkedTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { loggedInUser } = useAppContext();
 
@@ -1111,64 +1106,112 @@ const TaskList = ({
         </Modal>
         {isTaskLinkModalVisible && (
           <Popover
-            title="Link Existing Tasks"
+            title={
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span className="ml-3">Link Existing Tasks</span>
+                <Button
+                  type="text"
+                  icon={<X size={18} style={{ color: 'grey' }} />}
+                  onClick={closeTaskLinkModal}
+                  style={{ marginLeft: 8 }}
+                />
+              </div>
+            }
             content={
-              <div className="task-link-list" style={{ width: 400 }}>
-                {tasks?.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`task-link-item ${
-                      linkedTasks.some((t) => t.id === task.id)
-                        ? 'selected'
-                        : ''
-                    }`}
-                    onClick={() => toggleTaskSelection(task)}
-                  >
-                    <div className="task-link-content">
-                      <div className="task-link-header">
-                        <span className="task-id">{task.displayId}</span>
-                        <Tag
-                          color={
-                            task.status === 'Completed'
-                              ? 'green'
-                              : task.status === 'In Progress'
-                              ? 'orange'
-                              : 'blue'
-                          }
-                        >
-                          {task.status.toUpperCase()}
-                        </Tag>
-                      </div>
-                      <h4 className="task-title">{task.title}</h4>
-                      <div className="task-meta">
-                        <span>
-                          Due: {moment(task.dueDate).format('DD/MM/YYYY')}
-                        </span>
-                        <span>
-                          Assigned to: {task.assignee?.fullName || 'Unassigned'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <Divider style={{ margin: '12px 0' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '360px',
+                }}
+              >
                 <div
-                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                  style={{ padding: '8px 12px', background: '#fff', zIndex: 1 }}
                 >
-                  <Button
-                    type="text"
-                    onClick={closeTaskLinkModal}
-                    style={{ marginRight: 8 }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="primary"
-                    onClick={handleTaskLinkSubmit}
-                    disabled={linkedTasks.length === 0}
-                  >
-                    Link ({linkedTasks.length})
-                  </Button>
+                  <Input
+                    placeholder="Search tasks..."
+                    allowClear
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    overflowY: 'auto',
+                    maxHeight: '300px',
+                    padding: '0 12px',
+                  }}
+                >
+                  {tasks
+                    ?.filter(
+                      (task) =>
+                        task.title
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        task.displayId.toString().includes(searchTerm) ||
+                        task.status
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase())
+                    )
+                    ?.map((task) => (
+                      <Tooltip
+                        title={task.title}
+                        placement="topLeft"
+                        key={task.id}
+                      >
+                        <div
+                          className={`task-link-item ${
+                            linkedTasks.some((t) => t.id === task.id)
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            toggleTaskSelection(task);
+                            closeTaskLinkModal();
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 4px',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f0f0f0',
+                          }}
+                        >
+                          <Tag
+                            color={
+                              task.status === 'Completed'
+                                ? 'green'
+                                : task.status === 'In Progress'
+                                ? 'orange'
+                                : 'blue'
+                            }
+                            style={{ margin: 0, flexShrink: 0 }}
+                          >
+                            {task.status}
+                          </Tag>
+                          <span
+                            style={{
+                              flex: 1,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {task.title}
+                          </span>
+                          <span style={{ color: '#666', flexShrink: 0 }}>
+                            #{task.id}
+                          </span>
+                        </div>
+                      </Tooltip>
+                    ))}
                 </div>
               </div>
             }
@@ -1177,12 +1220,14 @@ const TaskList = ({
             onOpenChange={(visible) => {
               if (!visible) closeTaskLinkModal();
             }}
-            placement="topRight"
+            placement="bottomRight"
             overlayClassName="task-link-popover"
             overlayStyle={{
               boxShadow:
                 '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
               borderRadius: 8,
+              width: '400px',
+              padding: 0,
             }}
             arrow={false}
           >
