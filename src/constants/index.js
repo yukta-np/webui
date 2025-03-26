@@ -31,7 +31,8 @@ export const constants = {
     groupUrl: `${URL}/groups`,
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
-    groupUrl: `${URL}/groups`,
+    inquiryUrl: `${URL}/inquiries`,
+
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
