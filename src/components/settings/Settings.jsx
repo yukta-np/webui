@@ -23,8 +23,62 @@ import { BookOutlined, TeamOutlined, UserOutlined, CodeOutlined  } from '@ant-de
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+const initatialStudentData = [
+  {
+    key: '1',
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'FV3tG@example.com',
+    faculty: 'Faculty of Science',
+    program: 'Bachelor of Science in Computer Science',
+    startDate: '2023-01-01',
+    endDate: '',
+  },
+  {
+    key: '2',
+    firstName: 'Jane',
+    lastName: 'Roe',
+    email: 'U9b3@example.com',
+    faculty: 'Faculty of Arts',
+    program: 'Bachelor of Arts in English',
+    startDate: '2022-09-01',
+    endDate: '',
+  },
+  {
+    key: '3',
+    firstName: 'Richard',
+    lastName: 'Brown',
+    email: 'F6h4@example.com',
+    faculty: 'Faculty of Engineering',
+    program: 'Bachelor of Science in Mechanical Engineering',
+    startDate: '2023-05-01',
+    endDate: '',
+  },
+  {
+    key: '4',
+    firstName: 'Emily',
+    lastName: 'Chen',
+    email: 'L9@example.com',
+    faculty: 'Faculty of Business',
+    program: 'Bachelor of Commerce in Accounting',
+    startDate: '2022-01-01',
+    endDate: '',
+  },
+  {
+    key: '5',
+    firstName: 'Michael',
+    lastName: 'Lee',
+    email: 'X3@example.com',
+    faculty: 'Faculty of Science',
+    program: 'Bachelor of Science in Biology',
+    startDate: '2023-09-01',
+    endDate: '',
+  },
+]
+  
+
 // Mock data for admin staff
-const initialAdminStaffData = [
+const initialAdministrationData = [
   {
     key: '1',
     firstName: 'Admin',
@@ -126,7 +180,10 @@ const settingsCards = [
 
 const Settings = () => {
   const [currentSetting, setCurrentSetting] = useState('');
-  const [adminStaffData, setAdminStaffData] = useState(initialAdminStaffData);
+  const [adminStaffData, setAdminStaffData] = useState(initialAdministrationData);
+  const [studentStaffData, setStudentStaffData] = useState(
+    initatialStudentData
+  );
   const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
   const [adminEditingKey, setAdminEditingKey] = useState(null);
   const [form] = Form.useForm();
