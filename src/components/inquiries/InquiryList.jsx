@@ -19,7 +19,7 @@ import {
   Table,
 } from 'antd';
 import { useInquiry } from '@/hooks/useInquiry';
-import { createInquiry } from '@/services/inquiries.http';
+import { createInquiry, updateInquires } from '@/services/inquiries.http';
 import { constants, headers, Actions } from '@/constants';
 import { openNotification } from '@/utils';
 import axios from 'axios';
@@ -33,48 +33,27 @@ const InquiryList = () => {
   const [selectionType, setSelectionType] = useState('checkbox');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [action, setAction] = useState('add');
-  const { inquiries, revalidate: revalidateInquiries } = useInquiry();
+  const [currentInquiryId, setCurrentInquiryId] = useState(null);
+  const [action, setAction] = useState(Actions.add);
+  const { inquiries, revalidate } = useInquiry();
 
   console.log(inquiries);
 
   const getTitle = () => {
     if (action === 'add') {
       return 'Add New Details';
-    } else if (action === 'accept-reject') {
-      return 'Accept / Reject Leave';
-    } else if (action === 'review') {
-      return 'Review Leave Request';
     } else if (action === 'edit') {
-      return 'Edit Leave Request';
+      return 'Edit details';
     }
     return '';
   };
 
-  const onReviewClick = (inquiries) => {
-    const record = {
-      email: inquiries.email,
-      firstName: inquiries.firstName,
-      middleName: inquiries.middleName,
-      lastName: inquiries.lastName,
-      phoneNumber: inquiries.phoneNumber,
-      type: inquiries.type,
-    };
-    form.setFieldsValue(record);
-    setAction('review');
+  const onEdit = (record) => {
+    // yo record mathi ko record hoina
+    setCurrentInquiryId(record.id);
+    setAction(Actions.edit);
     openModal();
-  };
-
-  const onEditClick = (record) => {
-    const newRecord = {
-      ...record,
-      startDate: record.startDate ? moment(record.startDate) : null,
-      endDate: record.endDate ? moment(record.endDate) : null,
-    };
-    setEditingData(newRecord);
-    form.setFieldsValue(newRecord);
-    setAction('edit');
-    openModal();
+    form.setFieldsValue(record); //record yesle bharcha : record filling
   };
 
   const screens = useBreakpoint();
@@ -107,13 +86,13 @@ const InquiryList = () => {
     openModal();
   };
 
-  const handleDelete = async (id) => {
+  const onDelete = async (id) => {
     try {
       await axios.delete(`${constants.urls.inquiryUrl}/${id}`, {
         headers,
       });
-      openNotification('inquiry deleted successfully');
-      revalidateInquiries();
+      openNotification('Inquiry Deleted Successfully');
+      revalidate();
     } catch (error) {
       openNotification('Failed to delete inquiry', true);
       console.error('Delete failed:', error);
@@ -127,21 +106,21 @@ const InquiryList = () => {
       setIsProcessing(true);
       const res =
         action === Actions.add
-          ? createInquiry(values)
-          : updateInquicreateInquiry(currentInquicreateInquiry.id, values);
+          ? await createInquiry(values)
+          : await updateInquires(currentInquiryId, values);
+      openNotification(`Inquiry ${action}ed successfully`);
       setIsModalVisible(false);
-      message.success(`InquicreateInquiry ${action}ed successfully!`);
-      revalidateInquiries();
+      revalidate();
+      form.resetFields();
     } catch (error) {
       console.log(error);
-      message.error('Please fill all required fields correctly');
     } finally {
       setIsProcessing(false);
     }
   };
 
   const onTableChange = () => {
-    revalidateInquiries();
+    revalidate();
   };
 
   const columns = [
@@ -179,18 +158,13 @@ const InquiryList = () => {
           <Space size="middle">
             <Button
               type="link"
-              icon={<Eye size={18} />}
-              onClick={() => onReviewClick()}
-            />
-            <Button
-              type="link"
               icon={<FilePenLine size={18} />}
-              onClick={() => onEditClick(record)}
+              onClick={() => onEdit(record)}
             />
             <Popconfirm
               title="Delete the announcement"
               description="Are you sure to delete this announcement?"
-              onConfirm={() => handleDelete(record.id)}
+              onConfirm={() => onDelete(record.id)}
             >
               <Button
                 type="link"
