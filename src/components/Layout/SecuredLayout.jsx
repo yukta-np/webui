@@ -186,6 +186,12 @@ const SecuredLayout = ({ children }) => {
       icon: <Users size={18} />,
       href: '/groups',
     },
+    {
+      label: 'Modules',
+      key: 'modules',
+      icon: <List size={18} />,
+      href: '/modules',
+    }
   ];
 
   function renderMenu(items) {
