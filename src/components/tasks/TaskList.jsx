@@ -38,10 +38,11 @@ import {
   FilePenLine,
   FileText,
   File,
-  CloudHail,
   ListTree,
   Archive,
   X,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -138,6 +139,7 @@ const TaskList = ({
   const [linkedTasks, setLinkedTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(true);
 
   const { loggedInUser } = useAppContext();
 
@@ -217,6 +219,7 @@ const TaskList = ({
       const exists = prev.some((t) => t.id === task.id);
       return exists ? prev.filter((t) => t.id !== task.id) : [...prev, task];
     });
+    closeTaskLinkModal();
   };
 
   const handleTaskLinkSubmit = () => {
@@ -1103,6 +1106,73 @@ const TaskList = ({
               </Col>
             </Row>
           </Form>
+          {linkedTasks.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginBottom: 8,
+                }}
+                onClick={() => setIsLinkedTasksExpanded(!isLinkedTasksExpanded)}
+              >
+                <span className="ml-2 ">
+                  {isLinkedTasksExpanded ? (
+                    <ChevronDown size={18} />
+                  ) : (
+                    <ChevronRight size={18} />
+                  )}
+                </span>
+                <p className="font-semibold ml-2">
+                  Linked Tasks ({linkedTasks.length})
+                </p>
+              </div>
+              {isLinkedTasksExpanded && (
+                <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                  {linkedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '8px',
+                        borderBottom: '1px solid #f0f0f0',
+                      }}
+                    >
+                      <Tag
+                        color={
+                          task.status === 'Completed'
+                            ? 'green'
+                            : task.status === 'In Progress'
+                            ? 'orange'
+                            : 'blue'
+                        }
+                        className="mr-2"
+                      >
+                        {task.status}
+                      </Tag>
+                      <span className="mr-3">{task.title}</span>
+                      <span style={{ color: '#666', flex: 1 }}>#{task.id}</span>
+                      <Avatar size={25} src={task.assignee.avatar}>
+                        {task.assignee.firstName[0].toUpperCase()}
+                        {task.assignee.lastName[0].toUpperCase()}
+                      </Avatar>
+
+                      <Button
+                        type="text"
+                        icon={<X size={16} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTaskSelection(task);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </Modal>
         {isTaskLinkModalVisible && (
           <Popover
@@ -1160,57 +1230,54 @@ const TaskList = ({
                           .includes(searchTerm.toLowerCase())
                     )
                     ?.map((task) => (
-                      <Tooltip
-                        title={task.title}
-                        placement="topLeft"
+                      <div
                         key={task.id}
+                        className={`task-link-item ${
+                          linkedTasks.some((t) => t.id === task.id)
+                            ? 'selected'
+                            : ''
+                        }`}
+                        onClick={() => toggleTaskSelection(task)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '8px 4px',
+                          gap: '8px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f0f0f0',
+                          backgroundColor: linkedTasks.some(
+                            (t) => t.id === task.id
+                          )
+                            ? '#e6f7ff'
+                            : 'transparent',
+                        }}
                       >
-                        <div
-                          className={`task-link-item ${
-                            linkedTasks.some((t) => t.id === task.id)
-                              ? 'selected'
-                              : ''
-                          }`}
-                          onClick={() => {
-                            toggleTaskSelection(task);
-                            closeTaskLinkModal();
-                          }}
+                        <Tag
+                          color={
+                            task.status === 'Completed'
+                              ? 'green'
+                              : task.status === 'In Progress'
+                              ? 'orange'
+                              : 'blue'
+                          }
+                          style={{ margin: 0, flexShrink: 0 }}
+                        >
+                          {task.status}
+                        </Tag>
+                        <span
                           style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '8px 4px',
-                            gap: '8px',
-                            cursor: 'pointer',
-                            borderBottom: '1px solid #f0f0f0',
+                            flex: 1,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                           }}
                         >
-                          <Tag
-                            color={
-                              task.status === 'Completed'
-                                ? 'green'
-                                : task.status === 'In Progress'
-                                ? 'orange'
-                                : 'blue'
-                            }
-                            style={{ margin: 0, flexShrink: 0 }}
-                          >
-                            {task.status}
-                          </Tag>
-                          <span
-                            style={{
-                              flex: 1,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {task.title}
-                          </span>
-                          <span style={{ color: '#666', flexShrink: 0 }}>
-                            #{task.id}
-                          </span>
-                        </div>
-                      </Tooltip>
+                          {task.title}
+                        </span>
+                        <span style={{ color: '#666', flexShrink: 0 }}>
+                          #{task.id}
+                        </span>
+                      </div>
                     ))}
                 </div>
               </div>
