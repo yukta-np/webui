@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Layout,
   Grid,
@@ -42,6 +42,8 @@ import {
   MoreVertical,
 } from 'lucide-react';
 import { useUsers } from '@/hooks/useUsers';
+import { useDocuments } from '@/hooks/useDocuments';
+import { createDocument, deleteDocument } from '@/services/documents.http';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -61,36 +63,25 @@ const Documents = () => {
   const [folderStack, setFolderStack] = useState([]);
   const [viewMode, setViewMode] = useState('menu');
   const [selectedItem, setSelectedItem] = useState(null);
-  const [myFilesDataSource, setMyFilesDataSource] = useState([
-    {
-      key: '1',
-      name: 'Document 1.pdf',
-      type: 'file',
-      size: '1.2 MB',
-      date: '2023-10-01',
-    },
-    {
-      key: '2',
-      name: 'Folder 1',
-      type: 'folder',
-      size: '4.5 MB',
-      date: '2023-10-02',
-      children: [
-        {
-          key: '2-1',
-          name: 'Nested Document 1.pdf',
-          type: 'file',
-          size: '1.1 MB',
-          date: '2023-10-03',
-        },
-      ],
-    },
-  ]);
+  const [myFiles, setMyFiles] = useState([]);
+  const [currentUploadBatch, setCurrentUploadBatch] = useState([]);
   const [sharedFilesDataSource, setSharedFilesDataSource] = useState([]);
   const [newFolderName, setNewFolderName] = useState('');
+  const {
+    documentsList: documents,
+    revalidate: documentsRevalidate,
+    meta: documentsMeta,
+  } = useDocuments();
   const { users } = useUsers();
 
-  const totalStorage = '5 GB';
+  useEffect(() => {
+    console.log({ documents });
+    if (documents) {
+      setMyFiles(documents);
+    }
+  }, [documents]);
+
+  const totalStorage = '5 GB'; // TODO: Replace with the actual total storage value
   const sizeUnits = {
     B: 1,
     KB: 1024,
@@ -102,34 +93,34 @@ const Documents = () => {
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: 'cloudinaryFolderPath', // TODO: replace with file's name once added in backend
+      key: 'cloudinaryFolderPath',
+      sorter: (a, b) =>
+        a.name ||
+        'naam halna birsiyechu backend maa'.localeCompare(
+          b.name || 'naam halna birsiyechu backend maa'
+        ),
       render: (text, record) => (
         <Space>
-          {record.type === 'file' ? (
-            renderFileIcon(text, 18)
-          ) : (
-            <Folder size={18} />
-          )}
+          {record.isFolder ? <Folder size={18} /> : renderFileIcon(text, 18)}
           {text}
         </Space>
       ),
     },
     {
       title: 'Type',
-      dataIndex: 'type',
+      dataIndex: 'mimeType',
       key: 'type',
     },
     {
       title: 'Size',
-      dataIndex: 'size',
-      key: 'size',
+      dataIndex: 'sizeInByte',
+      key: 'sizeInByte',
     },
     {
       title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
     },
     {
       title: 'Actions',
@@ -168,8 +159,8 @@ const Documents = () => {
   };
 
   const totalStorageBytes = convertToBytes(totalStorage);
-  const usedStorageBytes = myFilesDataSource
-    .map((item) => convertToBytes(item.size))
+  const usedStorageBytes = myFiles
+    .map((item) => item.sizeInByte)
     .reduce((acc, val) => acc + val, 0);
 
   const formatSize = (bytes) => {
@@ -185,7 +176,7 @@ const Documents = () => {
     100
   ).toFixed(2);
 
-  const getFileExtension = (filename) => {
+  const getFileExtension = (filename = 'file.jpg') => {
     return filename.split('.').pop().toLowerCase();
   };
 
@@ -218,7 +209,7 @@ const Documents = () => {
   };
 
   const getCurrentFolderData = () => {
-    return currentFolder ? currentFolder.children : myFilesDataSource;
+    return currentFolder ? currentFolder.children : myFiles;
   };
 
   const handleSearch = (value) => {
@@ -254,14 +245,14 @@ const Documents = () => {
         ...currentFolder,
         children: [...currentFolder.children, newFolder],
       };
-      setMyFilesDataSource((prev) =>
+      setMyFiles((prev) =>
         prev.map((item) =>
           item.key === currentFolder.key ? updatedCurrentFolder : item
         )
       );
     } else {
       // Add the new folder to the root
-      setMyFilesDataSource([...myFilesDataSource, newFolder]);
+      setMyFiles([...myFiles, newFolder]);
     }
 
     closeAddFolderModal();
@@ -276,13 +267,20 @@ const Documents = () => {
     setIsUploadModalOpen(false);
   };
 
-  const handleUpload = (file) => {
+  const handleBeforeUpload = (file) => {
+    console.log(file);
     const newFile = {
-      key: `file-${Date.now()}`,
-      name: file.name,
-      type: 'file',
-      size: `${(file.size / 1024).toFixed(2)} KB`,
-      date: new Date().toISOString().split('T')[0],
+      // key: `file-${Date.now()}`,
+      batchId: file.lastModified,
+      // name: file.name || 'naam halna birsiyechu backend maa',
+      mimeType: file.type,
+      entity: 'documents',
+      entityId: 7,
+      sizeInByte: file.size,
+      organisationId: 1,
+      createdBy: 2,
+      isVisibleToStudent: false,
+      isVisibleToAcademicStaff: false,
     };
 
     if (currentFolder) {
@@ -291,18 +289,44 @@ const Documents = () => {
         ...currentFolder,
         children: [...currentFolder.children, newFile],
       };
-      setMyFilesDataSource((prev) =>
+      setMyFiles((prev) =>
         prev.map((item) =>
           item.key === currentFolder.key ? updatedCurrentFolder : item
         )
       );
     } else {
       // Add the new file to the root
-      setMyFilesDataSource([...myFilesDataSource, newFile]);
+      setCurrentUploadBatch([...currentUploadBatch, newFile]);
     }
 
-    closeUploadModal();
+    // closeUploadModal();
     message.success('File uploaded successfully!');
+  };
+
+  const handleFileChange = (info) => {
+    console.log('files are being changes!', info);
+  };
+
+  const handleFileUpload = async () => {
+    console.log({ currentUploadBatch });
+    const formData = new FormData();
+    currentUploadBatch.forEach((file) => {
+      formData.append('file', file);
+      Object.keys(file).forEach((key) => {
+        formData.append(key, file[key]);
+      });
+    });
+
+    for (const pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    try {
+      const data = await createDocument(formData);
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const openShareModal = (item) => {
@@ -317,14 +341,12 @@ const Documents = () => {
   const handleShare = () => {
     if (!selectedItem) return;
     setSharedFilesDataSource([...sharedFilesDataSource, selectedItem]);
-    setMyFilesDataSource((prev) =>
-      prev.filter((item) => item.key !== selectedItem.key)
-    );
+    setMyFiles((prev) => prev.filter((item) => item.key !== selectedItem.key));
     closeShareModal();
     message.success('File shared successfully!');
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (currentFolder) {
       // Delete the item from the current folder's children
       const updatedCurrentFolder = {
@@ -333,16 +355,21 @@ const Documents = () => {
           (child) => child.key !== item.key
         ),
       };
-      setMyFilesDataSource((prev) =>
+      setMyFiles((prev) =>
         prev.map((folder) =>
           folder.key === currentFolder.key ? updatedCurrentFolder : folder
         )
       );
     } else {
       // Delete the item from the root
-      setMyFilesDataSource((prev) =>
-        prev.filter((folder) => folder.key !== item.key)
-      );
+      setMyFiles((prev) => prev.filter((folder) => folder.key !== item.key));
+
+      try {
+        const res = await deleteDocument(item.id);
+        console.log(res);
+      } catch (err) {
+        console.log(err);
+      }
     }
     message.success('Item deleted successfully!');
   };
@@ -367,19 +394,24 @@ const Documents = () => {
                 height: '100%',
               }}
               onClick={() => {
-                if (item.type === 'folder') {
+                if (item.isFolder) {
                   handleFolderClick(item);
                 }
               }}
             >
               {item.type === 'file' ? (
-                renderFileIcon(item.name, 48)
+                renderFileIcon(
+                  item.name || 'naam halna birsiyechu backend maa',
+                  48
+                )
               ) : (
                 <Folder size={48} />
               )}
 
-              <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
-              <p style={{ fontSize: 12, color: '#666' }}>{item.size}</p>
+              <p style={{ marginTop: 8, marginBottom: 0 }}>
+                {item.name || 'naam halna birsiyechu backend maa'}
+              </p>
+              <p style={{ fontSize: 12, color: '#666' }}>{item.sizeInByte}</p>
 
               <Dropdown
                 overlay={
@@ -399,7 +431,10 @@ const Documents = () => {
                       icon={<Download size={16} />}
                       onClick={(e) => {
                         e.domEvent.stopPropagation();
-                        console.log('Download:', item.name);
+                        console.log(
+                          'Download:',
+                          item.name || 'naam halna birsiyechu backend maa'
+                        );
                       }}
                     >
                       Download
@@ -445,7 +480,9 @@ const Documents = () => {
         <Breadcrumb.Item>Home</Breadcrumb.Item>
         <Breadcrumb.Item>Documents</Breadcrumb.Item>
         {currentFolder && (
-          <Breadcrumb.Item>{currentFolder.name}</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            {currentFolder.name || 'naam halna birsiyechu backend maa'}
+          </Breadcrumb.Item>
         )}
       </Breadcrumb>
 
@@ -557,10 +594,10 @@ const Documents = () => {
             dataSource={getCurrentFolderData()}
             columns={columns}
             pagination={false}
-            rowKey="key"
+            rowKey="id"
             onRow={(record) => ({
               onClick: () => {
-                if (record.type === 'folder') {
+                if (record.isFolder) {
                   handleFolderClick(record);
                 }
               },
@@ -606,7 +643,7 @@ const Documents = () => {
               <Button key="cancel" onClick={closeUploadModal}>
                 Cancel
               </Button>
-              <Button key="submit" type="primary" onClick={closeUploadModal}>
+              <Button key="submit" type="primary" onClick={handleFileUpload}>
                 Upload
               </Button>
             </>,
@@ -614,10 +651,12 @@ const Documents = () => {
         >
           <Dragger
             style={{ marginTop: '20px' }}
+            accept=".pdf,.jpg,.jpeg,.png"
             beforeUpload={(file) => {
-              handleUpload(file);
-              return false; // Prevent default upload behavior
+              handleBeforeUpload(file);
+              return false; // prevent default upload
             }}
+            onChange={handleFileChange}
           >
             <p className="ant-upload-drag-icon">
               <Inbox
@@ -654,7 +693,9 @@ const Documents = () => {
         >
           <Divider />
           {selectedItem && (
-            <p className="text-md font-semibold mt-1">{selectedItem.name}</p>
+            <p className="text-md font-semibold mt-1">
+              {selectedItem.name || 'naam halna birsiyechu backend maa'}
+            </p>
           )}
           <Form>
             <Form.Item className="mt-5">
