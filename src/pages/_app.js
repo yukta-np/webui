@@ -9,6 +9,8 @@ import { clearStorageAndRedirect, getLoggedInUser } from '@/utils';
 import { ConfigProvider, Typography } from 'antd';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Inter } from 'next/font/google';
+import toast, { Toaster } from 'react-hot-toast';
+import ToastProvider from '@/components/toast-provider/ToastProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,6 +23,11 @@ export default function App({ Component, pageProps }) {
   const router = useRouter();
   const path = router.pathname;
   const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    toast.success("Test toast loaded");
+    console.log("i am called1212")
+  }, []);
 
   useEffect(() => {
     setIsClient(true); // Mark that we're on the client side
@@ -59,6 +66,7 @@ export default function App({ Component, pageProps }) {
       >
         <AppWrapper>
           <Component className={inter.className} {...pageProps} />
+          <ToastProvider />
         </AppWrapper>
       </ConfigProvider>
     );
@@ -82,6 +90,7 @@ export default function App({ Component, pageProps }) {
           <AppWrapper>
             <SecuredLayout>
               <Component className={inter.className} {...pageProps} />
+              <ToastProvider />
             </SecuredLayout>
           </AppWrapper>
         </UserWrapper>

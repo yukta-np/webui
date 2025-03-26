@@ -188,6 +188,12 @@ const SecuredLayout = ({ children }) => {
       href: '/groups',
     },
     {
+      label: 'Modules',
+      key: 'modules',
+      icon: <List size={18} />,
+      href: '/modules',
+    },
+    {
       label: 'Inquiries',
       key: 'inquiries',
       icon: <UserRoundPlus size={18} />,
