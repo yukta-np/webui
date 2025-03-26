@@ -40,6 +40,7 @@ import {
   File,
   ListTree,
   Archive,
+  ArchiveRestore,
   X,
   ChevronRight,
   ChevronDown,
@@ -170,7 +171,7 @@ const TaskList = ({
     params.assignedTo = assignedTo;
   }
   if (archived) {
-    params.archived = archived;
+    params.isArchived = archived;
   }
 
   if (isMyTask) {
@@ -232,17 +233,38 @@ const TaskList = ({
     openModal();
   };
 
-  const onArchiveClick = async (id) => {
+  const onToggleArchiveClick = async (ids = []) => {
+    if (!ids?.length || !tasks?.length) {
+      openNotification('Please select at least one task', 'warning');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      const myValue = {
-        isArchived: true,
-      };
-      console.log(myValue);
-      await updateTask(id, myValue);
+      const firstSelectedTask = tasks.find((t) => t.id === ids[0]);
+      if (!firstSelectedTask) {
+        openNotification('Selected task not found', 'error');
+        return;
+      }
+
+      const newArchiveStatus = !firstSelectedTask.isArchived;
+
+      await Promise.all(
+        ids.map((id) => updateTask(id, { isArchived: newArchiveStatus }))
+      );
+
       tasksRevalidate();
+
+      setSelectedTaskId([]);
+
+      openNotification(
+        `${newArchiveStatus ? 'Archived' : 'Unarchived'} ${
+          ids.length
+        } task(s) successfully`
+      );
     } catch (error) {
-      console.error('Error archiving tasks:', error);
+      console.error('Error toggling archive status:', error);
+      openNotification('Failed to update tasks', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -660,16 +682,42 @@ const TaskList = ({
           {selectedTaskId?.length > 0 ? (
             <Popconfirm
               placement="topLeft"
-              title={`Archive ${selectedTaskId.length} selected task?`}
-              onConfirm={() => onArchiveClick(selectedTaskId)}
+              title={`${
+                selectedTaskId.some((id) => {
+                  const task = tasks?.find((t) => t.id === id);
+                  return task?.isArchived;
+                })
+                  ? 'Unarchive'
+                  : 'Archive'
+              } ${selectedTaskId.length} selected task(s)?`}
+              onConfirm={() => onToggleArchiveClick(selectedTaskId)}
               okText="Yes"
               cancelText="No"
+              disabled={selectedTaskId.length === 0}
             >
               <Button
                 type="primary"
-                icon={<Archive className="mt-1" size={16} />}
+                loading={isProcessing}
+                disabled={selectedTaskId.length === 0}
+                icon={
+                  selectedTaskId.some((id) => {
+                    const task = tasks?.find((t) => t.id === id);
+                    return task?.isArchived;
+                  }) ? (
+                    <ArchiveRestore className="mt-1" size={16} />
+                  ) : (
+                    <Archive className="mt-1" size={16} />
+                  )
+                }
               >
-                Archive
+                {selectedTaskId.length === 0
+                  ? 'Select tasks to archive'
+                  : selectedTaskId.some((id) => {
+                      const task = tasks?.find((t) => t.id === id);
+                      return task?.isArchived;
+                    })
+                  ? 'Unarchive'
+                  : 'Archive'}
               </Button>
             </Popconfirm>
           ) : (
