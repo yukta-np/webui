@@ -141,6 +141,7 @@ const TaskList = ({
   const [selectedTaskId, setSelectedTaskId] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(true);
+  const [expandedRows, setExpandedRows] = useState([]);
 
   const { loggedInUser } = useAppContext();
 
@@ -453,6 +454,50 @@ const TaskList = ({
     minHeight: '200px',
     defaultTag: 'div',
   };
+  const groupTasksByParent = (tasks = []) => {
+    const taskMap = {};
+    const parentTasks = [];
+
+    // Create a map of all tasks and initialize children
+    tasks.forEach((task) => {
+      taskMap[task.id] = {
+        ...task,
+        children: task.subTasks || [], // Use existing subTasks array
+        depth: 0,
+      };
+    });
+
+    // Build hierarchy
+    tasks.forEach((task) => {
+      if (task.parentId && taskMap[task.parentId]) {
+        if (!taskMap[task.parentId].children) {
+          taskMap[task.parentId].children = [];
+        }
+        // Only add if not already present (prevents duplicates)
+        if (!taskMap[task.parentId].children.some((t) => t.id === task.id)) {
+          taskMap[task.parentId].children.push(taskMap[task.id]);
+        }
+      } else if (!task.parentId) {
+        parentTasks.push(taskMap[task.id]);
+      }
+    });
+
+    // Calculate depths
+    const calculateDepth = (task, depth = 0) => {
+      task.depth = depth;
+      if (task.children && task.children.length) {
+        task.children.forEach((child) => calculateDepth(child, depth + 1));
+      }
+    };
+
+    parentTasks.forEach((task) => calculateDepth(task));
+
+    return parentTasks;
+  };
+
+  const groupedTasks = groupTasksByParent(tasks || []);
+
+  console.log(groupedTasks);
 
   const columns = [
     {
@@ -461,19 +506,72 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (_, tasks) => (
-        <a className="text-blue-600" onClick={() => onViewClick(tasks)}>
-          {tasks?.displayId}
-        </a>
+      render: (_, task) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: `${(task.depth || 0) * 16}px`,
+            minHeight: '32px',
+          }}
+        >
+          {task.children?.length > 0 ? (
+            <Button
+              type="text"
+              size="small"
+              icon={
+                expandedRows.includes(task.id) ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                if (expandedRows.includes(task.id)) {
+                  setExpandedRows(expandedRows.filter((id) => id !== task.id));
+                } else {
+                  setExpandedRows([...expandedRows, task.id]);
+                }
+              }}
+              style={{
+                marginRight: 8,
+                width: 24,
+                height: 24,
+                minWidth: 24,
+              }}
+            />
+          ) : (
+            <div style={{ width: 24, marginRight: 8 }}></div> // Empty spacer for alignment
+          )}
+          <a
+            className="text-blue-600"
+            onClick={() => onViewClick(task)}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {task?.displayId}
+          </a>
+        </div>
       ),
-      width: 80,
+      width: 120, // Slightly wider to accommodate the arrow
     },
     {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
+      render: (text, record) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {text}
+        </div>
+      ),
     },
+
     {
       title: 'Category',
       dataIndex: 'category',
@@ -858,7 +956,7 @@ const TaskList = ({
             onChange: (selectedRowKeys) => setSelectedTaskId(selectedRowKeys),
           }}
           columns={columns}
-          dataSource={tasks}
+          dataSource={groupedTasks}
           pagination={{
             total: taskMeta?.totalRows,
             pageSize: taskMeta?.pageSize,
@@ -875,6 +973,13 @@ const TaskList = ({
             overflowX: 'auto',
           }}
           onChange={onTableChange}
+          expandable={{
+            childrenColumnName: 'children',
+            defaultExpandAllRows: false,
+            expandedRowKeys: expandedRows,
+            expandIcon: () => null,
+            rowExpandable: (record) => record.children?.length > 0,
+          }}
         />
 
         <Modal
@@ -1335,7 +1440,7 @@ const TaskList = ({
             onOpenChange={(visible) => {
               if (!visible) closeTaskLinkModal();
             }}
-            placement="bottomRight"
+            placement="topLeft"
             overlayClassName="task-link-popover"
             overlayStyle={{
               boxShadow:
