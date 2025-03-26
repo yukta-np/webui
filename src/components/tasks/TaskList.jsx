@@ -23,6 +23,9 @@ import {
   Popconfirm,
   Divider,
   Avatar,
+  Checkbox,
+  Popover,
+  Tooltip,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -33,7 +36,14 @@ import {
   FileImage,
   MessageSquareText,
   FilePenLine,
-  CloudHail,
+  FileText,
+  File,
+  ListTree,
+  Archive,
+  ArchiveRestore,
+  X,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -61,14 +71,8 @@ import {
   createComment,
   getComments,
 } from '@/services/tasks.http';
-import {
-  FileImageOutlined,
-  FilePdfOutlined,
-  VideoCameraOutlined,
-  FileTextOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
 import { useAppContext } from '@/app-context';
+import { Actions } from '@/constants';
 
 const getFileIcon = (fileName) => {
   const ext = fileName.split('.').pop().toLowerCase();
@@ -77,28 +81,14 @@ const getFileIcon = (fileName) => {
     case 'jpg':
     case 'jpeg':
     case 'png':
-    case 'gif':
-    case 'svg':
-      return (
-        <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-      );
+      return <FileImage style={{ color: '#1890ff', fontSize: '18px' }} />;
     case 'pdf':
-      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />;
-    case 'mp4':
-    case 'mkv':
-    case 'avi':
-    case 'mov':
-      return (
-        <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
-      );
+      return <FileText style={{ color: '#ff4d4f', fontSize: '18px' }} />;
+
     case 'txt':
-    case 'doc':
-    case 'docx':
-      return (
-        <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
-      );
+      return <FileText style={{ color: '#52c41a', fontSize: '18px' }} />;
     default:
-      return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+      return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
   }
 };
 
@@ -130,7 +120,7 @@ const TaskList = ({
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [action, setAction] = useState('add');
+  const [action, setAction] = useState(Actions.add);
   const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [status, setStatus] = useState(null);
@@ -139,11 +129,19 @@ const TaskList = ({
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [tablePage, setTablePage] = useState({});
+  const [archived, setArchived] = useState(false);
   const [editorContent, setEditorContent] = useState();
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
   const [currentTaskId, setCurrentTaskId] = useState(null);
+  const [createAnother, setCreateAnother] = useState(false);
+  const [isTaskLinkModalVisible, setIsTaskLinkModalVisible] = useState(false);
+  const [linkedTasks, setLinkedTasks] = useState([]);
+  const [selectedTaskId, setSelectedTaskId] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(true);
+  const [expandedRows, setExpandedRows] = useState([]);
 
   const { loggedInUser } = useAppContext();
 
@@ -172,6 +170,9 @@ const TaskList = ({
 
   if (assignedTo) {
     params.assignedTo = assignedTo;
+  }
+  if (archived) {
+    params.isArchived = archived;
   }
 
   if (isMyTask) {
@@ -203,12 +204,75 @@ const TaskList = ({
 
   const closeModal = () => {
     form.resetFields();
+    setEditorContent('');
     setIsModalVisible(false);
   };
 
+  const openTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(true);
+  };
+
+  const closeTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(false);
+  };
+
+  const toggleTaskSelection = (task) => {
+    setLinkedTasks((prev) => {
+      const exists = prev.some((t) => t.id === task.id);
+      return exists ? prev.filter((t) => t.id !== task.id) : [...prev, task];
+    });
+    closeTaskLinkModal();
+  };
+
+  const handleTaskLinkSubmit = () => {
+    console.log('Linked tasks:', linkedTasks);
+    closeTaskLinkModal();
+  };
+
   const onAddClick = () => {
-    setAction('add');
+    setAction(Actions.add);
     openModal();
+  };
+
+  const onToggleArchiveClick = async (ids = []) => {
+    if (!ids?.length || !tasks?.length) {
+      openNotification('Please select at least one task', 'warning');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const firstSelectedTask = tasks.find((t) => t.id === ids[0]);
+      if (!firstSelectedTask) {
+        openNotification('Selected task not found', 'error');
+        return;
+      }
+
+      const newArchiveStatus = !firstSelectedTask.isArchived;
+
+      await Promise.all(
+        ids.map((id) => updateTask(id, { isArchived: newArchiveStatus }))
+      );
+
+      tasksRevalidate();
+
+      setSelectedTaskId([]);
+
+      openNotification(
+        `${newArchiveStatus ? 'Archived' : 'Unarchived'} ${
+          ids.length
+        } task(s) successfully`
+      );
+    } catch (error) {
+      console.error('Error toggling archive status:', error);
+      openNotification('Failed to update tasks', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onCreateAnotherChange = (e) => {
+    setCreateAnother(e.target.checked);
   };
   const onEditClick = (record) => {
     const newRecord = {
@@ -217,7 +281,7 @@ const TaskList = ({
     };
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
-    setAction('edit');
+    setAction(Actions.edit);
     openModal();
   };
 
@@ -236,7 +300,7 @@ const TaskList = ({
       assignedTo: tasks?.assignee?.fullName,
       dueDate: tasks?.dueDate ? moment(tasks?.dueDate) : null,
     };
-    setAction('view');
+    setAction(Actions.view);
     form.setFieldsValue(newRecord);
 
     openModal();
@@ -255,19 +319,25 @@ const TaskList = ({
       taskUsers: [],
     };
     try {
-      if (action === 'edit') {
-        await updateTask(editingData.id, values);
-        openNotification('Task updated successfully');
-      } else {
-        await createTask(myValues);
-        openNotification('Task added successfully');
-      }
+      const response =
+        Actions.edit === action
+          ? await updateTask(editingData?.id, myValues)
+          : await createTask(myValues);
+      openNotification(`Task ${action}ed successfully`);
       tasksRevalidate();
+      if (createAnother) {
+        openModal();
+        form.resetFields();
+        setEditorContent('');
+        setUploadedFiles([]);
+      } else {
+        closeModal();
+      }
     } catch (error) {
       console.log(error);
     } finally {
       setIsProcessing(false);
-      setIsModalVisible(false);
+      form.resetFields();
     }
   };
 
@@ -329,12 +399,17 @@ const TaskList = ({
     tasksRevalidate();
   };
 
+  const filterByArchived = (value) => {
+    setArchived(value);
+    tasksRevalidate();
+  };
+
   const getTitle = () => {
-    if (action === 'add') {
+    if (Actions.add === action) {
       return 'Add  Task';
-    } else if (action === 'edit') {
+    } else if (Actions.edit === action) {
       return 'Edit Task';
-    } else if (action === 'view') {
+    } else if (Actions.view === action) {
       return 'Task';
     }
   };
@@ -379,6 +454,50 @@ const TaskList = ({
     minHeight: '200px',
     defaultTag: 'div',
   };
+  const groupTasksByParent = (tasks = []) => {
+    const taskMap = {};
+    const parentTasks = [];
+
+    // Create a map of all tasks and initialize children
+    tasks.forEach((task) => {
+      taskMap[task.id] = {
+        ...task,
+        children: task.subTasks || [], // Use existing subTasks array
+        depth: 0,
+      };
+    });
+
+    // Build hierarchy
+    tasks.forEach((task) => {
+      if (task.parentId && taskMap[task.parentId]) {
+        if (!taskMap[task.parentId].children) {
+          taskMap[task.parentId].children = [];
+        }
+        // Only add if not already present (prevents duplicates)
+        if (!taskMap[task.parentId].children.some((t) => t.id === task.id)) {
+          taskMap[task.parentId].children.push(taskMap[task.id]);
+        }
+      } else if (!task.parentId) {
+        parentTasks.push(taskMap[task.id]);
+      }
+    });
+
+    // Calculate depths
+    const calculateDepth = (task, depth = 0) => {
+      task.depth = depth;
+      if (task.children && task.children.length) {
+        task.children.forEach((child) => calculateDepth(child, depth + 1));
+      }
+    };
+
+    parentTasks.forEach((task) => calculateDepth(task));
+
+    return parentTasks;
+  };
+
+  const groupedTasks = groupTasksByParent(tasks || []);
+
+  console.log(groupedTasks);
 
   const columns = [
     {
@@ -387,25 +506,79 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (_, tasks) => (
-        <a className="text-blue-600" onClick={() => onViewClick(tasks)}>
-          {tasks?.displayId}
-        </a>
+      render: (_, task) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: `${(task.depth || 0) * 16}px`,
+            minHeight: '32px',
+          }}
+        >
+          {task.children?.length > 0 ? (
+            <Button
+              type="text"
+              size="small"
+              icon={
+                expandedRows.includes(task.id) ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                if (expandedRows.includes(task.id)) {
+                  setExpandedRows(expandedRows.filter((id) => id !== task.id));
+                } else {
+                  setExpandedRows([...expandedRows, task.id]);
+                }
+              }}
+              style={{
+                marginRight: 8,
+                width: 24,
+                height: 24,
+                minWidth: 24,
+              }}
+            />
+          ) : (
+            <div style={{ width: 24, marginRight: 8 }}></div> // Empty spacer for alignment
+          )}
+          <a
+            className="text-blue-600"
+            onClick={() => onViewClick(task)}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {task?.displayId}
+          </a>
+        </div>
       ),
-      width: '5%',
+      width: 120, // Slightly wider to accommodate the arrow
     },
     {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
+      render: (text, record) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {text}
+        </div>
+      ),
     },
+
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
       sorter: (a, b) => a.category.localeCompare(b.category),
       responsive: ['md'],
+      width: 120,
     },
     {
       title: 'Status',
@@ -413,7 +586,7 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
-      width: 150,
+      width: 100,
 
       render: (text, tasks) => (
         <>
@@ -456,6 +629,7 @@ const TaskList = ({
       key: 'priority',
       sorter: (a, b) => a.priority.localeCompare(b.priority),
       responsive: ['lg'],
+      width: 100,
     },
     ...(!isMyTask
       ? [
@@ -465,16 +639,11 @@ const TaskList = ({
             key: 'assignedTo',
             responsive: ['md'],
             render: (_, tasks) => tasks?.assignee?.fullName,
+            width: 150,
           },
         ]
       : []),
-    {
-      title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
-      responsive: ['lg'],
-      render: (_, tasks) => tasks?.creator?.fullName,
-    },
+
     {
       title: 'Due Date',
       dataIndex: 'dueDate',
@@ -482,15 +651,9 @@ const TaskList = ({
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
       render: (text) => moment(text).format('DD/MM/YYYY'),
+      width: 100,
     },
-    {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      responsive: ['sm'],
-      render: (text) => moment(text).format('DD/MM/YYYY hh:mm A'),
-    },
+
     {
       title: 'Action',
       key: 'action',
@@ -614,9 +777,52 @@ const TaskList = ({
           <p className="text-xl font-bold">
             {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
           </p>
-          <Button type="primary" onClick={onAddClick}>
-            Add Task
-          </Button>
+          {selectedTaskId?.length > 0 ? (
+            <Popconfirm
+              placement="topLeft"
+              title={`${
+                selectedTaskId.some((id) => {
+                  const task = tasks?.find((t) => t.id === id);
+                  return task?.isArchived;
+                })
+                  ? 'Unarchive'
+                  : 'Archive'
+              } ${selectedTaskId.length} selected task(s)?`}
+              onConfirm={() => onToggleArchiveClick(selectedTaskId)}
+              okText="Yes"
+              cancelText="No"
+              disabled={selectedTaskId.length === 0}
+            >
+              <Button
+                type="primary"
+                loading={isProcessing}
+                disabled={selectedTaskId.length === 0}
+                icon={
+                  selectedTaskId.some((id) => {
+                    const task = tasks?.find((t) => t.id === id);
+                    return task?.isArchived;
+                  }) ? (
+                    <ArchiveRestore className="mt-1" size={16} />
+                  ) : (
+                    <Archive className="mt-1" size={16} />
+                  )
+                }
+              >
+                {selectedTaskId.length === 0
+                  ? 'Select tasks to archive'
+                  : selectedTaskId.some((id) => {
+                      const task = tasks?.find((t) => t.id === id);
+                      return task?.isArchived;
+                    })
+                  ? 'Unarchive'
+                  : 'Archive'}
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" onClick={onAddClick}>
+              Add Task
+            </Button>
+          )}
         </div>
 
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
@@ -726,6 +932,7 @@ const TaskList = ({
             <p>Archived </p>
             <Select
               showSearch
+              allowClear
               style={{ width: 150 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
@@ -734,17 +941,22 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={[
-                { value: '1', label: 'No' },
-                { value: '2', label: 'Yes' },
+                { value: 'false', label: 'No' },
+                { value: 'true', label: 'Yes' },
               ]}
+              onChange={(value) => filterByArchived(value)}
             />
           </Space>
         </Space>
 
         <Table
-          rowSelection={{ type: 'checkbox' }}
+          rowSelection={{
+            type: 'checkbox',
+            selectedRowKeys: selectedTaskId,
+            onChange: (selectedRowKeys) => setSelectedTaskId(selectedRowKeys),
+          }}
           columns={columns}
-          dataSource={tasks}
+          dataSource={groupedTasks}
           pagination={{
             total: taskMeta?.totalRows,
             pageSize: taskMeta?.pageSize,
@@ -761,6 +973,13 @@ const TaskList = ({
             overflowX: 'auto',
           }}
           onChange={onTableChange}
+          expandable={{
+            childrenColumnName: 'children',
+            defaultExpandAllRows: false,
+            expandedRowKeys: expandedRows,
+            expandIcon: () => null,
+            rowExpandable: (record) => record.children?.length > 0,
+          }}
         />
 
         <Modal
@@ -768,17 +987,31 @@ const TaskList = ({
           open={isModalVisible}
           onCancel={closeModal}
           footer={
-            action === 'add' ? (
+            Actions.add === action ? (
               <>
                 <Divider />
+                <Checkbox onChange={onCreateAnotherChange} className="mr-2 ">
+                  Create another
+                </Checkbox>
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
+                </Button>
+                <Button
+                  type="default"
+                  className=" left-4
+                  float-left"
+                  onClick={openTaskLinkModal}
+                  icon={
+                    <ListTree className="mt-1" stroke="#1890ff" size={18} />
+                  }
+                >
+                  Link Task
                 </Button>
                 <Button type="primary" onClick={() => form.submit()}>
                   Add
                 </Button>
               </>
-            ) : action === 'edit' ? (
+            ) : Actions.edit === action ? (
               <>
                 <Divider />
                 <Button onClick={closeModal}>Cancel</Button>
@@ -802,7 +1035,7 @@ const TaskList = ({
             form={form}
             layout="vertical"
             onFinish={onSubmit}
-            disabled={action === 'view'}
+            disabled={Actions.view === action}
           >
             <Row gutter={24}>
               <Col xs={24} lg={18}>
@@ -821,7 +1054,7 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  {action === 'view' ? (
+                  {Actions.view === action ? (
                     <PreviewSection
                       content={form.getFieldValue('description')}
                     />
@@ -833,9 +1066,7 @@ const TaskList = ({
                           onChange={handleEditorChange}
                           placeholder="Enter your task description"
                           setContents={
-                            action === 'edit' || action === 'view'
-                              ? form.getFieldValue('description')
-                              : tasks?.description
+                            action == Actions.edit ? tasks?.description : ''
                           }
                         />
                       </TabPane>
@@ -912,7 +1143,6 @@ const TaskList = ({
                               .includes(input.toLowerCase())
                           }
                           optionLabelProp="label"
-                          // mode='multiple' //! DONT DELETE
                         >
                           {users?.map((u) => (
                             <Option
@@ -1029,7 +1259,201 @@ const TaskList = ({
               </Col>
             </Row>
           </Form>
+          {linkedTasks.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginBottom: 8,
+                }}
+                onClick={() => setIsLinkedTasksExpanded(!isLinkedTasksExpanded)}
+              >
+                <span className="ml-2 ">
+                  {isLinkedTasksExpanded ? (
+                    <ChevronDown size={18} />
+                  ) : (
+                    <ChevronRight size={18} />
+                  )}
+                </span>
+                <p className="font-semibold ml-2">
+                  Linked Tasks ({linkedTasks.length})
+                </p>
+              </div>
+              {isLinkedTasksExpanded && (
+                <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                  {linkedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '8px',
+                        borderBottom: '1px solid #f0f0f0',
+                      }}
+                    >
+                      <Tag
+                        color={
+                          task.status === 'Completed'
+                            ? 'green'
+                            : task.status === 'In Progress'
+                            ? 'orange'
+                            : 'blue'
+                        }
+                        className="mr-2"
+                      >
+                        {task.status}
+                      </Tag>
+                      <span className="mr-3">{task.title}</span>
+                      <span style={{ color: '#666', flex: 1 }}>#{task.id}</span>
+                      <Avatar size={25} src={task.assignee.avatar}>
+                        {task.assignee.firstName[0].toUpperCase()}
+                        {task.assignee.lastName[0].toUpperCase()}
+                      </Avatar>
+
+                      <Button
+                        type="text"
+                        icon={<X size={16} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTaskSelection(task);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </Modal>
+        {isTaskLinkModalVisible && (
+          <Popover
+            title={
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span className="ml-3">Link Existing Tasks</span>
+                <Button
+                  type="text"
+                  icon={<X size={18} style={{ color: 'grey' }} />}
+                  onClick={closeTaskLinkModal}
+                  style={{ marginLeft: 8 }}
+                />
+              </div>
+            }
+            content={
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '360px',
+                }}
+              >
+                <div
+                  style={{ padding: '8px 12px', background: '#fff', zIndex: 1 }}
+                >
+                  <Input
+                    placeholder="Search tasks..."
+                    allowClear
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    overflowY: 'auto',
+                    maxHeight: '300px',
+                    padding: '0 12px',
+                  }}
+                >
+                  {tasks
+                    ?.filter(
+                      (task) =>
+                        task.title
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()) ||
+                        task.displayId.toString().includes(searchTerm) ||
+                        task.status
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase())
+                    )
+                    ?.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`task-link-item ${
+                          linkedTasks.some((t) => t.id === task.id)
+                            ? 'selected'
+                            : ''
+                        }`}
+                        onClick={() => toggleTaskSelection(task)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '8px 4px',
+                          gap: '8px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #f0f0f0',
+                          backgroundColor: linkedTasks.some(
+                            (t) => t.id === task.id
+                          )
+                            ? '#e6f7ff'
+                            : 'transparent',
+                        }}
+                      >
+                        <Tag
+                          color={
+                            task.status === 'Completed'
+                              ? 'green'
+                              : task.status === 'In Progress'
+                              ? 'orange'
+                              : 'blue'
+                          }
+                          style={{ margin: 0, flexShrink: 0 }}
+                        >
+                          {task.status}
+                        </Tag>
+                        <span
+                          style={{
+                            flex: 1,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {task.title}
+                        </span>
+                        <span style={{ color: '#666', flexShrink: 0 }}>
+                          #{task.id}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            }
+            trigger="click"
+            open={isTaskLinkModalVisible}
+            onOpenChange={(visible) => {
+              if (!visible) closeTaskLinkModal();
+            }}
+            placement="topLeft"
+            overlayClassName="task-link-popover"
+            overlayStyle={{
+              boxShadow:
+                '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
+              borderRadius: 8,
+              width: '400px',
+              padding: 0,
+            }}
+            arrow={false}
+          >
+            <div style={{ display: 'inline-block' }}></div>
+          </Popover>
+        )}
         <Modal
           title="Task Comments"
           open={isCommentModalVisible}
