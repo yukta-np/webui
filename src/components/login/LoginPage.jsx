@@ -3,7 +3,7 @@ import { Form, Input, Button, Checkbox, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { constants } from '@/constants';
-import { setSessionStorageData } from '@/utils';
+import { openNotification, setSessionStorageData } from '@/utils';
 import YuktaLogo from '@/svgs/yukta';
 
 const LoginPage = () => {
@@ -61,10 +61,12 @@ const LoginPage = () => {
       });
       const { token } = response.data;
       setSessionStorageData(token);
+      openNotification('Login successful !');
       window.location.href = '/';
     } catch (e) {
       if (e.response) {
         const msg = e.response.data.message;
+        openNotification(msg, true);
       }
     } finally {
       setIsProcessing(false);
