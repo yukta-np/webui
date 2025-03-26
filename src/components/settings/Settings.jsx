@@ -85,14 +85,14 @@ const initatialStudentData = [
 ]
   
 
-// Mock data for admin staff
+// Mock data for administration staff
 const initialAdministrationData = [
   {
     key: '1',
-    firstName: 'Admin',
+    firstName: 'Administration',
     lastName: 'User',
-    email: 'admin@college.edu',
-    permissionGroup: 'Administrator',
+    email: 'administration@college.edu',
+    permissionGroup: 'Administrationistrator',
     group: 'IT Services',
     designation: 'IT Support',
     phoneNumber: '+61234567890',
@@ -110,7 +110,7 @@ const initialAdministrationData = [
     email: 'registrar@college.edu',
     permissionGroup: 'Registrar Office',
     group: 'Administration',
-    designation: 'Admin Staff',
+    designation: 'Administration Staff',
     phoneNumber: '+61234567891',
     mobileNumber: '+610987654322',
     startDate: '2023-02-01',
@@ -123,7 +123,7 @@ const initialAdministrationData = [
 
 // Permission group options
 const permissionGroups = [
-  'Administrator',
+  'Administrationistrator',
   'Manager',
   'Staff',
   'Inquiry/Intake only',
@@ -151,7 +151,7 @@ const designationOptions = [
   'Associate Professor',
   'Assistant Professor',
   'Lecturer',
-  'Admin Staff',
+  'Administration Staff',
   'Finance Officer',
   'IT Support',
   'Department Head',
@@ -192,14 +192,14 @@ const Settings = () => {
   const [studentData, setStudentData] = useState(
     initatialStudentData
   );
-  const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
-  const [adminEditingKey, setAdminEditingKey] = useState(null);
+  const [isAdministrationModalVisible, setIsAdministrationModalVisible] = useState(false);
+  const [administrationEditingKey, setAdministrationEditingKey] = useState(null);
   const [isStudentModalVisible, setIsStudentModalVisible] = useState(false);
   const [studentEditingKey, setStudentEditingKey] = useState(null);
   const [form] = Form.useForm();
 
-  // Admin Staff Columns
-  const adminColumns = [
+  // Administration Staff Columns
+  const administrationColumns = [
     {
       title: 'Name',
       key: 'name',
@@ -246,14 +246,14 @@ const Settings = () => {
           <Button
             type="link"
             className="text-blue-500 hover:text-blue-700"
-            onClick={() => onAdminEdit(record)}
+            onClick={() => onAdministrationEdit(record)}
           >
             Edit
           </Button>
           <Button
             type="link"
             className="text-red-500 hover:text-red-700"
-            onClick={() => onAdminDelete(record.key)}
+            onClick={() => onAdministrationDelete(record.key)}
           >
             Delete
           </Button>
@@ -265,22 +265,19 @@ const Settings = () => {
 
   const studentColumns = [
     {
-      title: 'First Name',
-      dataIndex: 'firstName',
-      key: 'firstName',
-      sorter: (a, b) => a.firstName.localeCompare(b.firstName),
-    },
-    {
-      title: 'Last Name',
-      dataIndex: 'lastName',
-      key: 'lastName',
-      sorter: (a, b) => a.lastName.localeCompare(b.lastName),
+      title: 'Name',
+      key: 'name',
+      render: (_, record) => `${record.firstName} ${record.lastName}`,
+      sorter: (a, b) =>
+        `${a.firstName} ${a.lastName}`.localeCompare(
+          `${b.firstName} ${b.lastName}`
+        ),
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      render: (email) => <a href={`mailto:${email}`}>{email}</a>,
+      sorter: (a, b) => a.email.localeCompare(b.email),
     },
     {
       title: 'Faculty',
@@ -298,14 +295,14 @@ const Settings = () => {
       title: 'Start Date',
       dataIndex: 'startDate',
       key: 'startDate',
-      render: (date) => moment(date).format('DD/MM/YYYY'),
+      // render: (date) => moment(date).format('DD/MM/YYYY'),
       sorter: (a, b) => new Date(a.startDate) - new Date(b.startDate),
     },
     {
       title: 'End Date',
       dataIndex: 'endDate',
       key: 'endDate',
-      render: (date) => (date ? moment(date).format('DD/MM/YYYY') : 'N/A'),
+      // render: (date) => (date ? moment(date).format('DD/MM/YYYY') : 'N/A'),
       sorter: (a, b) => new Date(a.endDate) - new Date(b.endDate),
     },
     {
@@ -336,23 +333,23 @@ const Settings = () => {
   ];
 
   // Handlers
-  const showAdminModal = () => {
-    setAdminEditingKey(null);
+  const showAdministrationModal = () => {
+    setAdministrationEditingKey(null);
     form.resetFields();
-    setIsAdminModalVisible(true);
+    setIsAdministrationModalVisible(true);
   };
 
-  const onAdminEdit = (record) => {
-    setAdminEditingKey(record.key);
+  const onAdministrationEdit = (record) => {
+    setAdministrationEditingKey(record.key);
     form.setFieldsValue({
       ...record,
       startDate: record.startDate ? moment(record.startDate) : null,
       endDate: record.endDate ? moment(record.endDate) : null,
     });
-    setIsAdminModalVisible(true);
+    setIsAdministrationModalVisible(true);
   };
 
-  const onAdminDelete = (key) => {
+  const onAdministrationDelete = (key) => {
     Modal.confirm({
       title: 'Delete this staff member?',
       content: 'This action cannot be undone.',
@@ -365,32 +362,32 @@ const Settings = () => {
     });
   };
 
-  const onAdminCancel = () => {
-    setIsAdminModalVisible(false);
+  const onAdministrationCancel = () => {
+    setIsAdministrationModalVisible(false);
     form.resetFields();
-    setAdminEditingKey(null);
+    setAdministrationEditingKey(null);
   };
 
-  const onAdminOk = () => {
+  const onAdministrationOk = () => {
     form.validateFields().then((values) => {
       const newEntry = {
         ...values,
-        key: adminEditingKey || String(Date.now()),
+        key: administrationEditingKey || String(Date.now()),
         startDate: values.startDate?.format('YYYY-MM-DD'),
         endDate: values.endDate?.format('YYYY-MM-DD'),
       };
 
-      if (adminEditingKey) {
+      if (administrationEditingKey) {
         setAdministrationStaffData(
           administrationStaffData.map((item) =>
-            item.key === adminEditingKey ? newEntry : item
+            item.key === administrationEditingKey ? newEntry : item
           )
         );
       } else {
         setAdministrationStaffData([...administrationStaffData, newEntry]);
       }
 
-      setIsAdminModalVisible(false);
+      setIsAdministrationModalVisible(false);
       form.resetFields();
     });
   };
@@ -414,7 +411,7 @@ const Settings = () => {
          setStudentData([...studentData, newEntry]);
        }
 
-       setIsAdminModalVisible(false);
+       setIsAdministrationModalVisible(false);
        form.resetFields();
      });
    };
@@ -461,9 +458,9 @@ const Settings = () => {
       });
     };
     const showStudentModal = () => {
-      setAdminEditingKey(null);
+      setStudentEditingKey(null);
       form.resetFields();
-      setIsAdminModalVisible(true);
+      setIsStudentModalVisible(true);
     };
 
   // Render settings grid or detail view
@@ -538,7 +535,7 @@ const Settings = () => {
               </div>
               <Button
                 type="primary"
-                onClick={showAdminModal}
+                onClick={showAdministrationModal}
                 className="bg-blue-500 hover:bg-blue-600"
               >
                 Add
@@ -546,7 +543,8 @@ const Settings = () => {
             </div>
 
             <Table
-              columns={adminColumns}
+              rowSelection={{ type: 'checkbox' }}
+              columns={administrationColumns}
               dataSource={administrationStaffData}
               pagination={{ pageSize: 10 }}
               className="shadow-sm"
@@ -555,12 +553,12 @@ const Settings = () => {
             />
 
             <Modal
-              title={adminEditingKey ? 'Edit Staff Member' : 'Add Staff Member'}
-              open={isAdminModalVisible}
-              onOk={onAdminOk}
-              onCancel={onAdminCancel}
+              title={administrationEditingKey ? 'Edit Staff Member' : 'Add Staff Member'}
+              open={isAdministrationModalVisible}
+              onOk={onAdministrationOk}
+              onCancel={onAdministrationCancel}
               width={800}
-              okText={adminEditingKey ? 'Update' : 'Add'}
+              okText={administrationEditingKey ? 'Update' : 'Add'}
               cancelText="Cancel"
             >
               <Form form={form} layout="vertical" className="mt-4">
@@ -596,7 +594,10 @@ const Settings = () => {
                       label="Email"
                       rules={[
                         { required: true, message: 'Please enter email' },
-                        { type: 'email', message: 'Please enter a valid email' },
+                        {
+                          type: 'email',
+                          message: 'Please enter a valid email',
+                        },
                       ]}
                     >
                       <Input placeholder="Enter email address" />
@@ -613,7 +614,7 @@ const Settings = () => {
                       <Select placeholder="Select role">
                         <Select.Option value="student">Student</Select.Option>
                         <Select.Option value="teacher">Teacher</Select.Option>
-                        <Select.Option value="admin">Admin</Select.Option>
+                        <Select.Option value="administration">Administration</Select.Option>
                       </Select>
                     </Form.Item>
                   </Col>
@@ -719,8 +720,10 @@ const Settings = () => {
                   </Col>
                 </Row> */}
 
-                <Divider/>
-                <Typography.Title level={5} style={{ marginBottom: '12px' }}>Contact Information</Typography.Title>
+                <Divider />
+                <Typography.Title level={5} style={{ marginBottom: '12px' }}>
+                  Contact Information
+                </Typography.Title>
 
                 <Row gutter={16}>
                   <Col span={12}>
@@ -779,6 +782,7 @@ const Settings = () => {
             </div>
 
             <Table
+              rowSelection={{ type: 'checkbox' }}
               columns={studentColumns}
               dataSource={studentData}
               pagination={{ pageSize: 10 }}
@@ -796,11 +800,7 @@ const Settings = () => {
               okText={studentEditingKey ? 'Update' : 'Add'}
               cancelText="Cancel"
             >
-              <Form
-                form={Form}
-                layout="vertical"
-                className="mt-4"
-              >
+              <Form form={Form} layout="vertical" className="mt-4">
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
@@ -833,7 +833,10 @@ const Settings = () => {
                       label="Email"
                       rules={[
                         { required: true, message: 'Please enter email' },
-                        { type: 'email', message: 'Please enter a valid email' },
+                        {
+                          type: 'email',
+                          message: 'Please enter a valid email',
+                        },
                       ]}
                     >
                       <Input placeholder="Enter email address" />
@@ -850,7 +853,7 @@ const Settings = () => {
                       <Select placeholder="Select role">
                         <Select.Option value="student">Student</Select.Option>
                         <Select.Option value="teacher">Teacher</Select.Option>
-                        <Select.Option value="admin">Admin</Select.Option>
+                        <Select.Option value="administration">Administration</Select.Option>
                       </Select>
                     </Form.Item>
                   </Col>
