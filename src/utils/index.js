@@ -231,3 +231,5 @@ export const Roles = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
+
+export const cl = (...args) => console.log(...args);
