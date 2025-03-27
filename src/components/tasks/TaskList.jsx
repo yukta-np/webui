@@ -26,6 +26,7 @@ import {
   Checkbox,
   Popover,
   Tooltip,
+  Empty,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -217,6 +218,7 @@ const TaskList = ({
   };
 
   const toggleTaskSelection = (task) => {
+    if (task.id === editingData?.id) return;
     setLinkedTasks((prev) => {
       const exists = prev.some((t) => t.id === task.id);
       return exists
@@ -228,13 +230,9 @@ const TaskList = ({
   };
   console.log('haha', linkedTasks);
 
-  const handleTaskLinkSubmit = () => {
-    console.log('Linked tasks:', linkedTasks);
-    closeTaskLinkModal();
-  };
-
   const onAddClick = () => {
     setAction(Actions.add);
+    setEditorContent('');
     openModal();
   };
 
@@ -285,6 +283,7 @@ const TaskList = ({
     };
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
+    setEditorContent(record.description);
     setAction(Actions.edit);
     openModal();
   };
@@ -321,7 +320,7 @@ const TaskList = ({
       isArchived: false,
       taskItems: [],
       taskUsers: [],
-      parentId: null,
+      parentId: editingData?.parentId || null,
     };
 
     console.log('values', myValues);
@@ -337,7 +336,7 @@ const TaskList = ({
           linkedTasks.map((task) => {
             if (task.id === editingData?.id) return Promise.resolve();
 
-            return updateTask(task.id, { parentId: editingData?.id });
+            return updateTask(task.id, { parentId: editingData?.id, ...task });
           })
         );
       }
@@ -589,6 +588,7 @@ const TaskList = ({
           {text}
         </div>
       ),
+      width: 200,
     },
 
     {
@@ -1006,33 +1006,31 @@ const TaskList = ({
           open={isModalVisible}
           onCancel={closeModal}
           footer={
-            Actions.view === action ? (
+            Actions.add === action ? (
               <>
                 <Divider />
-                <Button onClick={closeModal}>Cancel</Button>
-              </>
-            ) : (
-              <>
-                <Divider />
-                {action === Actions.add && (
-                  <Checkbox onChange={onCreateAnotherChange} className="mr-2">
-                    Create another
-                  </Checkbox>
-                )}
+                <Checkbox onChange={onCreateAnotherChange} className="mr-2 ">
+                  Create another
+                </Checkbox>
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
 
                 <Button type="primary" onClick={() => form.submit()}>
-                  {action === Actions.add ? 'Add' : 'Update'}
+                  Add
                 </Button>
-
+              </>
+            ) : Actions.edit === action ? (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+                <Button type="primary" onClick={() => form.submit()}>
+                  Update
+                </Button>
                 <Tooltip
                   title={
-                    action === Actions.edit && editingData?.parentId
+                    editingData?.parentId
                       ? 'Subtasks cannot have their own subtasks'
-                      : action === Actions.add
-                      ? 'Link existing tasks as subtasks'
                       : ''
                   }
                 >
@@ -1043,13 +1041,16 @@ const TaskList = ({
                     icon={
                       <ListTree className="mt-1" stroke="#1890ff" size={18} />
                     }
-                    disabled={
-                      action === Actions.edit && editingData?.parentId !== null
-                    }
+                    disabled={editingData?.parentId !== null}
                   >
                     Add Subtask
                   </Button>
                 </Tooltip>
+              </>
+            ) : (
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
               </>
             )
           }
@@ -1093,7 +1094,9 @@ const TaskList = ({
                           onChange={handleEditorChange}
                           placeholder="Enter your task description"
                           setContents={
-                            action == Actions.edit ? tasks?.description : ''
+                            action === Actions.edit
+                              ? editingData?.description
+                              : editorContent
                           }
                         />
                       </TabPane>
@@ -1398,67 +1401,94 @@ const TaskList = ({
                     padding: '0 12px',
                   }}
                 >
-                  {tasks
-                    ?.filter(
-                      (task) =>
-                        task.title
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()) ||
+                  {tasks?.filter(
+                    (task) =>
+                      task.id !== editingData?.id && // Exclude current task
+                      (task.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
                         task.displayId.toString().includes(searchTerm) ||
                         task.status
                           .toLowerCase()
-                          .includes(searchTerm.toLowerCase())
-                    )
-                    ?.map((task) => (
-                      <div
-                        key={task.id}
-                        className={`task-link-item ${
-                          linkedTasks.some((t) => t.id === task.id)
-                            ? 'selected'
-                            : ''
-                        }`}
-                        onClick={() => toggleTaskSelection(task)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '8px 4px',
-                          gap: '8px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #f0f0f0',
-                          backgroundColor: linkedTasks.some(
-                            (t) => t.id === task.id
-                          )
-                            ? '#e6f7ff'
-                            : 'transparent',
-                        }}
-                      >
-                        <Tag
-                          color={
-                            task.status === 'Completed'
-                              ? 'green'
-                              : task.status === 'In Progress'
-                              ? 'orange'
-                              : 'blue'
-                          }
-                          style={{ margin: 0, flexShrink: 0 }}
-                        >
-                          {task.status}
-                        </Tag>
-                        <span
+                          .includes(searchTerm.toLowerCase()))
+                  )?.length > 0 ? (
+                    tasks
+                      ?.filter(
+                        (task) =>
+                          task.id !== editingData?.id && // Exclude current task
+                          (task.title
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                            task.displayId.toString().includes(searchTerm) ||
+                            task.status
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()))
+                      )
+                      ?.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`task-link-item ${
+                            linkedTasks.some((t) => t.id === task.id)
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => toggleTaskSelection(task)}
                           style={{
-                            flex: 1,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 4px',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f0f0f0',
+                            backgroundColor: linkedTasks.some(
+                              (t) => t.id === task.id
+                            )
+                              ? '#e6f7ff'
+                              : 'transparent',
                           }}
                         >
-                          {task.title}
-                        </span>
-                        <span style={{ color: '#666', flexShrink: 0 }}>
-                          #{task.id}
-                        </span>
-                      </div>
-                    ))}
+                          <Tag
+                            color={
+                              task.status === 'Completed'
+                                ? 'green'
+                                : task.status === 'In Progress'
+                                ? 'orange'
+                                : 'blue'
+                            }
+                            style={{ margin: 0, flexShrink: 0 }}
+                          >
+                            {task.status}
+                          </Tag>
+                          <span
+                            style={{
+                              flex: 1,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {task.title}
+                          </span>
+                          <span style={{ color: '#666', flexShrink: 0 }}>
+                            #{task.displayId}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '200px',
+                      }}
+                    >
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="No other tasks available to link"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             }
