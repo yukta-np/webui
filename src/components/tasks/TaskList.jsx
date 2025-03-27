@@ -26,6 +26,7 @@ import {
   Checkbox,
   Popover,
   Tooltip,
+  Empty,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -217,20 +218,21 @@ const TaskList = ({
   };
 
   const toggleTaskSelection = (task) => {
+    if (task.id === editingData?.id) return;
     setLinkedTasks((prev) => {
       const exists = prev.some((t) => t.id === task.id);
-      return exists ? prev.filter((t) => t.id !== task.id) : [...prev, task];
+      return exists
+        ? prev.filter((t) => t.id !== task.id)
+        : [...prev, { ...task, parentId: editingData?.id }];
     });
-    closeTaskLinkModal();
-  };
 
-  const handleTaskLinkSubmit = () => {
-    console.log('Linked tasks:', linkedTasks);
     closeTaskLinkModal();
   };
+  console.log('haha', linkedTasks);
 
   const onAddClick = () => {
     setAction(Actions.add);
+    setEditorContent('');
     openModal();
   };
 
@@ -281,6 +283,7 @@ const TaskList = ({
     };
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
+    setEditorContent(record.description);
     setAction(Actions.edit);
     openModal();
   };
@@ -317,12 +320,26 @@ const TaskList = ({
       isArchived: false,
       taskItems: [],
       taskUsers: [],
+      parentId: editingData?.parentId || null,
     };
+
+    console.log('values', myValues);
+
     try {
       const response =
         Actions.edit === action
           ? await updateTask(editingData?.id, myValues)
           : await createTask(myValues);
+
+      if (linkedTasks.length > 0 && Actions.edit == action) {
+        await Promise.all(
+          linkedTasks.map((task) => {
+            if (task.id === editingData?.id) return Promise.resolve();
+
+            return updateTask(task.id, { parentId: editingData?.id, ...task });
+          })
+        );
+      }
       openNotification(`Task ${action}ed successfully`);
       tasksRevalidate();
       if (createAnother) {
@@ -333,6 +350,7 @@ const TaskList = ({
       } else {
         closeModal();
       }
+      setLinkedTasks([]);
     } catch (error) {
       console.log(error);
     } finally {
@@ -406,12 +424,23 @@ const TaskList = ({
 
   const getTitle = () => {
     if (Actions.add === action) {
-      return 'Add  Task';
+      return 'Add Task';
     } else if (Actions.edit === action) {
-      return 'Edit Task';
+      return (
+        <span>
+          Edit Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
     } else if (Actions.view === action) {
-      return 'Task';
+      return (
+        <span>
+          Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
     }
+    return 'Task';
   };
 
   const onFileChange = (info) => {
@@ -553,7 +582,7 @@ const TaskList = ({
           </a>
         </div>
       ),
-      width: 120, // Slightly wider to accommodate the arrow
+      width: 120,
     },
     {
       title: 'Title',
@@ -565,11 +594,14 @@ const TaskList = ({
           style={{
             display: 'flex',
             alignItems: 'center',
+            wordBreak: 'break-word',
+            whiteSpace: 'normal',
           }}
         >
           {text}
         </div>
       ),
+      width: 200,
     },
 
     {
@@ -996,17 +1028,7 @@ const TaskList = ({
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
-                <Button
-                  type="default"
-                  className=" left-4
-                  float-left"
-                  onClick={openTaskLinkModal}
-                  icon={
-                    <ListTree className="mt-1" stroke="#1890ff" size={18} />
-                  }
-                >
-                  Link Task
-                </Button>
+
                 <Button type="primary" onClick={() => form.submit()}>
                   Add
                 </Button>
@@ -1018,6 +1040,25 @@ const TaskList = ({
                 <Button type="primary" onClick={() => form.submit()}>
                   Update
                 </Button>
+                <Tooltip
+                  title={
+                    editingData?.parentId
+                      ? 'Subtasks cannot have their own subtasks'
+                      : ''
+                  }
+                >
+                  <Button
+                    type="default"
+                    className="left-4 float-left"
+                    onClick={openTaskLinkModal}
+                    icon={
+                      <ListTree className="mt-1" stroke="#1890ff" size={18} />
+                    }
+                    disabled={editingData?.parentId !== null}
+                  >
+                    Add Subtask
+                  </Button>
+                </Tooltip>
               </>
             ) : (
               <>
@@ -1066,7 +1107,9 @@ const TaskList = ({
                           onChange={handleEditorChange}
                           placeholder="Enter your task description"
                           setContents={
-                            action == Actions.edit ? tasks?.description : ''
+                            action === Actions.edit
+                              ? editingData?.description
+                              : editorContent
                           }
                         />
                       </TabPane>
@@ -1371,67 +1414,100 @@ const TaskList = ({
                     padding: '0 12px',
                   }}
                 >
-                  {tasks
-                    ?.filter(
-                      (task) =>
-                        task.title
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase()) ||
+                  {tasks?.filter(
+                    (task) =>
+                      task.id !== editingData?.id && // Exclude current task
+                      !linkedTasks.some((t) => t.id === task.id) && // Exclude already linked tasks
+                      !editingData?.subtasks?.some((st) => st.id === task.id) && // Exclude subtasks
+                      (task.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
                         task.displayId.toString().includes(searchTerm) ||
                         task.status
                           .toLowerCase()
-                          .includes(searchTerm.toLowerCase())
-                    )
-                    ?.map((task) => (
-                      <div
-                        key={task.id}
-                        className={`task-link-item ${
-                          linkedTasks.some((t) => t.id === task.id)
-                            ? 'selected'
-                            : ''
-                        }`}
-                        onClick={() => toggleTaskSelection(task)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '8px 4px',
-                          gap: '8px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #f0f0f0',
-                          backgroundColor: linkedTasks.some(
-                            (t) => t.id === task.id
-                          )
-                            ? '#e6f7ff'
-                            : 'transparent',
-                        }}
-                      >
-                        <Tag
-                          color={
-                            task.status === 'Completed'
-                              ? 'green'
-                              : task.status === 'In Progress'
-                              ? 'orange'
-                              : 'blue'
-                          }
-                          style={{ margin: 0, flexShrink: 0 }}
-                        >
-                          {task.status}
-                        </Tag>
-                        <span
+                          .includes(searchTerm.toLowerCase()))
+                  )?.length > 0 ? (
+                    tasks
+                      ?.filter(
+                        (task) =>
+                          task.id !== editingData?.id && // Exclude current task
+                          !linkedTasks.some((t) => t.id === task.id) && // Exclude already linked tasks
+                          !editingData?.subtasks?.some(
+                            (st) => st.id === task.id
+                          ) && // Exclude subtasks
+                          (task.title
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                            task.displayId.toString().includes(searchTerm) ||
+                            task.status
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()))
+                      )
+                      ?.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`task-link-item ${
+                            linkedTasks.some((t) => t.id === task.id)
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => toggleTaskSelection(task)}
                           style={{
-                            flex: 1,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 4px',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f0f0f0',
+                            backgroundColor: linkedTasks.some(
+                              (t) => t.id === task.id
+                            )
+                              ? '#e6f7ff'
+                              : 'transparent',
                           }}
                         >
-                          {task.title}
-                        </span>
-                        <span style={{ color: '#666', flexShrink: 0 }}>
-                          #{task.id}
-                        </span>
-                      </div>
-                    ))}
+                          <Tag
+                            color={
+                              task.status === 'Completed'
+                                ? 'green'
+                                : task.status === 'In Progress'
+                                ? 'orange'
+                                : 'blue'
+                            }
+                            style={{ margin: 0, flexShrink: 0 }}
+                          >
+                            {task.status}
+                          </Tag>
+                          <span
+                            style={{
+                              flex: 1,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {task.title}
+                          </span>
+                          <span style={{ color: '#666', flexShrink: 0 }}>
+                            #{task.id}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '200px',
+                      }}
+                    >
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="No other tasks available to link"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             }
