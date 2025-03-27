@@ -1,9 +1,17 @@
-import React from 'react'
+// pages/settings/[id]/index.jsx
+'use client';
 
-const index = () => {
-  return (
-    <div>index</div>
-  )
-}
+import { useRouter } from 'next/router';
+import Settings from '@/components/settings/Settings'; // Adjust the import path
 
-export default index
+const SettingsPage = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
+  // If you need to modify the URL structure, you can transform the ID here
+  const transformedId = id?.replace('-staff', '');
+
+  return <Settings currentType={transformedId} />;
+};
+
+export default SettingsPage;
