@@ -219,10 +219,14 @@ const TaskList = ({
   const toggleTaskSelection = (task) => {
     setLinkedTasks((prev) => {
       const exists = prev.some((t) => t.id === task.id);
-      return exists ? prev.filter((t) => t.id !== task.id) : [...prev, task];
+      return exists
+        ? prev.filter((t) => t.id !== task.id)
+        : [...prev, { ...task, parentId: editingData?.id }];
     });
+
     closeTaskLinkModal();
   };
+  console.log('haha', linkedTasks);
 
   const handleTaskLinkSubmit = () => {
     console.log('Linked tasks:', linkedTasks);
@@ -317,12 +321,26 @@ const TaskList = ({
       isArchived: false,
       taskItems: [],
       taskUsers: [],
+      parentId: null,
     };
+
+    console.log('values', myValues);
+
     try {
       const response =
         Actions.edit === action
           ? await updateTask(editingData?.id, myValues)
           : await createTask(myValues);
+
+      if (linkedTasks.length > 0 && Actions.edit == action) {
+        await Promise.all(
+          linkedTasks.map((task) => {
+            if (task.id === editingData?.id) return Promise.resolve();
+
+            return updateTask(task.id, { parentId: editingData?.id });
+          })
+        );
+      }
       openNotification(`Task ${action}ed successfully`);
       tasksRevalidate();
       if (createAnother) {
@@ -333,6 +351,7 @@ const TaskList = ({
       } else {
         closeModal();
       }
+      setLinkedTasks([]);
     } catch (error) {
       console.log(error);
     } finally {
@@ -996,17 +1015,7 @@ const TaskList = ({
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
-                <Button
-                  type="default"
-                  className=" left-4
-                  float-left"
-                  onClick={openTaskLinkModal}
-                  icon={
-                    <ListTree className="mt-1" stroke="#1890ff" size={18} />
-                  }
-                >
-                  Link Task
-                </Button>
+
                 <Button type="primary" onClick={() => form.submit()}>
                   Add
                 </Button>
@@ -1018,6 +1027,25 @@ const TaskList = ({
                 <Button type="primary" onClick={() => form.submit()}>
                   Update
                 </Button>
+                <Tooltip
+                  title={
+                    editingData?.parentId
+                      ? 'Subtasks cannot have their own subtasks'
+                      : ''
+                  }
+                >
+                  <Button
+                    type="default"
+                    className="left-4 float-left"
+                    onClick={openTaskLinkModal}
+                    icon={
+                      <ListTree className="mt-1" stroke="#1890ff" size={18} />
+                    }
+                    disabled={editingData?.parentId !== null}
+                  >
+                    Add Subtask
+                  </Button>
+                </Tooltip>
               </>
             ) : (
               <>
