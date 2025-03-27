@@ -1371,7 +1371,7 @@ const TaskList = ({
                         {task.assignee.lastName[0].toUpperCase()}
                       </Avatar>
                       <Popconfirm
-                        title="Are you sure to delete this task?"
+                        title="Are you sure to remove this task?"
                         okText="Yes"
                         cancelText="No"
                         onConfirm={(e) => {
@@ -1438,9 +1438,9 @@ const TaskList = ({
                 >
                   {tasks?.filter(
                     (task) =>
-                      task.id !== editingData?.id && // Exclude current task
-                      !linkedTasks.some((t) => t.id === task.id) && // Exclude already linked tasks
-                      !editingData?.subtasks?.some((st) => st.id === task.id) && // Exclude subtasks
+                      task.id !== editingData?.id &&
+                      !linkedTasks.some((t) => t.id === task.id) &&
+                      !editingData?.subtasks?.some((st) => st.id === task.id) &&
                       (task.title
                         .toLowerCase()
                         .includes(searchTerm.toLowerCase()) ||
