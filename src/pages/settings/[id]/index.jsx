@@ -1,17 +1,8 @@
 // pages/settings/[id]/index.jsx
-'use client';
+import Settings from '@/components/settings/Settings';
 
-import { useRouter } from 'next/router';
-import Settings from '@/components/settings/Settings'; // Adjust the import path
-
-const SettingsPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
-
-  // If you need to modify the URL structure, you can transform the ID here
-  const transformedId = id?.replace('-staff', '');
-
-  return <Settings currentType={transformedId} />;
-};
-
-export default SettingsPage;
+export default function Page({ params }) {
+  // Safely handle undefined params or id
+  const currentType = params?.id?.replace('-staff', '') || '';
+  return <Settings currentType={currentType} />;
+}
