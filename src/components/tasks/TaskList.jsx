@@ -424,12 +424,23 @@ const TaskList = ({
 
   const getTitle = () => {
     if (Actions.add === action) {
-      return 'Add  Task';
+      return 'Add Task';
     } else if (Actions.edit === action) {
-      return 'Edit Task';
+      return (
+        <span>
+          Edit Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
     } else if (Actions.view === action) {
-      return 'Task';
+      return (
+        <span>
+          Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
     }
+    return 'Task';
   };
 
   const onFileChange = (info) => {
