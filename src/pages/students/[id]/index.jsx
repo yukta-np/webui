@@ -1,9 +1,12 @@
+import StudentProfile from '@/components/userprofile/StudentProfile'
 import React from 'react'
 
-const index = () => {
+const StudentProfilePage = ({ query }) => {
+  const { id } = query
+
   return (
-    <div>index</div>
+    <StudentProfile id={id} />
   )
 }
 
-export default index
+export default StudentProfilePage

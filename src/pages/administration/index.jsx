@@ -5,19 +5,19 @@ import Settings from '@/components/settings/Settings';
 
 export default function Page() {
   const router = useRouter();
-  const { staffs } = router.query; // Get student from router
+  const { administration } = router.query; // Get student from router
 
  
-  const currentType = staffs || '';
+  const currentType = administration || '';
 
   return (
     <>
       <CustomHead
-        actualTitle={`Staff - ${
-          staffs ? `${staffs} Profile` : 'All Staffs'
+        actualTitle={`Administration - ${
+          administration ? `${administration} Profile` : 'All Administration'
         }`}
       />
-      <Settings currentType="staffs" />
+      <Settings currentType="administration" />
     </>
   );
 }
