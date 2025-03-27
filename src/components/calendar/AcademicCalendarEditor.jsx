@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, Button, Tooltip } from 'antd';
 import {
   DownloadOutlined,
@@ -13,45 +13,60 @@ const { Option } = Select;
 
 const AcademicCalendarEditor = () => {
   const [currentMonth, setCurrentMonth] = useState(new NepaliDate());
+  const [firstDayOfMonth, setFirstDayOfMonth] = useState(
+    new NepaliDate().getDay()
+  );
   const [events, setEvents] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   const eventTypes = [
-    { label: 'Holiday', value: 'holiday', color: 'bg-red-100' },
-    { label: 'Exam', value: 'exam', color: 'bg-blue-100' },
-    { label: 'Event', value: 'event', color: 'bg-green-100' },
-    { label: 'Deadline', value: 'deadline', color: 'bg-yellow-100' },
+    { label: 'Holiday', value: 'holiday', color: 'bg-red-300' },
+    { label: 'Exam', value: 'exam', color: 'bg-blue-300' },
+    { label: 'Event', value: 'event', color: 'bg-green-300' },
+    { label: 'Deadline', value: 'deadline', color: 'bg-yellow-300' },
   ];
 
-const generateCalendar = () => {
-  const year = currentMonth.getYear();
-  const month = currentMonth.getMonth();
-  const daysInMonth = new NepaliDate(year, month + 1, 0).getDate(); // Fixed line
+  const generateCalendar = () => {
+    const year = currentMonth.getYear();
+    const month = currentMonth.getMonth();
+    const firstDayOfMonth = new NepaliDate(year, month, 1).getDay();
+    const daysInMonth = new NepaliDate(year, month + 1, 0).getDate();
 
-  return Array.from({ length: daysInMonth }, (_, i) => {
-    const date = new NepaliDate(year, month, i + 1);
-    const dateKey = date.format('YYYY-MM-DD');
-    return {
-      date,
-      events: events[dateKey] || [],
-      isCurrentMonth: true,
-    };
-  });
-};
+    const daysShift = Array.from({ length: firstDayOfMonth }).map(() => null);
 
-const handleMonthChange = (offset) => {
-  // Get current date components
-  const year = currentMonth.getYear();
-  const currentMonthIndex = currentMonth.getMonth();
+    const calendarDays = Array.from({ length: daysInMonth }, (_, i) => {
+      const date = new NepaliDate(year, month, i + 1);
+      const dateKey = date.format('YYYY-MM-DD');
+      return {
+        date,
+        events: events[dateKey] || [],
+        isCurrentMonth: true,
+      };
+    });
 
-  // Calculate new month and handle year overflow
-  const newMonthIndex = currentMonthIndex + offset;
-  const newDate = new NepaliDate(year, newMonthIndex, 1);
+    const totalCells = 7 * 6; // 7 days * 6 rows(max. weeks) = 42 cells
+    const emptyCellsAtEnd = Array.from({
+      length: totalCells - (daysShift.length + calendarDays.length),
+    }).map(() => null);
 
-  setCurrentMonth(newDate);
-};
+    return [...daysShift, ...calendarDays, ...emptyCellsAtEnd];
+  };
+
+  const handleMonthChange = (offset) => {
+    // Get current date components
+    const year = currentMonth.getYear();
+    const currentMonthIndex = currentMonth.getMonth();
+
+    // Calculate new month and handle year overflow
+    const newMonthIndex = currentMonthIndex + offset;
+    const newDate = new NepaliDate(year, newMonthIndex, 1);
+    const firstDayOfMonth = new NepaliDate(year, newMonthIndex, 1).getDay();
+
+    setCurrentMonth(newDate);
+    setFirstDayOfMonth(firstDayOfMonth);
+  };
 
   const handleAddEvent = (values) => {
     const dateKey = selectedDate.format('YYYY-MM-DD');
@@ -103,11 +118,11 @@ const handleMonthChange = (offset) => {
     const currentYear = currentMonth.getYear();
 
     return (
-      <div className="mt-8 bg-white p-6 rounded-lg shadow">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">
+      <div className="p-6 mt-8 bg-white rounded-lg shadow">
+        <h3 className="mb-4 text-xl font-semibold text-gray-800">
           {currentYear} (B.S.) Academic Year Overview
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 12 }, (_, i) => {
             const monthDate = new NepaliDate(currentYear, i, 1);
             const monthEvents = Object.entries(events)
@@ -118,8 +133,8 @@ const handleMonthChange = (offset) => {
               .flatMap(([_, events]) => events);
 
             return (
-              <div key={i} className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-700 mb-2">
+              <div key={i} className="p-4 rounded-lg bg-gray-50">
+                <h4 className="mb-2 font-medium text-gray-700">
                   {monthDate.format('MMMM')}
                 </h4>
                 {monthEvents.length > 0 ? (
@@ -136,7 +151,7 @@ const handleMonthChange = (offset) => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">No events scheduled</p>
+                  <p className="text-sm text-gray-400">No events scheduled</p>
                 )}
               </div>
             );
@@ -146,71 +161,117 @@ const handleMonthChange = (offset) => {
     );
   };
 
-  const CalendarGrid = () => (
-    <div className="grid grid-cols-7 gap-px bg-gray-200 border border-gray-200">
-      {['आइत', 'सोम', 'मङ्गल', 'बुध', 'बिही', 'शुक्र', 'शनि'].map((day) => (
-        <div
-          key={day}
-          className="bg-white p-2 text-center font-medium text-gray-600"
-        >
-          {day}
-        </div>
-      ))}
-      {generateCalendar().map((day, idx) => {
-        const gregorianDate = day.date.toJsDate();
+  const CalendarGrid = () => {
+    const today = new NepaliDate();
 
-        return (
+    return (
+      <div className=" grid grid-cols-7  gap-px bg-gray-300">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div
-            key={idx}
-            onClick={() => {
-              setSelectedDate(day.date);
-              setIsModalVisible(true);
-            }}
-            className="min-h-24 bg-white p-2 border-b border-r border-gray-100 hover:bg-gray-50 cursor-pointer"
+            key={day}
+            className="p-3 pb-6 text-xl font-semibold text-center text-gray-600 bg-white"
           >
-            <div className="flex justify-between items-center mb-1">
-              <div className="text-sm">
-                <div className="text-gray-800">{day.date.getDate()}</div>
-                <div className="text-xs text-gray-400">
-                  {dayjs(gregorianDate).format('D MMM')}
-                </div>
-              </div>
-              {day.events.length > 0 && (
-                <span className="text-xs text-gray-400">
-                  {day.events.length} event(s)
-                </span>
-              )}
-            </div>
-            <div className="space-y-1">
-              {day.events.map((event, i) => (
-                <Tooltip key={i} title={event.description}>
-                  <div
-                    className={`${
-                      eventTypes.find((t) => t.value === event.type)?.color
-                    } p-1 text-xs rounded truncate flex justify-between items-center`}
-                  >
-                    <span>{event.title}</span>
-                    <DeleteOutlined
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteEvent(day.date.format('YYYY-MM-DD'), i);
-                      }}
-                      className="hover:text-red-600"
-                    />
-                  </div>
-                </Tooltip>
-              ))}
-            </div>
+            {day}
           </div>
-        );
-      })}
-    </div>
-  );
+        ))}
+
+        {/* Render days of the month */}
+        {generateCalendar().map((day, idx) => {
+          if (!day) {
+            // If it's an empty slot (before the first day of the month), render an empty cell
+            return (
+              <div
+                key={idx}
+                className="p-2 bg-white border-b border-r border-gray-100 min-h-24"
+              ></div>
+            );
+          }
+
+          const gregorianDate = day.date.toJsDate();
+          const isToday =
+            today.getYear() === day.date.getYear() &&
+            today.getMonth() === day.date.getMonth() &&
+            today.getDate() === day.date.getDate();
+
+          return (
+            <div
+              key={idx}
+              onClick={() => {
+                setSelectedDate(day.date);
+                setIsModalVisible(true);
+              }}
+              className={`min-h-24 p-2 border-b border-r border-gray-100 cursor-pointer ${
+                isToday ? 'bg-blue-600  text-gray-100' : 'bg-white'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-lg font-semibold">
+                  <div className={isToday ? 'text-gray-100' : 'text-gray-800'}>
+                    {day.date.getDate()}
+                  </div>
+                  <div
+                    className={`text-xs ${
+                      isToday ? 'text-gray-200' : 'text-gray-500'
+                    }`}
+                  >
+                    {dayjs(gregorianDate).format('D MMM')}
+                  </div>
+                </div>
+                {day.events.length > 0 && (
+                  <span className="text-xs text-gray-500">
+                    {day.events.length}{' '}
+                    {day.events.length > 1 ? 'events' : 'event'}
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1">
+                {day.events.map((event, i) => (
+                  <Tooltip key={i} title={event.description}>
+                    <div
+                      className={`${
+                        eventTypes.find((t) => t.value === event.type)?.color
+                      } p-1 text-xs rounded truncate flex justify-between items-center`}
+                    >
+                      <span>{event.title}</span>
+                      <DeleteOutlined
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteEvent(day.date.format('YYYY-MM-DD'), i);
+                        }}
+                        className="hover:text-red-600"
+                      />
+                    </div>
+                  </Tooltip>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const UpcomingEvents = () => {
+    return (
+      <div className="p-4 rounded-lg bg-gray-50">
+        <h4 className="mb-2 text-lg font-medium text-gray-700">
+          Upcoming Events
+        </h4>
+        {events.length > 0 ? (
+          <div className="space-y-2">
+            {/* TODO: map the upcoming events here, please... */}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400">No upcoming events</p>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen p-8 bg-gray-50">
+      <div className=" mx-auto">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
               shape="circle"
@@ -238,7 +299,13 @@ const handleMonthChange = (offset) => {
           </Button>
         </div>
 
-        <CalendarGrid />
+        <section className="grid grid-cols-[75%_1fr] gap-12">
+          <CalendarGrid />
+          <aside className="border-l-2 border-gray-300">
+            <UpcomingEvents />
+          </aside>
+        </section>
+
         <YearlyOverview />
 
         <Modal

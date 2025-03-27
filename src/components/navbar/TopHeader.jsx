@@ -14,9 +14,12 @@ import {
   List,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
-import { fetcher } from '@/utils';
+import { clearStorageAndRedirect, fetcher } from '@/utils';
 import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import useWebSocket from '@/hooks/useWebsocket';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -31,31 +34,7 @@ const TopHeader = () => {
   const [isAnnouncementsModalOpen, setIsAnnouncementsModalOpen] =
     useState(false);
   const [loggedInUser, setLoggedInUser] = useState();
-
-  const meUrl = constants.urls.meUrl;
-  const { data: userData } = useSWRImmutable(meUrl, fetcher);
-
-  useEffect(() => {
-    if (userData) {
-      setLoggedInUser(userData);
-    }
-  }, [userData]);
-
-  // Dummy data
-  const [notifications] = useState([
-    {
-      id: 1,
-      title: 'System Update',
-      description: 'Planned maintenance on Friday at 10 PM',
-      date: '2024-02-15',
-    },
-    {
-      id: 2,
-      title: 'New Message',
-      description: 'You have a new message from support',
-      date: '2024-02-14',
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
   const [announcements] = useState([
     {
@@ -72,25 +51,43 @@ const TopHeader = () => {
     },
   ]);
 
+  const meUrl = constants.urls.meUrl;
+  const { data: userData } = useSWRImmutable(meUrl, fetcher);
+
+  const { socket, socketConnected } = useWebSocket();
+
+  useEffect(() => {
+    if (userData) {
+      setLoggedInUser(userData);
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (socket) {
+      console.log({ socket, socketConnected });
+      if (socketConnected) {
+        socket.on('onNotification', (data) => {
+          console.log('Notification received:', data);
+
+          setNotifications((prev) => [data, ...prev]);
+        });
+      }
+    }
+  }, [socket, socketConnected]);
+
   const {
     token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
   } = theme.useToken();
   const screens = useBreakpoint();
-  // const { loggedInUser } = useAppContext();
 
-  // const loggedInUser = getLoggedInUser();
-
-  // const loggedInUser = {
-  //   userId: 8,
-  //   fullName: 'Abishek Ghimire',
-  //   role: 'Admin',
-  // };
+  const onLogout = () => {
+    clearStorageAndRedirect();
+  };
 
   const menuItems = [
     {
-      key: '1',
-      label: 'Profile',
-      onClick: () => console.log('Profile Clicked'),
+      label: <Link href="/users/profile">Profile</Link>,
+      key: 'profile',
     },
     {
       key: '2',
@@ -101,7 +98,7 @@ const TopHeader = () => {
       key: '3',
       label: 'Logout',
       danger: true,
-      onClick: () => console.log('Logout Clicked'),
+      onClick: onLogout,
     },
   ];
 
@@ -204,7 +201,6 @@ const TopHeader = () => {
           <Input
             placeholder="Search..."
             allowClear
-            enterButton
             prefix={<SearchIcon stroke={colorTextSecondary} />}
             style={{
               borderRadius: borderRadiusLG,
@@ -227,7 +223,6 @@ const TopHeader = () => {
         <Input.Search
           placeholder="Type to search..."
           allowClear
-          enterButton
           onSearch={(value) => console.log(value)}
         />
       </Modal>
@@ -279,7 +274,10 @@ const TopHeader = () => {
             <Button type="text">
               <Space className="text-left">
                 <Avatar style={{ backgroundColor: '#87d068' }}>
-                  {loggedInUser?.fullName?.toUpperCase()[0]}
+                  {loggedInUser?.fullName
+                    ?.split(' ')
+                    .map((name) => name[0].toUpperCase())
+                    .join('')}
                 </Avatar>
                 <div
                   style={{
@@ -289,9 +287,7 @@ const TopHeader = () => {
                     lineHeight: 1.25,
                   }}
                 >
-                  <p className="m-0">
-                    {loggedInUser?.fullName} 
-                  </p>
+                  <p className="m-0">{loggedInUser?.fullName}</p>
                   <p className="m-0 text-[10px] text-gray-500">
                     {loggedInUser?.role?.toUpperCase()}
                   </p>

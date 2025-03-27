@@ -1,9 +1,14 @@
-import React from 'react'
+// import CustomHead from '@/components/customHead/CustomHead';
+import Settings from '@/components/settings/Settings';
+import React from 'react';
 
 const index = () => {
   return (
-    <div>index</div>
-  )
-}
+    <>
+      {/* <CustomHead actualTitle="Your Settings" /> */}
+      <Settings />
+    </>
+  );
+};
 
-export default index
+export default index;

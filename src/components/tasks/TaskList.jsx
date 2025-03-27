@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Breadcrumb,
   Layout,
@@ -23,6 +23,10 @@ import {
   Popconfirm,
   Divider,
   Avatar,
+  Checkbox,
+  Popover,
+  Tooltip,
+  Empty,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -33,6 +37,14 @@ import {
   FileImage,
   MessageSquareText,
   FilePenLine,
+  FileText,
+  File,
+  ListTree,
+  Archive,
+  ArchiveRestore,
+  X,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -46,52 +58,38 @@ import dynamic from 'next/dynamic';
 const SunEditor = dynamic(() => import('suneditor-react'), { ssr: false });
 import 'suneditor/dist/css/suneditor.min.css';
 import CommentSection from '@/components/comment/CommentSection';
-import { dateRanges, openNotification } from '@/utils';
+import { dateRanges, objectHasValue, openNotification } from '@/utils';
 import { useTaskStatus } from '@/hooks/useTaskStatus';
 import { useTaskPriority } from '@/hooks/useTaskPriority';
 import { useTaskCategory } from '@/hooks/useTaskCategory';
 import { useTasks } from '@/hooks/useTasks';
 import { useUsers } from '@/hooks/useUsers';
 import moment from 'moment/moment';
-import { createTask, updateTask, deleteTask } from '@/services/tasks.http';
 import {
-  FileImageOutlined,
-  FilePdfOutlined,
-  VideoCameraOutlined, // ✅ Use this for videos
-  FileTextOutlined,
-  FileOutlined,
-} from '@ant-design/icons';
+  createTask,
+  updateTask,
+  deleteTask,
+  createComment,
+  getComments,
+} from '@/services/tasks.http';
 import { useAppContext } from '@/app-context';
+import { Actions } from '@/constants';
 
 const getFileIcon = (fileName) => {
-  const ext = fileName.split('.').pop().toLowerCase(); // Get file extension
+  const ext = fileName.split('.').pop().toLowerCase();
 
   switch (ext) {
     case 'jpg':
     case 'jpeg':
     case 'png':
-    case 'gif':
-    case 'svg':
-      return (
-        <FileImageOutlined style={{ color: '#1890ff', fontSize: '18px' }} />
-      ); // Blue for images
+      return <FileImage style={{ color: '#1890ff', fontSize: '18px' }} />;
     case 'pdf':
-      return <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />; // Red for PDFs
-    case 'mp4':
-    case 'mkv':
-    case 'avi':
-    case 'mov':
-      return (
-        <VideoCameraOutlined style={{ color: '#faad14', fontSize: '18px' }} />
-      ); // ✅ Yellow for videos
+      return <FileText style={{ color: '#ff4d4f', fontSize: '18px' }} />;
+
     case 'txt':
-    case 'doc':
-    case 'docx':
-      return (
-        <FileTextOutlined style={{ color: '#52c41a', fontSize: '18px' }} />
-      ); // Green for text files
+      return <FileText style={{ color: '#52c41a', fontSize: '18px' }} />;
     default:
-      return <FileOutlined style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+      return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
   }
 };
 
@@ -123,19 +121,28 @@ const TaskList = ({
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [action, setAction] = useState('add');
+  const [action, setAction] = useState(Actions.add);
   const [editingData, setEditingData] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [status, setStatus] = useState(null);
-  const [priority, setPriority] = useState(null);
-  const [category, setCategory] = useState(null);
-  const [task, setTask] = useState({
-    creatorId: 1,
-    taskStatus: 1,
-    assigneeId: 2,
-    title: 'sample task',
-    description: 'this is a description of the task.',
-  });
+  const [assignedTo, setAssignedTo] = useState(null);
+  const [createdBy, setCreatedBy] = useState(null);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [tablePage, setTablePage] = useState({});
+  const [archived, setArchived] = useState(false);
+  const [editorContent, setEditorContent] = useState();
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [comments, setComments] = useState([]);
+  const [currentTaskId, setCurrentTaskId] = useState(null);
+  const [createAnother, setCreateAnother] = useState(false);
+  const [isTaskLinkModalVisible, setIsTaskLinkModalVisible] = useState(false);
+  const [linkedTasks, setLinkedTasks] = useState([]);
+  const [selectedTaskId, setSelectedTaskId] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(true);
+  const [expandedRows, setExpandedRows] = useState([]);
 
   const { loggedInUser } = useAppContext();
 
@@ -145,12 +152,36 @@ const TaskList = ({
     params.status = status;
   }
 
-  if (priority) {
-    params.priority = priority;
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
   }
 
-  if (category) {
-    params.category = category;
+  if (createdBy) {
+    params.createdBy = createdBy;
+  }
+
+  if (startDate && endDate) {
+    params.startDate = startDate;
+    params.endDate = endDate;
+  }
+
+  if (assignedTo) {
+    params.assignedTo = assignedTo;
+  }
+  if (archived) {
+    params.isArchived = archived;
+  }
+
+  if (isMyTask) {
+    params.assignedTo = loggedInUser?.userId;
+  }
+
+  if (isMyTeamTask) {
+    params.createdBy = loggedInUser?.userId;
   }
 
   const {
@@ -163,10 +194,9 @@ const TaskList = ({
   const { taskPriority } = useTaskPriority();
   const { users } = useUsers();
 
-  const [editorContent, setEditorContent] = useState(task.description || '');
-
   const handleEditorChange = (content) => {
     setEditorContent(content);
+    form.setFieldsValue({ description: content });
   };
 
   const openModal = () => {
@@ -175,12 +205,76 @@ const TaskList = ({
 
   const closeModal = () => {
     form.resetFields();
+    setEditorContent('');
     setIsModalVisible(false);
   };
 
+  const openTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(true);
+  };
+
+  const closeTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(false);
+  };
+
+  const toggleTaskSelection = (task) => {
+    if (task.id === editingData?.id) return;
+    setLinkedTasks((prev) => {
+      const exists = prev.some((t) => t.id === task.id);
+      return exists
+        ? prev.filter((t) => t.id !== task.id)
+        : [...prev, { ...task, parentId: editingData?.id }];
+    });
+
+    closeTaskLinkModal();
+  };
+  console.log('haha', linkedTasks);
+
   const onAddClick = () => {
-    setAction('add');
+    setAction(Actions.add);
+    setEditorContent('');
     openModal();
+  };
+
+  const onToggleArchiveClick = async (ids = []) => {
+    if (!ids?.length || !tasks?.length) {
+      openNotification('Please select at least one task', 'warning');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const firstSelectedTask = tasks.find((t) => t.id === ids[0]);
+      if (!firstSelectedTask) {
+        openNotification('Selected task not found', 'error');
+        return;
+      }
+
+      const newArchiveStatus = !firstSelectedTask.isArchived;
+
+      await Promise.all(
+        ids.map((id) => updateTask(id, { isArchived: newArchiveStatus }))
+      );
+
+      tasksRevalidate();
+
+      setSelectedTaskId([]);
+
+      openNotification(
+        `${newArchiveStatus ? 'Archived' : 'Unarchived'} ${
+          ids.length
+        } task(s) successfully`
+      );
+    } catch (error) {
+      console.error('Error toggling archive status:', error);
+      openNotification('Failed to update tasks', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onCreateAnotherChange = (e) => {
+    setCreateAnother(e.target.checked);
   };
   const onEditClick = (record) => {
     const newRecord = {
@@ -189,7 +283,8 @@ const TaskList = ({
     };
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
-    setAction('edit');
+    setEditorContent(record.description);
+    setAction(Actions.edit);
     openModal();
   };
 
@@ -198,12 +293,17 @@ const TaskList = ({
     tasksRevalidate();
   };
 
-  const onViewClick = (record) => {
+  const onViewClick = (tasks) => {
     const newRecord = {
-      ...record,
-      dueDate: record.dueDate ? moment(record.dueDate) : null,
+      title: tasks?.title,
+      description: tasks?.description,
+      status: tasks?.status,
+      priority: tasks?.priority,
+      category: tasks?.category,
+      assignedTo: tasks?.assignee?.fullName,
+      dueDate: tasks?.dueDate ? moment(tasks?.dueDate) : null,
     };
-    setAction('view');
+    setAction(Actions.view);
     form.setFieldsValue(newRecord);
 
     openModal();
@@ -214,24 +314,48 @@ const TaskList = ({
     const { files, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      createdBy: 4,
-      organisationId: 1,
+      dueDate: new Date(values?.dueDate),
+      createdBy: loggedInUser?.userId,
+      organisationId: loggedInUser?.orgId,
       isArchived: false,
+      taskItems: [],
+      taskUsers: [],
+      parentId: editingData?.parentId || null,
     };
+
+    console.log('values', myValues);
+
     try {
-      if (action === 'edit') {
-        await updateTask(editingData.id, values);
-        openNotification('Task updated successfully');
-      } else {
-        await createTask(myValues);
-        openNotification('Task added successfully');
+      const response =
+        Actions.edit === action
+          ? await updateTask(editingData?.id, myValues)
+          : await createTask(myValues);
+
+      if (linkedTasks.length > 0 && Actions.edit == action) {
+        await Promise.all(
+          linkedTasks.map((task) => {
+            if (task.id === editingData?.id) return Promise.resolve();
+
+            return updateTask(task.id, { parentId: editingData?.id, ...task });
+          })
+        );
       }
+      openNotification(`Task ${action}ed successfully`);
       tasksRevalidate();
+      if (createAnother) {
+        openModal();
+        form.resetFields();
+        setEditorContent('');
+        setUploadedFiles([]);
+      } else {
+        closeModal();
+      }
+      setLinkedTasks([]);
     } catch (error) {
       console.log(error);
     } finally {
       setIsProcessing(false);
-      setIsModalVisible(false);
+      form.resetFields();
     }
   };
 
@@ -245,19 +369,78 @@ const TaskList = ({
     }
   };
 
-  const filterStatusChange = (value) => {
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+  };
+
+  const filterByDateRange = (value) => {
+    if (!value) {
+      setStartDate(null);
+      setEndDate(null);
+      tasksRevalidate();
+      return;
+    }
+    const startDate = value[0];
+    const endDate = value[1];
+    const formattedStartDate = startDate
+      ? startDate.format('YYYY-MM-DD')
+      : null;
+    const formattedEndDate = endDate ? endDate.format('YYYY-MM-DD') : null;
+    params = {
+      ...params,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+    };
+    setStartDate(formattedStartDate);
+    setEndDate(formattedEndDate);
+    tasksRevalidate();
+  };
+
+  const filterByStatus = (value) => {
     setStatus(value);
     tasksRevalidate();
   };
 
+  const filterByCreator = (value) => {
+    setCreatedBy(value);
+    tasksRevalidate();
+  };
+
+  const filterByAssignee = (value) => {
+    setAssignedTo(value);
+    tasksRevalidate();
+  };
+
+  const filterByArchived = (value) => {
+    setArchived(value);
+    tasksRevalidate();
+  };
+
   const getTitle = () => {
-    if (action === 'add') {
-      return 'Add  Task';
-    } else if (action === 'edit') {
-      return 'Edit Task';
-    } else if (action === 'view') {
-      return 'Task';
+    if (Actions.add === action) {
+      return 'Add Task';
+    } else if (Actions.edit === action) {
+      return (
+        <span>
+          Edit Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
+    } else if (Actions.view === action) {
+      return (
+        <span>
+          Task{' '}
+          <span className="text-lg text-gray-400 mt-1">#{editingData?.id}</span>
+        </span>
+      );
     }
+    return 'Task';
   };
 
   const onFileChange = (info) => {
@@ -300,6 +483,50 @@ const TaskList = ({
     minHeight: '200px',
     defaultTag: 'div',
   };
+  const groupTasksByParent = (tasks = []) => {
+    const taskMap = {};
+    const parentTasks = [];
+
+    // Create a map of all tasks and initialize children
+    tasks.forEach((task) => {
+      taskMap[task.id] = {
+        ...task,
+        children: task.subTasks || [], // Use existing subTasks array
+        depth: 0,
+      };
+    });
+
+    // Build hierarchy
+    tasks.forEach((task) => {
+      if (task.parentId && taskMap[task.parentId]) {
+        if (!taskMap[task.parentId].children) {
+          taskMap[task.parentId].children = [];
+        }
+        // Only add if not already present (prevents duplicates)
+        if (!taskMap[task.parentId].children.some((t) => t.id === task.id)) {
+          taskMap[task.parentId].children.push(taskMap[task.id]);
+        }
+      } else if (!task.parentId) {
+        parentTasks.push(taskMap[task.id]);
+      }
+    });
+
+    // Calculate depths
+    const calculateDepth = (task, depth = 0) => {
+      task.depth = depth;
+      if (task.children && task.children.length) {
+        task.children.forEach((child) => calculateDepth(child, depth + 1));
+      }
+    };
+
+    parentTasks.forEach((task) => calculateDepth(task));
+
+    return parentTasks;
+  };
+
+  const groupedTasks = groupTasksByParent(tasks || []);
+
+  console.log(groupedTasks);
 
   const columns = [
     {
@@ -308,25 +535,82 @@ const TaskList = ({
       key: 'key',
       sorter: (a, b) => a.key - b.key,
       responsive: ['md'],
-      render: (text, record) => (
-        <a className="text-blue-600" onClick={() => onViewClick(record)}>
-          TSK-{text}
-        </a>
+      render: (_, task) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: `${(task.depth || 0) * 16}px`,
+            minHeight: '32px',
+          }}
+        >
+          {task.children?.length > 0 ? (
+            <Button
+              type="text"
+              size="small"
+              icon={
+                expandedRows.includes(task.id) ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )
+              }
+              onClick={(e) => {
+                e.stopPropagation();
+                if (expandedRows.includes(task.id)) {
+                  setExpandedRows(expandedRows.filter((id) => id !== task.id));
+                } else {
+                  setExpandedRows([...expandedRows, task.id]);
+                }
+              }}
+              style={{
+                marginRight: 8,
+                width: 24,
+                height: 24,
+                minWidth: 24,
+              }}
+            />
+          ) : (
+            <div style={{ width: 24, marginRight: 8 }}></div> // Empty spacer for alignment
+          )}
+          <a
+            className="text-blue-600"
+            onClick={() => onViewClick(task)}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {task?.displayId}
+          </a>
+        </div>
       ),
-      width: '5%',
+      width: 120,
     },
     {
       title: 'Title',
       dataIndex: 'title',
       key: 'title',
       ellipsis: true,
+      render: (text, record) => (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            wordBreak: 'break-word',
+            whiteSpace: 'normal',
+          }}
+        >
+          {text}
+        </div>
+      ),
+      width: 200,
     },
+
     {
       title: 'Category',
       dataIndex: 'category',
       key: 'category',
       sorter: (a, b) => a.category.localeCompare(b.category),
       responsive: ['md'],
+      width: 120,
     },
     {
       title: 'Status',
@@ -334,9 +618,9 @@ const TaskList = ({
       key: 'status',
       sorter: (a, b) => a.status.localeCompare(b.status),
       responsive: ['md'],
-      width: 150,
+      width: 100,
 
-      render: (text, record) => (
+      render: (text, tasks) => (
         <>
           {isMyTask ? (
             <Select
@@ -349,13 +633,24 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={taskStatus?.map((ts) => ({
-                label: ts.name,
+                label: ts?.name.toUpperCase(),
                 value: ts.name,
               }))}
-              onChange={(value) => onColumnStatusChange(record.id, value)}
+              onChange={(value) => onColumnStatusChange(tasks.id, value)}
             />
           ) : (
-            <span>{text}</span>
+            <Tag
+              className="items-center"
+              color={
+                text === 'Completed'
+                  ? 'green'
+                  : text === 'In Progress'
+                  ? 'orange'
+                  : 'blue'
+              }
+            >
+              {text.toUpperCase()}
+            </Tag>
           )}
         </>
       ),
@@ -366,6 +661,7 @@ const TaskList = ({
       key: 'priority',
       sorter: (a, b) => a.priority.localeCompare(b.priority),
       responsive: ['lg'],
+      width: 100,
     },
     ...(!isMyTask
       ? [
@@ -374,15 +670,12 @@ const TaskList = ({
             dataIndex: 'assignedTo',
             key: 'assignedTo',
             responsive: ['md'],
+            render: (_, tasks) => tasks?.assignee?.fullName,
+            width: 150,
           },
         ]
       : []),
-    {
-      title: 'Created By',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
-      responsive: ['lg'],
-    },
+
     {
       title: 'Due Date',
       dataIndex: 'dueDate',
@@ -390,7 +683,9 @@ const TaskList = ({
       sorter: (a, b) => new Date(a.dueDate) - new Date(b.dueDate),
       responsive: ['sm'],
       render: (text) => moment(text).format('DD/MM/YYYY'),
+      width: 100,
     },
+
     {
       title: 'Action',
       key: 'action',
@@ -401,7 +696,7 @@ const TaskList = ({
             <Button
               type="link"
               icon={<MessageSquareText size={18} />}
-              onClick={showCommentModal}
+              onClick={() => showCommentModal(record)}
             />
             {!isMyTask && (
               <>
@@ -450,65 +745,39 @@ const TaskList = ({
     },
   ];
 
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'John Doe',
-      content: 'This is a comment about the task.',
-      date: '2025-03-01 10:00 AM',
-    },
-    {
-      id: 2,
-      author: 'Jane Smith',
-      content: 'I have some updates on this task. Please review.',
-      date: '2025-03-02 11:00 AM',
-    },
-    {
-      id: 3,
-      author: 'Michael Johnson',
-      content: 'I will be working on this task tomorrow.',
-      date: '2025-03-03 09:30 AM',
-    },
-    {
-      id: 4,
-      author: 'Sarah Williams',
-      content: 'This task is progressing well, everything looks good.',
-      date: '2025-03-04 01:45 PM',
-    },
-    {
-      id: 5,
-      author: 'David Lee',
-      content: 'The task is on hold for now due to some blockers.',
-      date: '2025-03-05 03:00 PM',
-    },
-  ]);
+  const showCommentModal = async (record) => {
+    setCurrentTaskId(record.id);
+    const response = await getComments(record.id);
+    const data = response.data;
+    setComments(data);
+    setIsCommentModalVisible(true);
+  };
 
-  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
-  const [newComment, setNewComment] = useState('');
-
-  const handleNewComment = (comment) => {
-    setComments([
-      ...comments,
-      {
-        id: comments.length + 1,
-        author: 'Current User',
-        content: comment,
-        date: new Date().toLocaleString(),
-      },
-    ]);
-    setNewComment('');
+  const onCommentSubmit = async (newComment) => {
+    setIsProcessing(true);
+    const comment = {
+      comment: newComment,
+    };
+    try {
+      await createComment(currentTaskId, comment);
+      const response = await getComments(currentTaskId);
+      setComments(response.data);
+      setNewComment('');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      form.resetFields();
+    }
   };
 
   const onCommentChange = (value) => {
     setNewComment(value);
   };
 
-  const showCommentModal = () => {
-    setIsCommentModalVisible(true);
-  };
-
   const hideCommentModal = () => {
     setIsCommentModalVisible(false);
+    form.resetFields();
   };
 
   return (
@@ -540,19 +809,68 @@ const TaskList = ({
           <p className="text-xl font-bold">
             {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
           </p>
-          <Button type="primary" onClick={onAddClick}>
-            Add Task
-          </Button>
+          {selectedTaskId?.length > 0 ? (
+            <Popconfirm
+              placement="topLeft"
+              title={`${
+                selectedTaskId.some((id) => {
+                  const task = tasks?.find((t) => t.id === id);
+                  return task?.isArchived;
+                })
+                  ? 'Unarchive'
+                  : 'Archive'
+              } ${selectedTaskId.length} selected task(s)?`}
+              onConfirm={() => onToggleArchiveClick(selectedTaskId)}
+              okText="Yes"
+              cancelText="No"
+              disabled={selectedTaskId.length === 0}
+            >
+              <Button
+                type="primary"
+                loading={isProcessing}
+                disabled={selectedTaskId.length === 0}
+                icon={
+                  selectedTaskId.some((id) => {
+                    const task = tasks?.find((t) => t.id === id);
+                    return task?.isArchived;
+                  }) ? (
+                    <ArchiveRestore className="mt-1" size={16} />
+                  ) : (
+                    <Archive className="mt-1" size={16} />
+                  )
+                }
+              >
+                {selectedTaskId.length === 0
+                  ? 'Select tasks to archive'
+                  : selectedTaskId.some((id) => {
+                      const task = tasks?.find((t) => t.id === id);
+                      return task?.isArchived;
+                    })
+                  ? 'Unarchive'
+                  : 'Archive'}
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" onClick={onAddClick}>
+              Add Task
+            </Button>
+          )}
         </div>
 
         <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>Date Range</p>
-            <RangePicker presets={dateRanges} style={{ width: 385 }} />
+            <RangePicker
+              presets={dateRanges}
+              style={{ width: 385 }}
+              onChange={(value) => filterByDateRange(value)}
+            />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>By Creator </p>
             <Select
+              allowClear={true}
+              optionLabelProp="label"
               showSearch
               style={{ width: 200 }}
               optionFilterProp="label"
@@ -561,17 +879,34 @@ const TaskList = ({
                   .toLowerCase()
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
-              options={[
-                { value: '1', label: 'John Doe' },
-                { value: '2', label: 'Jane Smith' },
-                { value: '3', label: 'Michael Johnson' },
-              ]}
-            />
+              onChange={(values) => filterByCreator(values)}
+            >
+              {users?.map((u) => (
+                <Option
+                  key={u?.id}
+                  value={`${u?.id} `}
+                  label={`${u?.fullName} `}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                      {!u?.avatar && `${u?.firstName[0]}`}{' '}
+                    </Avatar>
+                    <span>{`${u?.fullName} `}</span>
+                  </div>
+                </Option>
+              ))}
+            </Select>
           </Space>
           {!isMyTask && (
             <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
               <p>By Assignee</p>
               <Select
+                allowClear={true}
                 optionLabelProp="label"
                 showSearch
                 style={{ width: 200 }}
@@ -581,12 +916,13 @@ const TaskList = ({
                     .toLowerCase()
                     .localeCompare((optionB?.label ?? '').toLowerCase())
                 }
+                onChange={(values) => filterByAssignee(values)}
               >
                 {users?.map((u) => (
                   <Option
-                    key={u.id}
-                    value={`${u.firstname} ${u.lastname}`}
-                    label={`${u.firstname} ${u.lastname}`}
+                    key={u?.id}
+                    value={`${u?.id} `}
+                    label={`${u?.fullName} `}
                   >
                     <div
                       style={{
@@ -594,10 +930,10 @@ const TaskList = ({
                         alignItems: 'center',
                       }}
                     >
-                      <Avatar src={u.avatar} style={{ marginRight: 8 }}>
-                        {!u.avatar && `${u.firstname[0]}`}{' '}
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {!u?.avatar && `${u?.firstName[0]}`}{' '}
                       </Avatar>
-                      <span>{`${u.firstname} ${u.lastname}`}</span>
+                      <span>{`${u?.fullName} `}</span>
                     </div>
                   </Option>
                 ))}
@@ -611,7 +947,6 @@ const TaskList = ({
               showSearch
               style={{ width: 200 }}
               allowClear={true}
-              onClear={() => filterStatusChange(null)}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
                 (optionA?.label ?? '')
@@ -619,16 +954,17 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={taskStatus?.map((ts) => ({
-                label: ts.name,
-                value: ts.name,
+                label: ts?.name,
+                value: ts?.name,
               }))}
-              onChange={(value) => filterStatusChange(value)}
+              onChange={(value) => filterByStatus(value)}
             />
           </Space>
           <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
             <p>Archived </p>
             <Select
               showSearch
+              allowClear
               style={{ width: 150 }}
               optionFilterProp="label"
               filterSort={(optionA, optionB) =>
@@ -637,29 +973,44 @@ const TaskList = ({
                   .localeCompare((optionB?.label ?? '').toLowerCase())
               }
               options={[
-                { value: '1', label: 'No' },
-                { value: '2', label: 'Yes' },
+                { value: 'false', label: 'No' },
+                { value: 'true', label: 'Yes' },
               ]}
+              onChange={(value) => filterByArchived(value)}
             />
           </Space>
         </Space>
 
         <Table
+          rowSelection={{
+            type: 'checkbox',
+            selectedRowKeys: selectedTaskId,
+            onChange: (selectedRowKeys) => setSelectedTaskId(selectedRowKeys),
+          }}
           columns={columns}
-          dataSource={tasks}
+          dataSource={groupedTasks}
           pagination={{
-            ...taskMeta,
-            pageSizeOptions: ['10', '20', '50'],
+            total: taskMeta?.totalRows,
+            pageSize: taskMeta?.pageSize,
             showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
             responsive: true,
           }}
           rowKey={(record) => record.id}
           scroll={{ x: 'max-content' }}
           bordered
-          size={screens.xs ? 'small' : 'middle'}
+          size="small"
           style={{
             minWidth: screens.xs ? '100%' : 'auto',
             overflowX: 'auto',
+          }}
+          onChange={onTableChange}
+          expandable={{
+            childrenColumnName: 'children',
+            defaultExpandAllRows: false,
+            expandedRowKeys: expandedRows,
+            expandIcon: () => null,
+            rowExpandable: (record) => record.children?.length > 0,
           }}
         />
 
@@ -668,23 +1019,46 @@ const TaskList = ({
           open={isModalVisible}
           onCancel={closeModal}
           footer={
-            action === 'add' ? (
+            Actions.add === action ? (
               <>
                 <Divider />
+                <Checkbox onChange={onCreateAnotherChange} className="mr-2 ">
+                  Create another
+                </Checkbox>
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
+
                 <Button type="primary" onClick={() => form.submit()}>
                   Add
                 </Button>
               </>
-            ) : action === 'edit' ? (
+            ) : Actions.edit === action ? (
               <>
                 <Divider />
                 <Button onClick={closeModal}>Cancel</Button>
                 <Button type="primary" onClick={() => form.submit()}>
                   Update
                 </Button>
+                <Tooltip
+                  title={
+                    editingData?.parentId
+                      ? 'Subtasks cannot have their own subtasks'
+                      : ''
+                  }
+                >
+                  <Button
+                    type="default"
+                    className="left-4 float-left"
+                    onClick={openTaskLinkModal}
+                    icon={
+                      <ListTree className="mt-1" stroke="#1890ff" size={18} />
+                    }
+                    disabled={editingData?.parentId !== null}
+                  >
+                    Add Subtask
+                  </Button>
+                </Tooltip>
               </>
             ) : (
               <>
@@ -702,7 +1076,7 @@ const TaskList = ({
             form={form}
             layout="vertical"
             onFinish={onSubmit}
-            disabled={action === 'view'}
+            disabled={Actions.view === action}
           >
             <Row gutter={24}>
               <Col xs={24} lg={18}>
@@ -721,18 +1095,21 @@ const TaskList = ({
                     { required: true, message: 'Please enter a description' },
                   ]}
                 >
-                  {action === 'view' ? (
-                    <PreviewSection content={editorContent} />
+                  {Actions.view === action ? (
+                    <PreviewSection
+                      content={form.getFieldValue('description')}
+                    />
                   ) : (
                     <Tabs activeKey={activeTab} onChange={setActiveTab}>
                       <TabPane tab="Write" key="write">
                         <SunEditor
                           setOptions={editorOptions}
                           onChange={handleEditorChange}
+                          placeholder="Enter your task description"
                           setContents={
-                            action === 'edit'
-                              ? form.getFieldValue('description')
-                              : task.description
+                            action === Actions.edit
+                              ? editingData?.description
+                              : editorContent
                           }
                         />
                       </TabPane>
@@ -754,7 +1131,7 @@ const TaskList = ({
                       <Inbox
                         size={80}
                         strokeWidth={1}
-                        className="text-gray-300 mr-2"
+                        className="mr-2 text-gray-300"
                       />{' '}
                     </div>
                     <p className="ant-upload-text !text-gray-500">
@@ -767,7 +1144,13 @@ const TaskList = ({
               <Col xs={24} lg={6}>
                 <Row gutter={[16, 16]}>
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Status" name="status">
+                    <Form.Item
+                      label="Status"
+                      name="status"
+                      rules={[
+                        { required: true, message: 'Please select a status' },
+                      ]}
+                    >
                       <Select
                         defaultValue=""
                         filterOption={(input, option) =>
@@ -776,26 +1159,39 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskStatus?.map((ts) => ({
-                          label: ts.name,
-                          value: ts.name,
+                          label: ts?.name,
+                          value: ts?.name,
                         }))}
                       />
                     </Form.Item>
                   </Col>
+
                   <Col xs={24} md={12} lg={24}>
                     <Form.Item
                       label={isMyTask ? 'Assign yourself' : 'Assign to'}
                       name="assignedTo"
+                      rules={[
+                        { required: true, message: 'Please select a user' },
+                      ]}
                     >
                       {isMyTask ? (
                         <Switch disabled defaultChecked />
                       ) : (
-                        <Select optionLabelProp="label">
+                        <Select
+                          showSearch
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            option?.label
+                              ?.toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          optionLabelProp="label"
+                        >
                           {users?.map((u) => (
                             <Option
-                              key={u.id}
-                              value={`${u.firstname} ${u.lastname}`}
-                              label={`${u.firstname} ${u.lastname}`}
+                              key={u?.id}
+                              value={u?.id}
+                              label={`${u?.fullName}`}
                             >
                               <div
                                 style={{
@@ -804,12 +1200,15 @@ const TaskList = ({
                                 }}
                               >
                                 <Avatar
-                                  src={u.avatar}
+                                  src={u?.avatar}
                                   style={{ marginRight: 8 }}
                                 >
-                                  {!u.avatar && `${u.firstname[0]}`}{' '}
+                                  {u?.fullName
+                                    ?.split(' ')
+                                    .map((name) => name[0].toUpperCase())
+                                    .join('')}
                                 </Avatar>
-                                <span>{`${u.firstname} ${u.lastname}`}</span>
+                                <span>{`${u?.fullName} `}</span>
                               </div>
                             </Option>
                           ))}
@@ -819,7 +1218,13 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Due date" name="dueDate">
+                    <Form.Item
+                      label="Due date"
+                      name="dueDate"
+                      rules={[
+                        { required: true, message: 'Please select a due date' },
+                      ]}
+                    >
                       <DatePicker
                         presets={dateRanges}
                         style={{ width: '100%' }}
@@ -829,7 +1234,13 @@ const TaskList = ({
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Category" name="category">
+                    <Form.Item
+                      label="Category"
+                      name="category"
+                      rules={[
+                        { required: true, message: 'Please select a category' },
+                      ]}
+                    >
                       <Select
                         defaultValue=""
                         filterOption={(input, option) =>
@@ -838,15 +1249,21 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskCategory?.map((tc) => ({
-                          label: tc.name,
-                          value: tc.name,
+                          label: tc?.name,
+                          value: tc?.name,
                         }))}
                       />
                     </Form.Item>
                   </Col>
 
                   <Col xs={24} md={12} lg={24}>
-                    <Form.Item label="Priority" name="priority">
+                    <Form.Item
+                      label="Priority"
+                      name="priority"
+                      rules={[
+                        { required: true, message: 'Please select a priority' },
+                      ]}
+                    >
                       <Select
                         defaultValue=""
                         filterOption={(input, option) =>
@@ -855,8 +1272,8 @@ const TaskList = ({
                             .includes(input.toLowerCase())
                         }
                         options={taskPriority?.map((tp) => ({
-                          label: tp.name,
-                          value: tp.name,
+                          label: tp?.name,
+                          value: tp?.name,
                         }))}
                       />
                     </Form.Item>
@@ -885,14 +1302,247 @@ const TaskList = ({
               </Col>
             </Row>
           </Form>
+          {linkedTasks.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  marginBottom: 8,
+                }}
+                onClick={() => setIsLinkedTasksExpanded(!isLinkedTasksExpanded)}
+              >
+                <span className="ml-2 ">
+                  {isLinkedTasksExpanded ? (
+                    <ChevronDown size={18} />
+                  ) : (
+                    <ChevronRight size={18} />
+                  )}
+                </span>
+                <p className="font-semibold ml-2">
+                  Linked Tasks ({linkedTasks.length})
+                </p>
+              </div>
+              {isLinkedTasksExpanded && (
+                <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+                  {linkedTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '8px',
+                        borderBottom: '1px solid #f0f0f0',
+                      }}
+                    >
+                      <Tag
+                        color={
+                          task.status === 'Completed'
+                            ? 'green'
+                            : task.status === 'In Progress'
+                            ? 'orange'
+                            : 'blue'
+                        }
+                        className="mr-2"
+                      >
+                        {task.status}
+                      </Tag>
+                      <span className="mr-3">{task.title}</span>
+                      <span style={{ color: '#666', flex: 1 }}>#{task.id}</span>
+                      <Avatar size={25} src={task.assignee.avatar}>
+                        {task.assignee.firstName[0].toUpperCase()}
+                        {task.assignee.lastName[0].toUpperCase()}
+                      </Avatar>
+
+                      <Button
+                        type="text"
+                        icon={<X size={16} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleTaskSelection(task);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </Modal>
+        {isTaskLinkModalVisible && (
+          <Popover
+            title={
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span className="ml-3">Link Existing Tasks</span>
+                <Button
+                  type="text"
+                  icon={<X size={18} style={{ color: 'grey' }} />}
+                  onClick={closeTaskLinkModal}
+                  style={{ marginLeft: 8 }}
+                />
+              </div>
+            }
+            content={
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '360px',
+                }}
+              >
+                <div
+                  style={{ padding: '8px 12px', background: '#fff', zIndex: 1 }}
+                >
+                  <Input
+                    placeholder="Search tasks..."
+                    allowClear
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    overflowY: 'auto',
+                    maxHeight: '300px',
+                    padding: '0 12px',
+                  }}
+                >
+                  {tasks?.filter(
+                    (task) =>
+                      task.id !== editingData?.id && // Exclude current task
+                      (task.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                        task.displayId.toString().includes(searchTerm) ||
+                        task.status
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase()))
+                  )?.length > 0 ? (
+                    tasks
+                      ?.filter(
+                        (task) =>
+                          task.id !== editingData?.id && // Exclude current task
+                          (task.title
+                            .toLowerCase()
+                            .includes(searchTerm.toLowerCase()) ||
+                            task.displayId.toString().includes(searchTerm) ||
+                            task.status
+                              .toLowerCase()
+                              .includes(searchTerm.toLowerCase()))
+                      )
+                      ?.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`task-link-item ${
+                            linkedTasks.some((t) => t.id === task.id)
+                              ? 'selected'
+                              : ''
+                          }`}
+                          onClick={() => toggleTaskSelection(task)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '8px 4px',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            borderBottom: '1px solid #f0f0f0',
+                            backgroundColor: linkedTasks.some(
+                              (t) => t.id === task.id
+                            )
+                              ? '#e6f7ff'
+                              : 'transparent',
+                          }}
+                        >
+                          <Tag
+                            color={
+                              task.status === 'Completed'
+                                ? 'green'
+                                : task.status === 'In Progress'
+                                ? 'orange'
+                                : 'blue'
+                            }
+                            style={{ margin: 0, flexShrink: 0 }}
+                          >
+                            {task.status}
+                          </Tag>
+                          <span
+                            style={{
+                              flex: 1,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {task.title}
+                          </span>
+                          <span style={{ color: '#666', flexShrink: 0 }}>
+                            #{task.displayId}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '200px',
+                      }}
+                    >
+                      <Empty
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="No other tasks available to link"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            }
+            trigger="click"
+            open={isTaskLinkModalVisible}
+            onOpenChange={(visible) => {
+              if (!visible) closeTaskLinkModal();
+            }}
+            placement="topLeft"
+            overlayClassName="task-link-popover"
+            overlayStyle={{
+              boxShadow:
+                '0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
+              borderRadius: 8,
+              width: '400px',
+              padding: 0,
+            }}
+            arrow={false}
+          >
+            <div style={{ display: 'inline-block' }}></div>
+          </Popover>
+        )}
         <Modal
           title="Task Comments"
           open={isCommentModalVisible}
           onCancel={hideCommentModal}
-          footer={null}
+          on
+          footer={
+            <>
+              <Divider />
+              <Button className="mr-2" onClick={hideCommentModal}>
+                Cancel
+              </Button>
+              <Button type="primary" onClick={() => form.submit()}>
+                Comment
+              </Button>
+            </>
+          }
           style={{ top: 20 }}
         >
+          <Divider />
           <div
             style={{
               maxHeight: '500px',
@@ -900,7 +1550,7 @@ const TaskList = ({
               paddingBottom: '80px',
             }}
           >
-            <CommentSection comments={comments} />
+            <CommentSection comments={comments} taskId={currentTaskId} />
           </div>
 
           <div
@@ -910,32 +1560,36 @@ const TaskList = ({
               width: '100%',
               background: 'white',
               padding: '16px',
-              boxShadow: '0 -2px 8px rgba(0,0,0,0.1)',
             }}
           >
-            <Mentions
-              value={newComment}
-              onChange={onCommentChange}
-              placeholder="Add your comment"
-              style={{
-                width: '100%',
-                marginBottom: '8px',
-                minHeight: '80px',
-              }}
-              suggestions={[
-                { label: '@John Doe', value: '@John Doe' },
-                { label: '@Jane Smith', value: '@Jane Smith' },
-                { label: '@Michael Johnson', value: '@Michael Johnson' },
-              ]}
-            />
-            <Button
-              type="primary"
-              block
-              onClick={() => handleNewComment(newComment)}
-              disabled={!newComment.trim()}
+            <Form
+              form={form}
+              onFinish={() => onCommentSubmit(newComment)}
+              layout="vertical"
             >
-              Submit Comment
-            </Button>
+              <Form.Item name="comment">
+                <Mentions
+                  value={newComment}
+                  onChange={onCommentChange}
+                  placeholder="Add your comment"
+                  autoSize={{ minRows: 3, maxRows: 6 }}
+                  style={{
+                    width: '100%',
+                  }}
+                  options={users?.map((u) => ({
+                    label: (
+                      <Space>
+                        <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                          {!u?.avatar && `${u?.firstName[0]}`}{' '}
+                        </Avatar>
+                        <span>{u?.fullName}</span>
+                      </Space>
+                    ),
+                    value: `${u?.fullName}`,
+                  }))}
+                />
+              </Form.Item>
+            </Form>
           </div>
         </Modal>
       </div>

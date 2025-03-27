@@ -23,8 +23,15 @@ import {
   Switch,
   InputNumber,
   Popconfirm,
+  Avatar,
 } from 'antd';
-import { EllipsisVertical, FilePenLine, Trash2Icon, Eye } from 'lucide-react';
+import {
+  EllipsisVertical,
+  FilePenLine,
+  Trash2Icon,
+  Eye,
+  CloudHail,
+} from 'lucide-react';
 import Link from 'next/link';
 import moment from 'moment';
 import { dateRanges, openNotification } from '@/utils';
@@ -39,6 +46,9 @@ import { data } from 'autoprefixer';
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 import { useAppContext } from '@/app-context';
+import { useUsers } from '@/hooks/useUsers';
+import { useLeaveTypes } from '@/hooks/useLeaveTypes';
+import { comment } from 'postcss';
 
 const LeaveRequest = ({
   isAllLeave = false,
@@ -46,7 +56,6 @@ const LeaveRequest = ({
   isMyTeamLeave = false,
 }) => {
   const screens = useBreakpoint();
-  console.log({ isAllLeave, isMyLeave, isMyTeamLeave });
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -56,16 +65,26 @@ const LeaveRequest = ({
   const [action, setAction] = useState('add');
   const [decision, setDecision] = useState('');
   const [transfer, setTransfer] = useState(null);
-  const [isAllDay, setIsAllDay] = useState(false);
+  const [isForAllPeriods, setIsForAllPeriods] = useState(false);
   const [editingData, setEditingData] = useState(null);
-  const [isApproved, setIsApproved] = useState(false);
 
   let params = {};
 
   const { loggedInUser } = useAppContext();
 
-  const { leaveRequest: leaves, revalidate: leavesRevalidate } =
-    useLeaveRequest(params);
+  const {
+    leaveRequest: leaves,
+    meta: leavesMeta,
+    revalidate: leavesRevalidate,
+  } = useLeaveRequest();
+  const { users } = useUsers();
+  const { leaveTypes } = useLeaveTypes();
+
+  const leaveDecision = {
+    approved: 'approved',
+    rejected: 'rejected',
+    pending: 'pending',
+  };
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -82,16 +101,17 @@ const LeaveRequest = ({
   };
 
   const onAcceptRejectClick = (record) => {
-    const { actionForOverlap, ...deletedValue } = record;
+    const { actionForOverlap, isApproved, ...deletedValue } = record;
 
     const newRecord = {
       ...deletedValue,
       startDate: record.startDate ? moment(record.startDate) : null,
       endDate: record.endDate ? moment(record.endDate) : null,
-      decidedAt: record.decidedAt ? moment(record.decidedAt) : null,
-      decidedBy: loggedInUser,
-      isApproved: decision === 'approved',
+      decidedAt: moment(),
+      decidedBy: loggedInUser.userId,
+      loggedBy: loggedInUser.fullName,
     };
+
     setEditingData(newRecord);
     form.setFieldsValue(newRecord);
 
@@ -99,13 +119,19 @@ const LeaveRequest = ({
     openModal();
   };
 
-  const onReviewClick = (record) => {
-    const newRecord = {
-      ...record,
-      startDate: record.startDate ? moment(record.startDate) : null,
-      endDate: record.endDate ? moment(record.endDate) : null,
+  const onReviewClick = (leaves) => {
+    const record = {
+      userId: leaves.assignee?.fullName,
+      requestType: leaves.requestType,
+      startDate: leaves.startDate ? moment(leaves.startDate) : null,
+      endDate: leaves.endDate ? moment(leaves.endDate) : null,
+      comments: leaves.comments,
+      note: leaves.note,
+      decidedAt: leaves.decidedAt ? moment(leaves.decidedAt) : null,
+      decidedBy: leaves.decider?.fullName,
+      reasonForRejection: leaves.reasonForRejection,
     };
-    form.setFieldsValue(newRecord);
+    form.setFieldsValue(record);
     setAction('review');
     openModal();
   };
@@ -132,16 +158,37 @@ const LeaveRequest = ({
     const { actionForOverlap, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
-      userId: loggedInUser.userId,
+      userId: isMyLeave ? loggedInUser.userId : values.userId,
       organisationId: loggedInUser.orgId,
-      isApproved: false,
       isArchived: false,
       createdBy: loggedInUser.userId,
+      isForAllPeriods: false,
+      periodAllocations: [
+        {
+          periodName: 'Morning',
+          allocatedUserId: null,
+        },
+      ],
+    };
+
+    const acceptRejectvalues = {
+      ...values,
+      periodAllocations: [
+        {
+          periodNames: 'M1',
+          allocatedUserId: 2,
+        },
+      ],
+      isApproved: decision === leaveDecision.approved ? true : false,
+      decidedAt: values.decidedAt ? moment(values.decidedAt) : null,
+      decidedBy: loggedInUser.userId,
     };
 
     try {
       if (action === 'edit') {
         await updateLeaves(editingData.id, values);
+      } else if (action === 'accept-reject') {
+        await updateLeaves(editingData.id, acceptRejectvalues);
       } else {
         await createLeaves(myValues);
       }
@@ -156,13 +203,12 @@ const LeaveRequest = ({
 
   const onDecisionChange = (value) => {
     setDecision(value);
-    if (value === 'rejected') {
-      setTransfer(null);
-    }
+
+    setTransfer(null);
   };
 
-  const onAllDayChange = () => {
-    setIsAllDay(!isAllDay);
+  const onAllPeriodsChange = () => {
+    setIsForAllPeriods(!isAllPeriod);
   };
 
   const getTitle = () => {
@@ -184,7 +230,7 @@ const LeaveRequest = ({
             title: 'Teacher / Staff Member Name',
             dataIndex: 'name',
             key: 'name',
-            render: () => loggedInUser?.fullName,
+            render: (_, leaves) => leaves?.assignee?.fullName,
             responsive: ['lg'],
           },
         ]
@@ -220,7 +266,7 @@ const LeaveRequest = ({
         if (leaveRequest.decidedAt == null) {
           return '-';
         } else {
-          return leaveRequest.decidedAt;
+          return moment(leaveRequest.decidedAt).format('DD/MM/YYYY hh:mm a');
         }
       },
       responsive: ['sm'],
@@ -230,11 +276,10 @@ const LeaveRequest = ({
       dataIndex: 'decidedBy',
       key: 'decidedBy',
       render: (_, leaveRequest) => {
-        if (leaveRequest.decidedBy == null) {
+        if (leaveRequest.decidedAt == null) {
           return '-';
-        } else {
-          return leaveRequest.decidedBy;
         }
+        return leaveRequest?.decider?.fullName;
       },
       responsive: ['sm'],
     },
@@ -245,10 +290,7 @@ const LeaveRequest = ({
       render: (_, leaveRequest) => {
         if (leaveRequest.isApproved == true) {
           return 'Approved';
-        } else if (
-          leaveRequest.isApproved == false &&
-          leaveRequest.rejectionReason != null
-        ) {
+        } else if (leaveRequest.isApproved == false) {
           return 'Rejected';
         } else {
           return 'Pending';
@@ -260,13 +302,13 @@ const LeaveRequest = ({
       title: 'Action',
       key: 'action',
       width: '10%',
-      render: (_, record, leaveRequest) =>
+      render: (_, record) =>
         screens.md ? (
           <Space size="middle">
             <Button
               type="link"
               icon={<Eye size={18} />}
-              onClick={() => onReviewClick(record)}
+              onClick={() => onReviewClick()}
             />
             <Button
               type="link"
@@ -291,11 +333,11 @@ const LeaveRequest = ({
               </>
             )}
             {!isMyLeave && (
-              <Flex wrap className="site-button-ghost-wrapper ">
+              <Flex wrap className="site-button-ghost-wrapper">
                 <Button
                   type="primary"
-                  danger
                   ghost
+                  danger
                   size="medium"
                   onClick={() => onAcceptRejectClick(record)}
                 >
@@ -375,21 +417,34 @@ const LeaveRequest = ({
           <Space>
             <Space direction="vertical" style={{ marginBottom: 16 }}>
               <p>Filter By</p>
+
               <Select
-                showSearch
+                optionLabelProp="label"
+                style={{ width: 300 }}
                 placeholder="Teacher / Staff Member"
+                showSearch
                 filterOption={(input, option) =>
                   (option?.label ?? '')
                     .toLowerCase()
                     .includes(input.toLowerCase())
                 }
-                options={[
-                  { value: '1', label: 'Jack' },
-                  { value: '2', label: 'Lucy' },
-                  { value: '3', label: 'Tom' },
-                ]}
-                style={{ width: 300 }}
-              />
+              >
+                {users?.map((u) => (
+                  <Option key={u.id} value={u.id} label={`${u.fullName}`}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                        {!u?.avatar && `${u?.fullName[0]}`}{' '}
+                      </Avatar>
+                      <span>{`${u.fullName}`}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
             </Space>
 
             <Space
@@ -418,8 +473,9 @@ const LeaveRequest = ({
 
         <Table
           columns={columns}
-          dataSource={Array.isArray(leaves) ? leaves : []}
+          dataSource={leaves}
           pagination={{
+            ...leavesMeta,
             pageSizeOptions: ['10', '20', '50'],
             showSizeChanger: true,
             responsive: true,
@@ -467,7 +523,10 @@ const LeaveRequest = ({
                 </Button>
               </>
             ) : (
-              []
+              <>
+                <Divider />
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
             )
           }
         >
@@ -480,25 +539,17 @@ const LeaveRequest = ({
             {action === 'accept-reject' && (
               <Row>
                 <Col span={12}>
-                  <Form.Item
-                    name="name"
-                    label="Logged Date/Time"
-                    initialValue={moment()} // Set the initialValue to moment()
-                  >
+                  <Form.Item name="decidedAt" label="Logged Date/Time">
                     <DatePicker
                       showTime
+                      format={'DD/MM/YYYY hh:mm A'}
                       disabled
-                      format="DD/MM/YYYY "
                       value={moment()}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item
-                    name="loggedBy"
-                    label="Logged by"
-                    initialValue={loggedInUser?.fullName}
-                  >
+                  <Form.Item name="loggedBy" label="Logged by">
                     <Input disabled />
                   </Form.Item>
                 </Col>
@@ -511,10 +562,24 @@ const LeaveRequest = ({
                   label="Teacher / Staff Member Name"
                   rules={[{ required: true }]}
                   width="100%"
+                  name="userId"
                 >
-                  <Select placeholder="Select a teacher or staff member">
-                    <Select.Option value={8}>John Doe</Select.Option>
-                    <Select.Option value="casual leave">Jane Doe</Select.Option>
+                  <Select optionLabelProp="label">
+                    {users?.map((u) => (
+                      <Option key={u.id} value={u.id} label={`${u.fullName}`}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                            {!u?.avatar && `${u?.fullName[0]}`}{' '}
+                          </Avatar>
+                          <span>{`${u.fullName}`}</span>
+                        </div>
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
               </Col>
@@ -528,17 +593,17 @@ const LeaveRequest = ({
                 width="100%"
                 initialValue={action === 'review' ? data.leaveType : ''}
               >
-                <Select>
-                  <Select.Option value="sick leave">Sick Leave</Select.Option>
-                  <Select.Option value="casual leave">
-                    Casual Leave
-                  </Select.Option>
-                </Select>
+                <Select
+                  options={leaveTypes?.map((lt) => ({
+                    label: lt.name,
+                    value: lt.name,
+                  }))}
+                ></Select>
               </Form.Item>
             </Col>
-            <Form.Item name="isAllDay">
-              <p style={{ marginBottom: '5px' }}>All Day?</p>
-              <Switch checked={isAllDay} onChange={onAllDayChange} />
+            <Form.Item name="isForAllPeriods">
+              <p style={{ marginBottom: '5px' }}>All Periods?</p>
+              <Switch checked={isForAllPeriods} onChange={onAllPeriodsChange} />
             </Form.Item>
             <Row gutter={16} style={{ width: '100%' }}>
               <Col span={12}>
@@ -551,7 +616,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay || action === 'review'}
+                    disabled={isForAllPeriods || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -566,7 +631,7 @@ const LeaveRequest = ({
                     showTime
                     format="DD/MM/YYYY"
                     ranges={dateRanges}
-                    disabled={isAllDay || action === 'review'}
+                    disabled={isForAllPeriods || action === 'review'}
                     style={{ width: '100%' }}
                   />
                 </Form.Item>
@@ -574,25 +639,52 @@ const LeaveRequest = ({
             </Row>
 
             <Form.Item name="comments" label="Comments">
-              <Input.TextArea rows={3} disabled={action === 'accept-reject'} />
+              <Input.TextArea
+                rows={3}
+                disabled={action === 'accept-reject' || action === 'review'}
+              />
             </Form.Item>
-            {action === 'accept-reject' && (
+            {!isMyLeave && action !== 'add' && (
               <>
                 <Form.Item name="note" label="Note">
                   <Input.TextArea rows={3} />
                 </Form.Item>
-                <Form.Item label="Decision" rules={[{ required: true }]}>
-                  <Select
-                    onChange={(value) => {
-                      onDecisionChange(value);
-                      if (value === 'approved') setIsApproved(true);
-                    }}
-                  >
-                    <Select.Option value="approved">Approve</Select.Option>
-                    <Select.Option value="rejected">Reject</Select.Option>
-                  </Select>
-                </Form.Item>
-                {decision === 'rejected' && (
+                {!isMyLeave && action === 'review' && (
+                  <Row>
+                    <Col span={12}>
+                      <Form.Item name="decidedAt" label="Decided At">
+                        <DatePicker
+                          showTime
+                          format={'DD/MM/YYYY hh:mm A'}
+                          disabled
+                        />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="decidedBy" label="Decided By">
+                        <Input disabled />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                )}
+
+                {action !== 'review' && (
+                  <Form.Item label="Decision" rules={[{ required: true }]}>
+                    <Select
+                      onChange={(value) => {
+                        onDecisionChange(value);
+                      }}
+                    >
+                      <Select.Option value={leaveDecision.approved}>
+                        Approve
+                      </Select.Option>
+                      <Select.Option value={leaveDecision.rejected}>
+                        Reject
+                      </Select.Option>
+                    </Select>
+                  </Form.Item>
+                )}
+                {decision === leaveDecision.rejected && (
                   <Form.Item
                     name="rejectionReason"
                     label="Reason for Rejection"
@@ -601,7 +693,7 @@ const LeaveRequest = ({
                     <Input.TextArea rows={4} />
                   </Form.Item>
                 )}
-                {decision === 'approved' && (
+                {decision === leaveDecision.approved && (
                   <Form.Item
                     name="actionForOverlap"
                     label="Action for overlapping with leave"
@@ -615,7 +707,6 @@ const LeaveRequest = ({
                       <Select.Option value="transferToAnother">
                         Transfer to another
                       </Select.Option>
-
                       <Select.Option value="doNothing">
                         Do Nothing
                       </Select.Option>
@@ -633,6 +724,15 @@ const LeaveRequest = ({
                       <Select.Option value="1">John Doe</Select.Option>
                       <Select.Option value="2">Jane Doe</Select.Option>
                     </Select>
+                  </Form.Item>
+                )}
+                {action === 'review' && (
+                  <Form.Item
+                    name="rejectionReason"
+                    label="Reason for Rejection"
+                    rules={[{ required: true }]}
+                  >
+                    <Input.TextArea rows={4} />
                   </Form.Item>
                 )}
               </>

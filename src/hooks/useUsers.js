@@ -25,8 +25,8 @@ export function useUsers(params) {
   const revalidate = () => mutate(fullUrl);
 
   return {
-    users: responseData,
-    meta: responseData,
+    users: responseData?.data,
+    meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,
     revalidate,

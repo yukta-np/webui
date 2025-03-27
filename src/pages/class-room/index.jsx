@@ -1,10 +1,14 @@
-import ClassroomManagement from '@/components/class-room/ClassroomManagement'
-import React from 'react'
+import ClassroomManagement from '@/components/class-room/ClassroomManagement';
+import CustomHead from '@/components/customHead/CustomHead';
+import React from 'react';
 
 const index = () => {
   return (
-    < ClassroomManagement />
-  )
-}
+    <>
+      <CustomHead actualTitle="Classroom Management" />
+      <ClassroomManagement />
+    </>
+  );
+};
 
-export default index
+export default index;

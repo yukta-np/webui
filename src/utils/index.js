@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { notification } from 'antd';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 /** ========================== Utility Functions ========================== */
 export function isJsonParsable(str) {
@@ -24,60 +25,15 @@ export function parseJwt(token) {
   return JSON.parse(jsonPayload);
 }
 
-export const extractTokenFromQueryString = () => {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('token');
-  }
-  return null;
-};
-
-/** ========================== Storage Functions ========================== */
-// export const setSessionStorageData = (token) => {
-//   const {
-//     id: userId,
-//     firstName,
-//     lastName,
-//     email,
-//     phone,
-//     role,
-//     preferences,
-//     organisationId: orgId,
-//     isVerified,
-//     isActive,
-//     createdAt,
-//     updatedAt,
-//   } = parseJwt(token);
-
-//   const yukta = {
-//     token,
-//     userId,
-//     subId,
-//     fullName: `${firstName} ${lastName}`,
-//     email,
-//     phone,
-//     role,
-//     orgId,
-//     preferences: preferences ? JSON.parse(preferences) : {},
-//     isVerified,
-//     isActive,
-//     createdAt,
-//     updatedAt,
-//   };
-//   window.localStorage.setItem('yukta', JSON.stringify(yukta));
-// };
-
-
 export const setSessionStorageData = (token) => {
   const {
     role,
-    orgId,
-    sub,
-    subId,
+    organisationId: orgId,
+    userId,
     fullName,
     preferences,
-    orgName,
-    orgLogo,
+    organisationName: orgName,
+    organisationLogo: orgLogo,
     permissions,
   } = parseJwt(token);
 
@@ -89,36 +45,39 @@ export const setSessionStorageData = (token) => {
       orgName,
       orgLogo,
       role,
-      subId,
       preferences,
       permissions,
-      userId: sub,
+      userId: userId,
     };
     window.localStorage.setItem('yukta', JSON.stringify(yukta));
   }
 };
+
 export const getLoggedInUser = () => {
-  try {
-    const yuktaStr = window.localStorage.getItem('yukta');
-    if (yuktaStr && isJsonParsable(yuktaStr)) {
-      return JSON.parse(yuktaStr);
-    }
-  } catch (error) {
-    console.error('Error parsing user data from localStorage', error);
+  const yuktaStr =
+    typeof window !== 'undefined' && window.localStorage.getItem('yukta');
+  let yukta;
+  if (yuktaStr && isJsonParsable(yuktaStr)) {
+    yukta = JSON.parse(yuktaStr);
   }
-  return null;
+  return yukta;
 };
 
 export const getToken = () => {
-  const yukta = getLoggedInUser() || extractTokenFromQueryString();
+  const yukta = getLoggedInUser(); //|| extractTokenFromQueryString();
   return yukta?.token;
 };
 
 export const clearStorageAndRedirect = (returnUrl) => {
-  window.localStorage.removeItem('yukta');
-  window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(returnUrl)
-    ? '/auth/login'
-    : `/auth/login?return=${returnUrl}`;
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('yukta');
+    window.location.href = [null, undefined, '/', 'undefined', 'null'].includes(
+      returnUrl
+    )
+      ? '/auth/login'
+      : `/auth/login?return=${returnUrl}`;
+  }
+  return null;
 };
 
 /** ========================== API Functions ========================== */
@@ -146,14 +105,37 @@ export const fetcher = (url, params) => {
 
 export const token = getToken();
 
+export const getPermission = () => {
+  if (typeof window !== 'undefined') {
+    return '{}';
+  }
+
+  const yukta = getLoggedInUser();
+
+  const perms = yukta?.permissions;
+  if (!perms || perms === 'undefined') {
+    if (yukta) {
+      yukta.permissions = '{}';
+      window.localStorage.setItem('yukta', yukta);
+    }
+    return '{}';
+  }
+};
+
 /** ========================== UI Helpers ========================== */
-export const openNotification = (message, isError, description = '') => {
-  const fn = isError ? 'error' : 'success';
-  notification[fn]({
-    message,
-    description,
-    placement: 'bottom',
-  });
+// export const openNotification = (message, isError, description = '') => {
+//   const fn = isError ? 'error' : 'success';
+//   notification[fn]({
+//     message,
+//     description,
+//     placement: 'bottom',
+//   });
+// };
+
+export const openNotification = (message, isError, description = "") => {
+  const fn = isError ? toast.error : toast.success;
+  cl("i am called")
+  fn(`${message} ${description}`);
 };
 
 export const disableRefetchBlock = {
@@ -173,3 +155,88 @@ export const dateRanges = {
   'This Month': [moment().startOf('month'), moment().endOf('month')],
   'This Year': [moment().startOf('year'), moment().endOf('year')],
 };
+
+/** Miscellanios */
+
+export const objectHasValue = (obj) => {
+  return (
+    obj &&
+    Object.values(obj).some((value) => value !== null && value !== undefined)
+  );
+};
+
+export function humanize(string) {
+  return string
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+}
+
+export function unflatten(data) {
+  var result = {};
+  for (var i in data) {
+    var keys = i.split('.');
+    keys.reduce(function (r, e, j) {
+      return (
+        r[e] ||
+        (r[e] = isNaN(Number(keys[j + 1]))
+          ? keys.length - 1 == j
+            ? data[i]
+            : {}
+          : [])
+      );
+    }, result);
+  }
+  return result;
+}
+
+export function flatten(oldObject) {
+  const newObject = {};
+
+  flattenHelper(oldObject, newObject, '');
+
+  return newObject;
+
+  function flattenHelper(currentObject, newObject, previousKeyName) {
+    for (let key in currentObject) {
+      let value = currentObject[key];
+
+      if (value.constructor !== Object) {
+        if (previousKeyName == null || previousKeyName == '') {
+          newObject[key] = value;
+        } else {
+          if (key == null || key == '') {
+            newObject[previousKeyName] = value;
+          } else {
+            newObject[previousKeyName + '.' + key] = value;
+          }
+        }
+      } else {
+        if (previousKeyName == null || previousKeyName == '') {
+          flattenHelper(value, newObject, key);
+        } else {
+          flattenHelper(value, newObject, previousKeyName + '.' + key);
+        }
+      }
+    }
+  }
+}
+
+export const Roles = {
+  // SYSTEM ADMIN
+  SYSADMIN: 'SYSADMIN',
+
+  // ACADEMIC STAFF
+  ADMIN: 'ADMIN',
+  MANAGER: 'MANAGER',
+  TEACHER: 'TEACHER',
+  STAFF: 'STAFF',
+
+  // STUDENT
+  PARENT: 'PARENT',
+  STUDENT: 'STUDENT',
+};
+
+export const cl = (...args) => console.log(...args);

@@ -15,6 +15,7 @@ import {
   MessageCircle,
   PanelLeftOpen,
   PanelLeftClose,
+  UserRoundPlus,
 } from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
@@ -23,8 +24,13 @@ import TopHeader from '../navbar/TopHeader';
 import Sider from 'antd/es/layout/Sider';
 import Cookies from 'universal-cookie';
 import useWindowSize from '@/hooks/useWindowSize';
-import { COOKIE_SIDEBER_COLLAPSED } from '@/constants';
+import { COOKIE_SIDEBER_COLLAPSED, ResourceActions } from '@/constants';
 import { CloseOutlined } from '@ant-design/icons';
+import YuktaLogo from '@/svgs/yukta';
+import { useUserContext } from '@/user-context';
+import { usePermissionGroup } from '@/hooks/usePermissionGroup';
+import { useAppContext } from '@/app-context';
+import { Roles } from '@/utils';
 
 const { Content } = Layout;
 
@@ -32,15 +38,31 @@ const SecuredLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const router = useRouter();
-  const cookies = new Cookies();
   const size = useWindowSize();
+  const { loggedInUser } = useAppContext();
+  const { permissionGroups } = usePermissionGroup(); // !important use the permissionGroups from the state(once available)
+
+  // TODO: remove this once the permissions backend is fixed to send only the ones associated with a user
+  const [studentPermission, setStudentPermission] = useState({});
 
   useEffect(() => {
-    setCollapsed(cookies.get(COOKIE_SIDEBER_COLLAPSED) === 'true');
-  }, []);
+    setCollapsed(true);
+
+    if (permissionGroups && permissionGroups.length > 0) {
+      const studentPermission = permissionGroups.find(
+        (group) => group.name === 'Student'
+      );
+      setStudentPermission(
+        studentPermission ? studentPermission.permissions : {}
+      );
+    }
+  }, [permissionGroups]);
+
+  useEffect(() => {
+    console.log({ studentPermission });
+  }, [studentPermission]);
 
   const onCollapse = (value) => {
-    cookies.set(COOKIE_SIDEBER_COLLAPSED, value, { path: '/' });
     setCollapsed(value);
   };
 
@@ -55,7 +77,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Routine',
-      key: 'routine',
+      key: 'routines',
       icon: <CalendarDays size={18} />,
       href: '/routine',
     },
@@ -69,6 +91,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-task',
           icon: <CheckCircle size={18} />,
           href: '/tasks/my-task',
+          parentKey: 'tasks',
+          isDefault: true,
         },
         {
           label: "My Team's Tasks",
@@ -86,7 +110,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Leave Request',
-      key: 'leave-request',
+      key: 'leaveRequest',
       icon: <CalendarX size={18} />,
       children: [
         {
@@ -94,6 +118,8 @@ const SecuredLayout = ({ children }) => {
           key: 'my-leave-request',
           icon: <UserX size={18} />,
           href: '/leave-request/my-leave',
+          parentKey: 'leaveRequest',
+          isDefault: true,
         },
         {
           label: "Team's Request",
@@ -133,7 +159,7 @@ const SecuredLayout = ({ children }) => {
     },
     {
       label: 'Class Room',
-      key: 'class-room',
+      key: 'classroom',
       icon: <PanelLeftOpen size={18} />,
       href: '/class-room',
     },
@@ -144,19 +170,79 @@ const SecuredLayout = ({ children }) => {
       href: '/settings',
     },
     {
+      label: 'Permission Groups',
+      key: 'permission-groups',
+      icon: <PanelLeftClose size={18} />,
+      href: '/permission-groups',
+    },
+    {
       label: 'Feedback',
       key: 'feedback',
       icon: <MessageCircle size={18} />,
       href: '/feedback',
     },
+    {
+      label: 'Groups',
+      key: 'groups',
+      icon: <Users size={18} />,
+      href: '/groups',
+    },
+    {
+      label: 'Modules',
+      key: 'modules',
+      icon: <List size={18} />,
+      href: '/modules',
+    },
+    {
+      label: 'Inquiries',
+      key: 'inquiries',
+      icon: <UserRoundPlus size={18} />,
+      href: '/inquiries',
+    },
   ];
 
-  const renderMenu = (items) =>
-    items.map(({ label, key, icon, href, children }) =>
-      children
-        ? { label, key, icon, children: renderMenu(children) }
-        : { label: <Link href={href}>{label}</Link>, key, icon }
-    );
+  function renderMenu(items) {
+    return items.map(({ label, key, icon, href = '', isDefault, children }) => {
+      const isAdmin = loggedInUser.role === Roles.ADMIN;
+      const hasMenuPermission =
+        isAdmin || studentPermission[key]?.[ResourceActions.menu] === true;
+
+      if (hasMenuPermission || isDefault) {
+        if (children) {
+          // Filter children based on their default status and the parent's permission
+          const filteredChildren = children.filter((child) => {
+            if (isAdmin) {
+              return true;
+            }
+
+            return (
+              child.isDefault &&
+              studentPermission[child.parentKey]?.[ResourceActions.menu] ===
+                true
+            );
+          });
+
+          // Only render the parent with children if there are valid children
+          if (filteredChildren.length > 0) {
+            return {
+              label,
+              key,
+              icon,
+              children: renderMenu(filteredChildren),
+            };
+          }
+        }
+
+        return {
+          label: <Link href={href}>{label}</Link>,
+          key,
+          icon,
+        };
+      }
+
+      return null;
+    });
+  }
 
   const sidebar = (
     <Sider
@@ -171,23 +257,40 @@ const SecuredLayout = ({ children }) => {
         position: 'fixed',
         left: 0,
         transition: 'all 0.3s ease-in-out',
+        padding: '1.5rem 0',
       }}
     >
-      <div className="p-2 flex items-center justify-center">
-        <Link href="/">
-          <img
-            src={collapsed ? '/yuktaLogo.png' : '/yukta.png'}
-            height={44}
-            style={{ marginTop: '8px', transition: 'width 0.3s ease-in-out' }}
-            alt="Yukta"
+      <div>
+        <Link href="/" className={`block mx-auto mb-6 w-max text-gray-100 `}>
+          <YuktaLogo
+            height="40px"
+            style={{
+              transition: 'all 0.3s ease-in-out',
+              display: 'inline-block',
+              transform: collapsed
+                ? 'translateX(14px) scale(0.8)'
+                : 'translateX(0) scale(1)',
+            }}
           />
+          <h1
+            className="inline-block text-3xl font-bold text-current"
+            style={{
+              transition: 'all 0.3s ease-in-out',
+              verticalAlign: 'middle',
+              transform: collapsed ? 'scaleY(0)' : 'scaleY(1)',
+              opacity: collapsed ? '0' : '1',
+              visibility: collapsed ? 'hidden' : 'visible',
+            }}
+          >
+            Yukta
+          </h1>
         </Link>
       </div>
       <Menu
         theme="dark"
         defaultSelectedKeys={[router.route]}
         mode="inline"
-        items={renderMenu(menuItems)}
+        items={studentPermission && renderMenu(menuItems)}
       />
     </Sider>
   );
@@ -230,7 +333,8 @@ const SecuredLayout = ({ children }) => {
         <TopHeader />
         <Content className="content-container">{children}</Content>
         <Footer style={{ textAlign: 'center' }}>
-          ©{new Date().getFullYear()} Yukta
+          <p>&copy; {new Date().getFullYear()} Yukta. All rights reserved.</p>
+          <p>Precision. Strength. SaaS Solutions – The Ant Way.</p>
         </Footer>
       </Layout>
     </Layout>

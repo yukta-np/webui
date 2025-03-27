@@ -1,10 +1,14 @@
-import FeedbackModule from '@/components/feedback/FeedbackModule'
-import React from 'react'
+import CustomHead from '@/components/customHead/CustomHead';
+import FeedbackModule from '@/components/feedback/FeedbackModule';
+import React from 'react';
 
 const index = () => {
   return (
-    <FeedbackModule />
-  )
-}
+    <>
+      <CustomHead actualTitle="Feedback" />
+      <FeedbackModule />
+    </>
+  );
+};
 
-export default index
+export default index;

@@ -1,8 +1,9 @@
+import StaffProfile from '@/components/userprofile/StaffProfile'
 import React from 'react'
 
 const index = () => {
   return (
-    <div>index</div>
+  <StaffProfile />
   )
 }
 

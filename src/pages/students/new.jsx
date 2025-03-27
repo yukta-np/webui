@@ -1,8 +1,9 @@
+import StudentProfile from '@/components/userprofile/StudentProfile'
 import React from 'react'
 
 const index = () => {
   return (
-    <div>index</div>
+    <StudentProfile />
   )
 }
 
