@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Breadcrumb,
   Layout,
@@ -74,6 +74,7 @@ import {
 } from '@/services/tasks.http';
 import { useAppContext } from '@/app-context';
 import { Actions } from '@/constants';
+import Link from 'next/link';
 
 const getFileIcon = (fileName) => {
   const ext = fileName.split('.').pop().toLowerCase();
@@ -217,18 +218,32 @@ const TaskList = ({
     setIsTaskLinkModalVisible(false);
   };
 
-  const toggleTaskSelection = (task) => {
+  const toggleTaskSelection = async (task) => {
     if (task.id === editingData?.id) return;
-    setLinkedTasks((prev) => {
-      const exists = prev.some((t) => t.id === task.id);
-      return exists
-        ? prev.filter((t) => t.id !== task.id)
-        : [...prev, { ...task, parentId: editingData?.id }];
-    });
+
+    try {
+      const isCurrentlyLinked = linkedTasks.some((t) => t.id === task.id);
+
+      if (isCurrentlyLinked) {
+        await updateTask(task.id, { parentId: null });
+      } else {
+        await updateTask(task.id, { parentId: editingData?.id });
+      }
+
+      setLinkedTasks((prev) => {
+        return isCurrentlyLinked
+          ? prev.filter((t) => t.id !== task.id)
+          : [...prev, { ...task, parentId: editingData?.id }];
+      });
+
+      tasksRevalidate();
+      openNotification('Subtask updated successfully');
+    } catch (error) {
+      console.error('Failed to update task relationship:', error);
+    }
 
     closeTaskLinkModal();
   };
-  console.log('haha', linkedTasks);
 
   const onAddClick = () => {
     setAction(Actions.add);
@@ -276,7 +291,7 @@ const TaskList = ({
   const onCreateAnotherChange = (e) => {
     setCreateAnother(e.target.checked);
   };
-  const onEditClick = (record) => {
+  const onEdit = (record) => {
     const newRecord = {
       ...record,
       dueDate: record.dueDate ? moment(record.dueDate) : null,
@@ -285,15 +300,18 @@ const TaskList = ({
     form.setFieldsValue(newRecord);
     setEditorContent(record.description);
     setAction(Actions.edit);
+
+    const linkedSubtasks = record.subTasks || [];
+    setLinkedTasks(linkedSubtasks);
     openModal();
   };
 
-  const onDeleteClick = (record) => {
+  const onDelete = (record) => {
     deleteTask(record.id);
     tasksRevalidate();
   };
 
-  const onViewClick = (tasks) => {
+  const onView = (tasks) => {
     const newRecord = {
       title: tasks?.title,
       description: tasks?.description,
@@ -305,7 +323,8 @@ const TaskList = ({
     };
     setAction(Actions.view);
     form.setFieldsValue(newRecord);
-
+    const linkedSubtasks = tasks.subTasks || [];
+    setLinkedTasks(linkedSubtasks);
     openModal();
   };
 
@@ -575,7 +594,7 @@ const TaskList = ({
           )}
           <a
             className="text-blue-600"
-            onClick={() => onViewClick(task)}
+            onClick={() => onView(task)}
             style={{ whiteSpace: 'nowrap' }}
           >
             {task?.displayId}
@@ -703,14 +722,14 @@ const TaskList = ({
                 <Button
                   type="link"
                   icon={<FilePenLine size={18} />}
-                  onClick={() => onEditClick(record)}
+                  onClick={() => onEdit(record)}
                 />
                 <Popconfirm
                   title="Delete the task"
                   description="Are you sure to delete this task?"
                   okText="Yes"
                   cancelText="No"
-                  onConfirm={() => onDeleteClick(record)}
+                  onConfirm={() => onDelete(record)}
                 >
                   <Button
                     type="link"
@@ -783,7 +802,9 @@ const TaskList = ({
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
-        <Breadcrumb.Item>Home</Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Link href="/dashboard">Home</Link>
+        </Breadcrumb.Item>
         <Breadcrumb.Item>
           {isMyTask ? 'My Task' : isAllTask ? 'All Task' : 'My Team Task'}
         </Breadcrumb.Item>
@@ -1354,15 +1375,21 @@ const TaskList = ({
                         {task.assignee.firstName[0].toUpperCase()}
                         {task.assignee.lastName[0].toUpperCase()}
                       </Avatar>
-
-                      <Button
-                        type="text"
-                        icon={<X size={16} />}
-                        onClick={(e) => {
+                      <Popconfirm
+                        title="Are you sure to delete this task?"
+                        okText="Yes"
+                        cancelText="No"
+                        onConfirm={(e) => {
                           e.stopPropagation();
                           toggleTaskSelection(task);
                         }}
-                      />
+                      >
+                        <Button
+                          type="text"
+                          icon={<X size={16} />}
+                          hidden={Actions.view === action}
+                        />
+                      </Popconfirm>
                     </div>
                   ))}
                 </div>
