@@ -542,7 +542,7 @@ const Settings = ({ currentType: propCurrentType }) => {
                 ? studentColumns
                 : currentType === 'teachers'
                 ? teacherColumns
-                : staffColumns // ons 'staff' type
+                : staffColumns === 'staffs' // ons 'staff' type
             }
             dataSource={data[currentType]}
             pagination={{ pageSize: 10 }}
@@ -578,7 +578,7 @@ const Settings = ({ currentType: propCurrentType }) => {
         <Row gutter={[24, 24]}>
           {settingsCards.map((card) => (
             <Col xs={24} sm={12} md={8} lg={6} key={card.id}>
-              <Link href={`/settings/${card.id}`}>
+              <Link href={`/${card.id}`}>
                 <Card hoverable className="h-full border-1">
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">{card.icon}</div>
