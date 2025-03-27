@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Typography,
@@ -15,6 +15,7 @@ import {
   Row,
   Col,
   Divider,
+  Popconfirm,
 } from 'antd';
 import Link from 'next/link';
 import {
@@ -24,9 +25,12 @@ import {
   CodeOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
+import { FilePenLine, Send, Trash2Icon } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
 
 // Mock Data
 const initialStudentData = [
@@ -87,7 +91,7 @@ const initialStaffData = [
 ];
 
 // Options
-const roleOptions = ['Administrator', 'Teacher', 'Support Staff', 'Student'];
+const options = ['Administrator', 'Teacher', 'Support Staff', 'Student'];
 const departmentOptions = [
   'IT',
   'Mathematics',
@@ -107,7 +111,7 @@ const subjectOptions = [
 
 const settingsCards = [
   {
-    id: 'administration-staff',
+    id: 'administration',
     title: 'Administration',
     description: 'Manage administration staff',
     icon: <UserOutlined className="text-blue-500 text-2xl" />,
@@ -132,14 +136,22 @@ const settingsCards = [
   },
 ];
 
-const Settings = () => {
-  const [currentSetting, setCurrentSetting] = useState('');
+const Settings = ({ currentType: propCurrentType }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const segments = (pathname || '').split('/');
+  const currentType = propCurrentType || segments[2] || '';
+
+  // Fixed: State moved inside component and duplicates removed
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
   const [data, setData] = useState({
     administration: initialAdministrationData,
     students: initialStudentData,
     teachers: initialTeacherData,
     staff: initialStaffData,
   });
+
   const [modalVisible, setModalVisible] = useState({
     administration: false,
     students: false,
@@ -154,298 +166,13 @@ const Settings = () => {
   });
   const [form] = Form.useForm();
 
-  // Common Columns
-  // Common Columns (without action)
-  const commonColumns = (type) => [
-    {
-      title: 'Name',
-      key: 'name',
-      render: (_, record) => `${record.firstName} ${record.lastName}`,
-      sorter: (a, b) =>
-        `${a.firstName} ${a.lastName}`.localeCompare(
-          `${b.firstName} ${b.lastName}`
-        ),
-    },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Start Date', dataIndex: 'startDate', key: 'startDate' },
-  ];
+  useEffect(() => {
+    setSelectedRowKeys([]);
+  }, [propCurrentType]);
 
-  // Action Column Component
-  const actionColumn = (type) => ({
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <span className="space-x-2">
-        {/* Existing buttons */}
-        <Button type="link" onClick={() => onEdit(type, record)}>
-          Edit
-        </Button>
-        <Button type="link" danger onClick={() => onDelete(type, record.key)}>
-          Delete
-        </Button>
-
-        {/* Add Send Links button only for students */}
-        {type === 'students' && (
-          <Button
-            type="link"
-            style={{ color: '#1890ff' }} 
-            onClick={() => onSendLinks(record)}
-          >
-            Send Links
-          </Button>
-        )}
-      </span>
-    ),
-  });
-
-  // Send Links onr
-  const onSendLinks = (record) => {
-    // Send links to the student
-    console.log('Sending links to', record);
-  };
-  // Specific Columns
-  const administrationColumns = [
-    ...commonColumns('administration'),
-    { title: 'Role', dataIndex: 'role', key: 'role' },
-    { title: 'Department', dataIndex: 'department', key: 'department' },
-    actionColumn('administration'),
-  ];
-
-  const studentColumns = [
-    ...commonColumns('students'),
-    { title: 'Faculty', dataIndex: 'faculty', key: 'faculty' },
-    { title: 'Program', dataIndex: 'program', key: 'program' },
-    actionColumn('students'),
-  ];
-
-  const teacherColumns = [
-    ...commonColumns('teachers'),
-    { title: 'Department', dataIndex: 'department', key: 'department' },
-    {
-      title: 'Subjects',
-      dataIndex: 'subjects',
-      key: 'subjects',
-      render: (subjects) => subjects.join(', '),
-    },
-    actionColumn('teachers'),
-  ];
-
-  const staffColumns = [
-    ...commonColumns('staff'),
-    { title: 'Role', dataIndex: 'role', key: 'role' },
-    { title: 'Department', dataIndex: 'department', key: 'department' },
-    actionColumn('staff'),
-  ];
-
-  // onrs
-  const onAdd = (type) => {
-    setEditingKey((prev) => ({ ...prev, [type]: null }));
-    form.resetFields();
-    setModalVisible((prev) => ({ ...prev, [type]: true }));
-  };
-
-  const onEdit = (type, record) => {
-    setEditingKey((prev) => ({ ...prev, [type]: record.key }));
-    form.setFieldsValue({
-      ...record,
-      startDate: record.startDate ? moment(record.startDate) : null,
-      subjects: record.subjects || [],
-    });
-    setModalVisible((prev) => ({ ...prev, [type]: true }));
-  };
-
-  const onDelete = (type, key) => {
-    Modal.confirm({
-      title: `Delete this ${type.slice(0, -1)}?`,
-      content: 'This action cannot be undone.',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: () => {
-        setData((prev) => ({
-          ...prev,
-          [type]: prev[type].filter((item) => item.key !== key),
-        }));
-      },
-    });
-  };
-
-  const onCancel = (type) => {
-    setModalVisible((prev) => ({ ...prev, [type]: false }));
-    form.resetFields();
-    setEditingKey((prev) => ({ ...prev, [type]: null }));
-  };
-
-  const onOk = (type) => {
-    form.validateFields().then((values) => {
-      const newEntry = {
-        ...values,
-        key: editingKey[type] || String(Date.now()),
-        startDate: values.startDate?.format('YYYY-MM-DD'),
-        subjects: values.subjects || [],
-      };
-
-      setData((prev) => ({
-        ...prev,
-        [type]: editingKey[type]
-          ? prev[type].map((item) =>
-              item.key === editingKey[type] ? newEntry : item
-            )
-          : [...prev[type], newEntry],
-      }));
-
-      onCancel(type);
-    });
-  };
-
-  // Modal Forms
-  const renderForm = (type) => (
-    <Form form={form} layout="vertical">
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            name="firstName"
-            label="First Name"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            name="lastName"
-            label="Last Name"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item
-            name="email"
-            label="Email"
-            rules={[{ required: true, type: 'email' }]}
-          >
-            <Input />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item name="startDate" label="Start Date">
-            <DatePicker className="w-full" />
-          </Form.Item>
-        </Col>
-
-        {type === 'administration' && (
-          <>
-            <Col span={12}>
-              <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-                <Select
-                  options={roleOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="department" label="Department">
-                <Select
-                  options={departmentOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </>
-        )}
-
-        {type === 'students' && (
-          <>
-            <Col span={12}>
-              <Form.Item
-                name="faculty"
-                label="Faculty"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="program"
-                label="Program"
-                rules={[{ required: true }]}
-              >
-                <Input />
-              </Form.Item>
-            </Col>
-          </>
-        )}
-
-        {type === 'teachers' && (
-          <>
-            <Col span={12}>
-              <Form.Item
-                name="department"
-                label="Department"
-                rules={[{ required: true }]}
-              >
-                <Select
-                  options={departmentOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={24}>
-              <Form.Item name="subjects" label="Subjects">
-                <Select
-                  mode="multiple"
-                  options={subjectOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </>
-        )}
-
-        {type === 'staff' && (
-          <>
-            <Col span={12}>
-              <Form.Item name="role" label="Role" rules={[{ required: true }]}>
-                <Select
-                  options={roleOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="department" label="Department">
-                <Select
-                  options={departmentOptions.map((option) => ({
-                    label: option,
-                    value: option,
-                  }))}
-                />
-              </Form.Item>
-            </Col>
-          </>
-        )}
-      </Row>
-    </Form>
-  );
-
-  // Main Render
   const renderContent = () => {
-    if (!currentSetting) return renderSettingsGrid();
+    if (!currentType) return renderSettingsGrid();
 
-    const currentType = currentSetting.replace('-staff', '');
     const titleMap = {
       administration: 'Administration Staff',
       students: 'Students',
@@ -453,17 +180,337 @@ const Settings = () => {
       staff: 'General Staff',
     };
 
+    if (!titleMap[currentType]) {
+      return (
+        <div className="p-6">
+          <h1>Invalid section</h1>
+          <Link href="/settings">Return to settings</Link>
+        </div>
+      );
+    }
+
+    // Common Columns (without action)
+    const commonColumns = (type) => [
+      {
+        title: 'Name',
+        key: 'name',
+        render: (_, record) => `${record.firstName} ${record.lastName}`,
+        sorter: (a, b) =>
+          `${a.firstName} ${a.lastName}`.localeCompare(
+            `${b.firstName} ${b.lastName}`
+          ),
+      },
+      { title: 'Email', dataIndex: 'email', key: 'email' },
+      { title: 'Start Date', dataIndex: 'startDate', key: 'startDate' },
+    ];
+
+    // Action Column Component
+    const actionColumn = (type) => ({
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <span className="space-x-2">
+          <>
+            <Button
+              type="link"
+              icon={<FilePenLine size={18} />}
+              onClick={() => onEdit(type, record)}
+            />
+            <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete this task?"
+              okText="Yes"
+              cancelText="No"
+              onConfirm={() => onDelete(type, record)}
+            >
+              <Button
+                type="link"
+                danger
+                icon={<Trash2Icon stroke="red" size={18} />}
+              />
+            </Popconfirm>
+          </>
+
+          {/* Add Send Links button only for students */}
+          {type === 'students' && (
+            <Popconfirm
+              title="Send the links"
+              description="Are you sure to send the links?"
+              okText="Yes"
+              cancelText="No"
+              onConfirm={() => onSendLinks(type, record)}
+            >
+              <Button
+                type="link"
+                style={{ color: '#1890ff' }}
+                confirm="Send Links"
+                icon={<Send size={18} />}
+              />
+            </Popconfirm>
+          )}
+        </span>
+      ),
+    });
+
+    // Send Links onr
+    const onSendLinks = (record) => {
+      // Send links to the student
+      console.log('Sending links to', record);
+    };
+    // Specific Columns
+    const administrationColumns = [
+      ...commonColumns('administration'),
+      { title: 'Role', dataIndex: 'role', key: 'role' },
+      { title: 'Department', dataIndex: 'department', key: 'department' },
+      actionColumn('administration'),
+    ];
+
+    const studentColumns = [
+      ...commonColumns('students'),
+      { title: 'Faculty', dataIndex: 'faculty', key: 'faculty' },
+      { title: 'Program', dataIndex: 'program', key: 'program' },
+      actionColumn('students'),
+    ];
+
+    const teacherColumns = [
+      ...commonColumns('teachers'),
+      { title: 'Department', dataIndex: 'department', key: 'department' },
+      {
+        title: 'Subjects',
+        dataIndex: 'subjects',
+        key: 'subjects',
+        render: (subjects) => subjects.join(', '),
+      },
+      actionColumn('teachers'),
+    ];
+
+    const staffColumns = [
+      ...commonColumns('staff'),
+      { title: 'Role', dataIndex: 'role', key: 'role' },
+      { title: 'Department', dataIndex: 'department', key: 'department' },
+      actionColumn('staff'),
+    ];
+
+    // onrs
+    const onAdd = (type) => {
+      setEditingKey((prev) => ({ ...prev, [type]: null }));
+      form.resetFields();
+      setModalVisible((prev) => ({ ...prev, [type]: true }));
+    };
+
+    const onEdit = (type, record) => {
+      setEditingKey((prev) => ({ ...prev, [type]: record.key }));
+      form.setFieldsValue({
+        ...record,
+        startDate: record.startDate ? moment(record.startDate) : null,
+        subjects: record.subjects || [],
+      });
+      setModalVisible((prev) => ({ ...prev, [type]: true }));
+    };
+
+    const onDelete = (type, key) => {
+      Modal.confirm({
+        title: `Delete this ${type.slice(0, -1)}?`,
+        content: 'This action cannot be undone.',
+        okText: 'Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk: () => {
+          setData((prev) => ({
+            ...prev,
+            [type]: prev[type].filter((item) => item.key !== key),
+          }));
+        },
+      });
+    };
+
+    const onCancel = (type) => {
+      setModalVisible((prev) => ({ ...prev, [type]: false }));
+      form.resetFields();
+      setEditingKey((prev) => ({ ...prev, [type]: null }));
+    };
+
+    const onOk = (type) => {
+      form.validateFields().then((values) => {
+        const newEntry = {
+          ...values,
+          key: editingKey[type] || String(Date.now()),
+          startDate: values.startDate?.format('YYYY-MM-DD'),
+          subjects: values.subjects || [],
+        };
+
+        setData((prev) => ({
+          ...prev,
+          [type]: editingKey[type]
+            ? prev[type].map((item) =>
+                item.key === editingKey[type] ? newEntry : item
+              )
+            : [...prev[type], newEntry],
+        }));
+
+        onCancel(type);
+      });
+    };
+
+    // Modal Forms
+    const renderForm = (type) => (
+      <Form form={form} layout="vertical">
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="firstName"
+              label="First Name"
+              rules={[{ required: true }]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="lastName"
+              label="Last Name"
+              rules={[{ required: true }]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[{ required: true, type: 'email' }]}
+            >
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="startDate" label="Start Date">
+              <DatePicker className="w-full" />
+            </Form.Item>
+          </Col>
+
+          {type === 'administration' && (
+            <>
+              <Col span={12}>
+                <Form.Item
+                  name="role"
+                  label="Role"
+                  rules={[{ required: true }]}
+                >
+                  <Select
+                    options={options.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="department" label="Department">
+                  <Select
+                    options={departmentOptions.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </>
+          )}
+
+          {type === 'students' && (
+            <>
+              <Col span={12}>
+                <Form.Item
+                  name="faculty"
+                  label="Faculty"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="program"
+                  label="Program"
+                  rules={[{ required: true }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+            </>
+          )}
+
+          {type === 'teachers' && (
+            <>
+              <Col span={12}>
+                <Form.Item
+                  name="department"
+                  label="Department"
+                  rules={[{ required: true }]}
+                >
+                  <Select
+                    options={departmentOptions.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={24}>
+                <Form.Item name="subjects" label="Subjects">
+                  <Select
+                    mode="multiple"
+                    options={subjectOptions.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </>
+          )}
+
+          {type === 'staff' && (
+            <>
+              <Col span={12}>
+                <Form.Item
+                  name="role"
+                  label="Role"
+                  rules={[{ required: true }]}
+                >
+                  <Select
+                    options={options.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="department" label="Department">
+                  <Select
+                    options={departmentOptions.map((option) => ({
+                      label: option,
+                      value: option,
+                    }))}
+                  />
+                </Form.Item>
+              </Col>
+            </>
+          )}
+        </Row>
+      </Form>
+    );
+
     return (
       <div className="p-6">
         <Breadcrumb className="mb-4">
           <Breadcrumb.Item>
             <Link href="/">Home</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item
-            onClick={() => setCurrentSetting('')}
-            className="cursor-pointer"
-          >
-            Settings
+          <Breadcrumb.Item>
+            <Link href="/settings">Settings</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{titleMap[currentType]}</Breadcrumb.Item>
         </Breadcrumb>
@@ -472,7 +519,7 @@ const Settings = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <Title level={3} className="mb-1">
-                {titleMap[currentType]} Student
+                {titleMap[currentType]} Management
               </Title>
               <Text type="secondary">Manage {currentType} records</Text>
             </div>
@@ -482,6 +529,12 @@ const Settings = () => {
           </div>
 
           <Table
+            rowSelection={{
+              type: 'checkbox',
+              selectedRowKeys,
+              onChange: (newSelectedKeys) =>
+                setSelectedRowKeys(newSelectedKeys),
+            }}
             columns={
               currentType === 'administration'
                 ? administrationColumns
@@ -525,21 +578,19 @@ const Settings = () => {
         <Row gutter={[24, 24]}>
           {settingsCards.map((card) => (
             <Col xs={24} sm={12} md={8} lg={6} key={card.id}>
-              <Card
-                hoverable
-                className="h-full border-1"
-                onClick={() => setCurrentSetting(card.id)}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">{card.icon}</div>
-                  <div>
-                    <Title level={5} style={{ margin: 0, color: '#3182CE' }}>
-                      {card.title}
-                    </Title>
-                    <Text type="secondary">{card.description}</Text>
+              <Link href={`/settings/${card.id}`}>
+                <Card hoverable className="h-full border-1">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">{card.icon}</div>
+                    <div>
+                      <Title level={5} style={{ margin: 0, color: '#3182CE' }}>
+                        {card.title}
+                      </Title>
+                      <Text type="secondary">{card.description}</Text>
+                    </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             </Col>
           ))}
         </Row>

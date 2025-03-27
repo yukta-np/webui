@@ -1,14 +1,13 @@
-// import CustomHead from '@/components/customHead/CustomHead';
-import Settings from '@/components/settings/Settings';
+// pages/settings/[id]/page.jsx
 import React from 'react';
+import CustomHead from '@/components/customHead/CustomHead';
+import Settings from '@/components/settings/Settings';
 
-const index = () => {
+export default function Page() {
   return (
     <>
-      {/* <CustomHead actualTitle="Your Settings" /> */}
-      <Settings />
+      <CustomHead actualTitle="Settings" />
+      <Settings currentType={null} />
     </>
   );
-};
-
-export default index;
+}
