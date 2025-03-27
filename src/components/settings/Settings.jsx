@@ -15,6 +15,7 @@ import {
   Row,
   Col,
   Divider,
+  Popconfirm,
 } from 'antd';
 import Link from 'next/link';
 import {
@@ -24,6 +25,7 @@ import {
   CodeOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
+import { FilePenLine, Send, Trash2Icon } from 'lucide-react';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -140,6 +142,9 @@ const Settings = () => {
     teachers: initialTeacherData,
     staff: initialStaffData,
   });
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  
   const [modalVisible, setModalVisible] = useState({
     administration: false,
     students: false,
@@ -176,23 +181,43 @@ const Settings = () => {
     key: 'action',
     render: (_, record) => (
       <span className="space-x-2">
-        {/* Existing buttons */}
-        <Button type="link" onClick={() => onEdit(type, record)}>
-          Edit
-        </Button>
-        <Button type="link" danger onClick={() => onDelete(type, record.key)}>
-          Delete
-        </Button>
+        <>
+          <Button
+            type="link"
+            icon={<FilePenLine size={18} />}
+            onClick={() => onEdit(type, record)}
+          />
+          <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(type, record)}
+          >
+            <Button
+              type="link"
+              danger
+              icon={<Trash2Icon stroke="red" size={18} />}
+            />
+          </Popconfirm>
+        </>
 
         {/* Add Send Links button only for students */}
         {type === 'students' && (
-          <Button
-            type="link"
-            style={{ color: '#1890ff' }} 
-            onClick={() => onSendLinks(record)}
+          <Popconfirm
+            title="Send the links"
+            description="Are you sure to send the links?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onSendLinks(type, record)}
           >
-            Send Links
-          </Button>
+            <Button
+              type="link"
+              style={{ color: '#1890ff' }}
+              confirm="Send Links"
+              icon={<Send size={18} />}
+            />
+          </Popconfirm>
         )}
       </span>
     ),
@@ -482,6 +507,11 @@ const Settings = () => {
           </div>
 
           <Table
+            rowSelection={{
+      type: 'checkbox',
+      selectedRowKeys,
+      onChange: (newSelectedKeys) => setSelectedRowKeys(newSelectedKeys),
+    }}
             columns={
               currentType === 'administration'
                 ? administrationColumns
