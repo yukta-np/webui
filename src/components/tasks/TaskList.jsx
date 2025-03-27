@@ -571,7 +571,7 @@ const TaskList = ({
           </a>
         </div>
       ),
-      width: 120, // Slightly wider to accommodate the arrow
+      width: 120,
     },
     {
       title: 'Title',
@@ -583,6 +583,8 @@ const TaskList = ({
           style={{
             display: 'flex',
             alignItems: 'center',
+            wordBreak: 'break-word',
+            whiteSpace: 'normal',
           }}
         >
           {text}
