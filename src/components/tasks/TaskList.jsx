@@ -76,39 +76,6 @@ import { useAppContext } from '@/app-context';
 import { Actions } from '@/constants';
 import Link from 'next/link';
 
-const getFileIcon = (fileName) => {
-  const ext = fileName.split('.').pop().toLowerCase();
-
-  switch (ext) {
-    case 'jpg':
-    case 'jpeg':
-    case 'png':
-      return <FileImage style={{ color: '#1890ff', fontSize: '18px' }} />;
-    case 'pdf':
-      return <FileText style={{ color: '#ff4d4f', fontSize: '18px' }} />;
-
-    case 'txt':
-      return <FileText style={{ color: '#52c41a', fontSize: '18px' }} />;
-    default:
-      return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
-  }
-};
-
-const PreviewSection = ({ content }) => {
-  const sanitizedContent = DOMPurify.sanitize(content);
-  return (
-    <div
-      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      style={{
-        padding: '16px',
-        border: '1px solid #d9d9d9',
-        borderRadius: '6px',
-        minHeight: '200px',
-      }}
-    />
-  );
-};
-
 const TaskList = ({
   isAllTask = false,
   isMyTask = false,
@@ -195,11 +162,6 @@ const TaskList = ({
   const { taskPriority } = useTaskPriority();
   const { users } = useUsers();
 
-  const handleEditorChange = (content) => {
-    setEditorContent(content);
-    form.setFieldsValue({ description: content });
-  };
-
   const openModal = () => {
     setIsModalVisible(true);
   };
@@ -245,52 +207,12 @@ const TaskList = ({
     closeTaskLinkModal();
   };
 
-  const onAddClick = () => {
+  const onAdd = () => {
     setAction(Actions.add);
     setEditorContent('');
     openModal();
   };
 
-  const onToggleArchiveClick = async (ids = []) => {
-    if (!ids?.length || !tasks?.length) {
-      openNotification('Please select at least one task', 'warning');
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const firstSelectedTask = tasks.find((t) => t.id === ids[0]);
-      if (!firstSelectedTask) {
-        openNotification('Selected task not found', 'error');
-        return;
-      }
-
-      const newArchiveStatus = !firstSelectedTask.isArchived;
-
-      await Promise.all(
-        ids.map((id) => updateTask(id, { isArchived: newArchiveStatus }))
-      );
-
-      tasksRevalidate();
-
-      setSelectedTaskId([]);
-
-      openNotification(
-        `${newArchiveStatus ? 'Archived' : 'Unarchived'} ${
-          ids.length
-        } task(s) successfully`
-      );
-    } catch (error) {
-      console.error('Error toggling archive status:', error);
-      openNotification('Failed to update tasks', 'error');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const onCreateAnotherChange = (e) => {
-    setCreateAnother(e.target.checked);
-  };
   const onEdit = (record) => {
     const newRecord = {
       ...record,
@@ -378,6 +300,47 @@ const TaskList = ({
     }
   };
 
+  const onToggleArchiveClick = async (ids = []) => {
+    if (!ids?.length || !tasks?.length) {
+      openNotification('Please select at least one task', 'warning');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const firstSelectedTask = tasks.find((t) => t.id === ids[0]);
+      if (!firstSelectedTask) {
+        openNotification('Selected task not found', 'error');
+        return;
+      }
+
+      const newArchiveStatus = !firstSelectedTask.isArchived;
+
+      await Promise.all(
+        ids.map((id) => updateTask(id, { isArchived: newArchiveStatus }))
+      );
+
+      tasksRevalidate();
+
+      setSelectedTaskId([]);
+
+      openNotification(
+        `${newArchiveStatus ? 'Archived' : 'Unarchived'} ${
+          ids.length
+        } task(s) successfully`
+      );
+    } catch (error) {
+      console.error('Error toggling archive status:', error);
+      openNotification('Failed to update tasks', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onCreateAnotherChange = (e) => {
+    setCreateAnother(e.target.checked);
+  };
+
   const onColumnStatusChange = async (id, status) => {
     try {
       await updateTask(id, { status });
@@ -398,6 +361,7 @@ const TaskList = ({
     setTablePage(options);
   };
 
+  //filters
   const filterByDateRange = (value) => {
     if (!value) {
       setStartDate(null);
@@ -462,6 +426,25 @@ const TaskList = ({
     return 'Task';
   };
 
+  //documents
+  const getFileIcon = (fileName) => {
+    const ext = fileName.split('.').pop().toLowerCase();
+
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return <FileImage style={{ color: '#1890ff', fontSize: '18px' }} />;
+      case 'pdf':
+        return <FileText style={{ color: '#ff4d4f', fontSize: '18px' }} />;
+
+      case 'txt':
+        return <FileText style={{ color: '#52c41a', fontSize: '18px' }} />;
+      default:
+        return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
+    }
+  };
+
   const onFileChange = (info) => {
     const newFile = {
       name: info.file.name,
@@ -481,10 +464,25 @@ const TaskList = ({
     console.log('Files after removal:', updatedFiles);
   };
 
-  const filterSort = (optionA, optionB) => {
-    const labelA = String(optionA?.label || '').toLowerCase();
-    const labelB = String(optionB?.label || '').toLowerCase();
-    return labelA.localeCompare(labelB);
+  //editor
+  const PreviewSection = ({ content }) => {
+    const sanitizedContent = DOMPurify.sanitize(content);
+    return (
+      <div
+        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+        style={{
+          padding: '16px',
+          border: '1px solid #d9d9d9',
+          borderRadius: '6px',
+          minHeight: '200px',
+        }}
+      />
+    );
+  };
+
+  const handleEditorChange = (content) => {
+    setEditorContent(content);
+    form.setFieldsValue({ description: content });
   };
 
   const editorOptions = {
@@ -502,26 +500,25 @@ const TaskList = ({
     minHeight: '200px',
     defaultTag: 'div',
   };
+
+  //for subTasks
   const groupTasksByParent = (tasks = []) => {
     const taskMap = {};
     const parentTasks = [];
 
-    // Create a map of all tasks and initialize children
     tasks.forEach((task) => {
       taskMap[task.id] = {
         ...task,
-        children: task.subTasks || [], // Use existing subTasks array
+        children: task.subTasks || [],
         depth: 0,
       };
     });
 
-    // Build hierarchy
     tasks.forEach((task) => {
       if (task.parentId && taskMap[task.parentId]) {
         if (!taskMap[task.parentId].children) {
           taskMap[task.parentId].children = [];
         }
-        // Only add if not already present (prevents duplicates)
         if (!taskMap[task.parentId].children.some((t) => t.id === task.id)) {
           taskMap[task.parentId].children.push(taskMap[task.id]);
         }
@@ -530,7 +527,6 @@ const TaskList = ({
       }
     });
 
-    // Calculate depths
     const calculateDepth = (task, depth = 0) => {
       task.depth = depth;
       if (task.children && task.children.length) {
@@ -545,7 +541,41 @@ const TaskList = ({
 
   const groupedTasks = groupTasksByParent(tasks || []);
 
-  console.log(groupedTasks);
+  //comments
+  const showCommentModal = async (record) => {
+    setCurrentTaskId(record.id);
+    const response = await getComments(record.id);
+    const data = response.data;
+    setComments(data);
+    setIsCommentModalVisible(true);
+  };
+
+  const onCommentSubmit = async (newComment) => {
+    setIsProcessing(true);
+    const comment = {
+      comment: newComment,
+    };
+    try {
+      await createComment(currentTaskId, comment);
+      const response = await getComments(currentTaskId);
+      setComments(response.data);
+      setNewComment('');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsProcessing(false);
+      form.resetFields();
+    }
+  };
+
+  const onCommentChange = (value) => {
+    setNewComment(value);
+  };
+
+  const hideCommentModal = () => {
+    setIsCommentModalVisible(false);
+    form.resetFields();
+  };
 
   const columns = [
     {
@@ -764,41 +794,6 @@ const TaskList = ({
     },
   ];
 
-  const showCommentModal = async (record) => {
-    setCurrentTaskId(record.id);
-    const response = await getComments(record.id);
-    const data = response.data;
-    setComments(data);
-    setIsCommentModalVisible(true);
-  };
-
-  const onCommentSubmit = async (newComment) => {
-    setIsProcessing(true);
-    const comment = {
-      comment: newComment,
-    };
-    try {
-      await createComment(currentTaskId, comment);
-      const response = await getComments(currentTaskId);
-      setComments(response.data);
-      setNewComment('');
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsProcessing(false);
-      form.resetFields();
-    }
-  };
-
-  const onCommentChange = (value) => {
-    setNewComment(value);
-  };
-
-  const hideCommentModal = () => {
-    setIsCommentModalVisible(false);
-    form.resetFields();
-  };
-
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -872,7 +867,7 @@ const TaskList = ({
               </Button>
             </Popconfirm>
           ) : (
-            <Button type="primary" onClick={onAddClick}>
+            <Button type="primary" onClick={onAdd}>
               Add Task
             </Button>
           )}
