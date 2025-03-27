@@ -1006,31 +1006,33 @@ const TaskList = ({
           open={isModalVisible}
           onCancel={closeModal}
           footer={
-            Actions.add === action ? (
+            Actions.view === action ? (
               <>
                 <Divider />
-                <Checkbox onChange={onCreateAnotherChange} className="mr-2 ">
-                  Create another
-                </Checkbox>
+                <Button onClick={closeModal}>Cancel</Button>
+              </>
+            ) : (
+              <>
+                <Divider />
+                {action === Actions.add && (
+                  <Checkbox onChange={onCreateAnotherChange} className="mr-2">
+                    Create another
+                  </Checkbox>
+                )}
                 <Button className="mr-2" onClick={closeModal}>
                   Cancel
                 </Button>
 
                 <Button type="primary" onClick={() => form.submit()}>
-                  Add
+                  {action === Actions.add ? 'Add' : 'Update'}
                 </Button>
-              </>
-            ) : Actions.edit === action ? (
-              <>
-                <Divider />
-                <Button onClick={closeModal}>Cancel</Button>
-                <Button type="primary" onClick={() => form.submit()}>
-                  Update
-                </Button>
+
                 <Tooltip
                   title={
-                    editingData?.parentId
+                    action === Actions.edit && editingData?.parentId
                       ? 'Subtasks cannot have their own subtasks'
+                      : action === Actions.add
+                      ? 'Link existing tasks as subtasks'
                       : ''
                   }
                 >
@@ -1041,16 +1043,13 @@ const TaskList = ({
                     icon={
                       <ListTree className="mt-1" stroke="#1890ff" size={18} />
                     }
-                    disabled={editingData?.parentId !== null}
+                    disabled={
+                      action === Actions.edit && editingData?.parentId !== null
+                    }
                   >
                     Add Subtask
                   </Button>
                 </Tooltip>
-              </>
-            ) : (
-              <>
-                <Divider />
-                <Button onClick={closeModal}>Cancel</Button>
               </>
             )
           }
