@@ -84,14 +84,14 @@ const initialStaffData = [
     firstName: 'Mike',
     lastName: 'Johnson',
     email: 'mike@example.com',
-    role: 'Support Staff',
+    role: 'Support staffs',
     department: 'Maintenance',
     startDate: '2021-05-01',
   },
 ];
 
 // Options
-const options = ['Administrator', 'Teacher', 'Support Staff', 'Student'];
+const options = ['Administrator', 'Teacher', 'Support staffs', 'Student'];
 const departmentOptions = [
   'IT',
   'Mathematics',
@@ -113,7 +113,7 @@ const settingsCards = [
   {
     id: 'administration',
     title: 'Administration',
-    description: 'Manage administration staff',
+    description: 'Manage administration staffs',
     icon: <UserOutlined className="text-blue-500 text-2xl" />,
   },
   {
@@ -125,13 +125,13 @@ const settingsCards = [
   {
     id: 'teachers',
     title: 'Teachers',
-    description: 'Manage teaching staff',
+    description: 'Manage teaching staffs',
     icon: <CodeOutlined className="text-blue-500 text-2xl" />,
   },
   {
-    id: 'staff',
-    title: 'Staff',
-    description: 'Manage general staff',
+    id: 'staffs',
+    title: 'staffs',
+    description: 'Manage general staffs',
     icon: <TeamOutlined className="text-blue-500 text-2xl" />,
   },
 ];
@@ -149,20 +149,20 @@ const Settings = ({ currentType: propCurrentType }) => {
     administration: initialAdministrationData,
     students: initialStudentData,
     teachers: initialTeacherData,
-    staff: initialStaffData,
+    staffs: initialStaffData,
   });
 
   const [modalVisible, setModalVisible] = useState({
     administration: false,
     students: false,
     teachers: false,
-    staff: false,
+    staffs: false,
   });
   const [editingKey, setEditingKey] = useState({
     administration: null,
     students: null,
     teachers: null,
-    staff: null,
+    staffs: null,
   });
   const [form] = Form.useForm();
 
@@ -174,10 +174,10 @@ const Settings = ({ currentType: propCurrentType }) => {
     if (!currentType) return renderSettingsGrid();
 
     const titleMap = {
-      administration: 'Administration Staff',
+      administration: 'Administration staffs',
       students: 'Students',
       teachers: 'Teachers',
-      staff: 'General Staff',
+      staffs: 'General staffs',
     };
 
     if (!titleMap[currentType]) {
@@ -285,10 +285,10 @@ const Settings = ({ currentType: propCurrentType }) => {
     ];
 
     const staffColumns = [
-      ...commonColumns('staff'),
+      ...commonColumns('staffs'),
       { title: 'Role', dataIndex: 'role', key: 'role' },
       { title: 'Department', dataIndex: 'department', key: 'department' },
-      actionColumn('staff'),
+      actionColumn('staffs'),
     ];
 
     // onrs
@@ -471,7 +471,7 @@ const Settings = ({ currentType: propCurrentType }) => {
             </>
           )}
 
-          {type === 'staff' && (
+          {type === 'staffs' && (
             <>
               <Col span={12}>
                 <Form.Item
@@ -542,7 +542,7 @@ const Settings = ({ currentType: propCurrentType }) => {
                 ? studentColumns
                 : currentType === 'teachers'
                 ? teacherColumns
-                : staffColumns === 'staffs' // ons 'staff' type
+                : staffColumns // ons 'staffs' type
             }
             dataSource={data[currentType]}
             pagination={{ pageSize: 10 }}
