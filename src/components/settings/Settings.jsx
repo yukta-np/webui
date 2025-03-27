@@ -144,7 +144,7 @@ const Settings = () => {
   });
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  
+
   const [modalVisible, setModalVisible] = useState({
     administration: false,
     students: false,
@@ -497,7 +497,7 @@ const Settings = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <Title level={3} className="mb-1">
-                {titleMap[currentType]} Student
+                {titleMap[currentType]} Management
               </Title>
               <Text type="secondary">Manage {currentType} records</Text>
             </div>
