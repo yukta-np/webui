@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { SearchOutlined } from '@ant-design/icons';
 import { Roles, fetcher, openNotification } from '../../utils';
 import { useAppContext } from '../../app-context';
-import { AbilityContext } from '@/utils/can';
+// import { AbilityContext } from '@/utils/can';
 
 const PermissionGroupList = () => {
   const { loggedInUser } = useAppContext();
@@ -38,7 +38,7 @@ const PermissionGroupList = () => {
 
   const [selectedUsers, setSelectedUsers] = useState([]);
 
-  const ability = useContext(AbilityContext);
+  // const ability = useContext(AbilityContext);
 
   let searchInput = null;
 
