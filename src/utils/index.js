@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { notification } from 'antd';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 /** ========================== Utility Functions ========================== */
 export function isJsonParsable(str) {
@@ -122,13 +123,19 @@ export const getPermission = () => {
 };
 
 /** ========================== UI Helpers ========================== */
-export const openNotification = (message, isError, description = '') => {
-  const fn = isError ? 'error' : 'success';
-  notification[fn]({
-    message,
-    description,
-    placement: 'bottom',
-  });
+// export const openNotification = (message, isError, description = '') => {
+//   const fn = isError ? 'error' : 'success';
+//   notification[fn]({
+//     message,
+//     description,
+//     placement: 'bottom',
+//   });
+// };
+
+export const openNotification = (message, isError, description = "") => {
+  const fn = isError ? toast.error : toast.success;
+  cl("i am called")
+  fn(`${message} ${description}`);
 };
 
 export const disableRefetchBlock = {
@@ -231,3 +238,5 @@ export const Roles = {
   PARENT: 'PARENT',
   STUDENT: 'STUDENT',
 };
+
+export const cl = (...args) => console.log(...args);

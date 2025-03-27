@@ -15,6 +15,7 @@ import {
   MessageCircle,
   PanelLeftOpen,
   PanelLeftClose,
+  UserRoundPlus,
 } from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
@@ -185,6 +186,18 @@ const SecuredLayout = ({ children }) => {
       key: 'groups',
       icon: <Users size={18} />,
       href: '/groups',
+    },
+    {
+      label: 'Modules',
+      key: 'modules',
+      icon: <List size={18} />,
+      href: '/modules',
+    },
+    {
+      label: 'Inquiries',
+      key: 'inquiries',
+      icon: <UserRoundPlus size={18} />,
+      href: '/inquiries',
     },
   ];
 
