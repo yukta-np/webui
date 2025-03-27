@@ -4,7 +4,10 @@ import { constants, headers } from '@/constants';
 const URL = constants.urls.documentsUrl;
 
 export async function createDocument(documents) {
-  return axios.post(`${URL}/upload`, documents, { headers });
+  return axios.post(`${URL}/`, documents, {
+    headers,
+    'Content-Type': 'multipart/form-data',
+  });
 }
 
 export async function updateDocument(id, documents) {

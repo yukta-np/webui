@@ -4,15 +4,15 @@ import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
 export function useDocuments(params) {
+  const { disableAutoRefetch, ...otherParams } = params || {};
+
   const queryString = useMemo(() => {
-    if (!params || Object.keys(params).length === 0) return '';
+    if (!otherParams || Object.keys(otherParams).length === 0) return '';
     return new URLSearchParams(params).toString();
   }, [params]);
 
   const URL = constants.urls.documentsUrl;
   const fullUrl = queryString ? `${URL}?${queryString}` : URL;
-
-  const { disableAutoRefetch } = params || {};
   const autoRefetchConfig = disableAutoRefetch ? disableRefetchBlock : null;
 
   const {

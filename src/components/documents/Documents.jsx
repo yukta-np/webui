@@ -44,6 +44,7 @@ import {
 import { useUsers } from '@/hooks/useUsers';
 import { useDocuments } from '@/hooks/useDocuments';
 import { createDocument, deleteDocument } from '@/services/documents.http';
+import Link from 'next/link';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -65,13 +66,14 @@ const Documents = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [myFiles, setMyFiles] = useState([]);
   const [currentUploadBatch, setCurrentUploadBatch] = useState([]);
+  const [fileList, setFileList] = useState([]);
   const [sharedFilesDataSource, setSharedFilesDataSource] = useState([]);
   const [newFolderName, setNewFolderName] = useState('');
   const {
     documentsList: documents,
     revalidate: documentsRevalidate,
     meta: documentsMeta,
-  } = useDocuments();
+  } = useDocuments({ disableAutoRefetch: true });
   const { users } = useUsers();
 
   useEffect(() => {
@@ -80,6 +82,10 @@ const Documents = () => {
       setMyFiles(documents);
     }
   }, [documents]);
+
+  useEffect(() => {
+    console.log('files are being changes!', fileList);
+  }, [fileList]);
 
   const totalStorage = '5 GB'; // TODO: Replace with the actual total storage value
   const sizeUnits = {
@@ -93,17 +99,15 @@ const Documents = () => {
   const columns = [
     {
       title: 'Name',
-      dataIndex: 'cloudinaryFolderPath', // TODO: replace with file's name once added in backend
-      key: 'cloudinaryFolderPath',
-      sorter: (a, b) =>
-        a.name ||
-        'naam halna birsiyechu backend maa'.localeCompare(
-          b.name || 'naam halna birsiyechu backend maa'
-        ),
+      dataIndex: 'fileName',
+      key: 'fileName',
+      sorter: (a, b) => a.name.localeCompare(b.name),
       render: (text, record) => (
         <Space>
           {record.isFolder ? <Folder size={18} /> : renderFileIcon(text, 18)}
-          {text}
+          <Link href={`${record.cloudinarySecureUrl}`} target="_blank">
+            {text}
+          </Link>
         </Space>
       ),
     },
@@ -264,23 +268,21 @@ const Documents = () => {
   };
 
   const closeUploadModal = () => {
+    setFileList([]);
     setIsUploadModalOpen(false);
   };
 
+  // TODO: not used, so remove soon!!!
   const handleBeforeUpload = (file) => {
-    console.log(file);
+    console.log('before upload called!', file);
     const newFile = {
-      // key: `file-${Date.now()}`,
-      batchId: file.lastModified,
-      // name: file.name || 'naam halna birsiyechu backend maa',
-      mimeType: file.type,
+      batchId: 'c62ac9e3-b939-46d8-97c0-9d07b2befb81',
+      fileName: file.name,
       entity: 'documents',
-      entityId: 7,
+      category: 'random uploads',
       sizeInByte: file.size,
       organisationId: 1,
       createdBy: 2,
-      isVisibleToStudent: false,
-      isVisibleToAcademicStaff: false,
     };
 
     if (currentFolder) {
@@ -295,7 +297,6 @@ const Documents = () => {
         )
       );
     } else {
-      // Add the new file to the root
       setCurrentUploadBatch([...currentUploadBatch, newFile]);
     }
 
@@ -303,29 +304,68 @@ const Documents = () => {
     message.success('File uploaded successfully!');
   };
 
-  const handleFileChange = (info) => {
-    console.log('files are being changes!', info);
+  const handleFileChange = ({ fileList: newFileList }) => {
+    console.log('File change called!!');
+
+    if (newFileList.length === 0) {
+      return setFileList(newFileList);
+    }
+
+    // !important for handling file removal and state update.
+    if (fileList.length > newFileList.length) {
+      return setFileList(newFileList);
+    }
+
+    const lastItem = newFileList[newFileList.length - 1];
+    const newFileData = {
+      file: lastItem.originFileObj,
+      batchId: 'c62ac9e3-b939-46d8-97c0-9d07b2befb81',
+      name: lastItem.name,
+      fileName: lastItem.name, // TODO: remove this in the backend as well...just accept 'name' in DTO
+      entity: 'attachments',
+      category: 'myFiles',
+      sizeInByte: lastItem.size,
+      organisationId: 1,
+      createdBy: 2,
+    };
+
+    setFileList([...fileList, newFileData]);
   };
 
   const handleFileUpload = async () => {
-    console.log({ currentUploadBatch });
+    const file = fileList[0]; // TODO: loop through entire array for multifile upload
+
     const formData = new FormData();
-    currentUploadBatch.forEach((file) => {
-      formData.append('file', file);
-      Object.keys(file).forEach((key) => {
-        formData.append(key, file[key]);
-      });
-    });
+
+    for (const key in file) {
+      formData.append(key, file[key]);
+    }
 
     for (const pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
 
+    // Make the API request using fetch or axios
     try {
-      const data = await createDocument(formData);
-      console.log(data);
+      const res = await createDocument(formData);
+      console.log(res);
+
+      if (res.status === 201) {
+        console.log('Successfully uploaded!');
+        message.success('File uploaded successfully!');
+
+        closeUploadModal();
+      } else {
+        console.log('OOpsy doopsy, not uploaded');
+        message.error('Upload failed!');
+
+        closeUploadModal();
+      }
     } catch (error) {
       console.log(error);
+      message.error('An error occurred!');
+
+      closeUploadModal();
     }
   };
 
@@ -400,17 +440,12 @@ const Documents = () => {
               }}
             >
               {item.type === 'file' ? (
-                renderFileIcon(
-                  item.name || 'naam halna birsiyechu backend maa',
-                  48
-                )
+                renderFileIcon(item.name, 48)
               ) : (
                 <Folder size={48} />
               )}
 
-              <p style={{ marginTop: 8, marginBottom: 0 }}>
-                {item.name || 'naam halna birsiyechu backend maa'}
-              </p>
+              <p style={{ marginTop: 8, marginBottom: 0 }}>{item.name}</p>
               <p style={{ fontSize: 12, color: '#666' }}>{item.sizeInByte}</p>
 
               <Dropdown
@@ -431,10 +466,7 @@ const Documents = () => {
                       icon={<Download size={16} />}
                       onClick={(e) => {
                         e.domEvent.stopPropagation();
-                        console.log(
-                          'Download:',
-                          item.name || 'naam halna birsiyechu backend maa'
-                        );
+                        console.log('Download:', item.name);
                       }}
                     >
                       Download
@@ -480,9 +512,7 @@ const Documents = () => {
         <Breadcrumb.Item>Home</Breadcrumb.Item>
         <Breadcrumb.Item>Documents</Breadcrumb.Item>
         {currentFolder && (
-          <Breadcrumb.Item>
-            {currentFolder.name || 'naam halna birsiyechu backend maa'}
-          </Breadcrumb.Item>
+          <Breadcrumb.Item>{currentFolder.name}</Breadcrumb.Item>
         )}
       </Breadcrumb>
 
@@ -649,12 +679,12 @@ const Documents = () => {
             </>,
           ]}
         >
-          <Dragger
+          <Upload
+            fileList={fileList}
             style={{ marginTop: '20px' }}
             accept=".pdf,.jpg,.jpeg,.png"
-            beforeUpload={(file) => {
-              handleBeforeUpload(file);
-              return false; // prevent default upload
+            beforeUpload={() => {
+              return false;
             }}
             onChange={handleFileChange}
           >
@@ -671,7 +701,7 @@ const Documents = () => {
             <p className="ant-upload-hint">
               Support for a single or bulk upload.
             </p>
-          </Dragger>
+          </Upload>
         </Modal>
 
         {/* Share Modal */}
@@ -693,9 +723,7 @@ const Documents = () => {
         >
           <Divider />
           {selectedItem && (
-            <p className="text-md font-semibold mt-1">
-              {selectedItem.name || 'naam halna birsiyechu backend maa'}
-            </p>
+            <p className="text-md font-semibold mt-1">{selectedItem.name}</p>
           )}
           <Form>
             <Form.Item className="mt-5">
