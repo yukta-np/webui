@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Typography,
@@ -26,9 +26,11 @@ import {
 } from '@ant-design/icons';
 import moment from 'moment';
 import { FilePenLine, Send, Trash2Icon } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
 
 // Mock Data
 const initialStudentData = [
@@ -135,7 +137,15 @@ const settingsCards = [
 ];
 
 const Settings = () => {
-  const [currentSetting, setCurrentSetting] = useState('');
+  const router = useRouter();
+  const pathname = usePathname();
+  const segments = pathname.split('/');
+  const currentOption = segments.length >= 3 ? segments[2] : '';
+
+  // Fixed: State moved inside component and duplicates removed
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [currentType, setCurrentType] = useState(''); // Added missing state
+
   const [data, setData] = useState({
     administration: initialAdministrationData,
     students: initialStudentData,
@@ -143,7 +153,18 @@ const Settings = () => {
     staff: initialStaffData,
   });
 
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  useEffect(() => {
+    setSelectedRowKeys([]);
+  }, [currentType]);
+
+  // Derive current type from URL
+  useEffect(() => {
+    const segments = pathname.split('/');
+    const setting = segments[2] || '';
+    setCurrentType(setting.replace('-staff', ''));
+  }, [pathname]);
+
+
 
   const [modalVisible, setModalVisible] = useState({
     administration: false,
@@ -468,9 +489,9 @@ const Settings = () => {
 
   // Main Render
   const renderContent = () => {
-    if (!currentSetting) return renderSettingsGrid();
+    if (!currentType) return renderSettingsGrid();
 
-    const currentType = currentSetting.replace('-staff', '');
+    // const currentType = currentOption.replace('-staff', '');
     const titleMap = {
       administration: 'Administration Staff',
       students: 'Students',
@@ -484,11 +505,8 @@ const Settings = () => {
           <Breadcrumb.Item>
             <Link href="/">Home</Link>
           </Breadcrumb.Item>
-          <Breadcrumb.Item
-            onClick={() => setCurrentSetting('')}
-            className="cursor-pointer"
-          >
-            Settings
+          <Breadcrumb.Item>
+            <Link href="/settings">Settings</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{titleMap[currentType]}</Breadcrumb.Item>
         </Breadcrumb>
@@ -508,10 +526,11 @@ const Settings = () => {
 
           <Table
             rowSelection={{
-      type: 'checkbox',
-      selectedRowKeys,
-      onChange: (newSelectedKeys) => setSelectedRowKeys(newSelectedKeys),
-    }}
+              type: 'checkbox',
+              selectedRowKeys,
+              onChange: (newSelectedKeys) =>
+                setSelectedRowKeys(newSelectedKeys),
+            }}
             columns={
               currentType === 'administration'
                 ? administrationColumns
@@ -555,11 +574,8 @@ const Settings = () => {
         <Row gutter={[24, 24]}>
           {settingsCards.map((card) => (
             <Col xs={24} sm={12} md={8} lg={6} key={card.id}>
-              <Card
-                hoverable
-                className="h-full border-1"
-                onClick={() => setCurrentSetting(card.id)}
-              >
+              <Link href={`/settings/${card.id}`}>
+              <Card hoverable className="h-full border-1">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">{card.icon}</div>
                   <div>
@@ -570,6 +586,7 @@ const Settings = () => {
                   </div>
                 </div>
               </Card>
+              </Link>
             </Col>
           ))}
         </Row>
