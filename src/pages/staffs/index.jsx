@@ -1,10 +1,23 @@
-import StaffProfile from '@/components/userprofile/StaffProfile'
-import React from 'react'
+// pages/settings/[id]/index.jsx
+import { useRouter } from 'next/router';
+import CustomHead from '@/components/customHead/CustomHead';
+import Settings from '@/components/settings/Settings';
 
-const index = () => {
+export default function Page() {
+  const router = useRouter();
+  const { staffs } = router.query; // Get student from router
+
+ 
+  const currentType = staffs || '';
+
   return (
-    <StaffProfile />
-  )
+    <>
+      <CustomHead
+        actualTitle={`Staff - ${
+          staffs ? `${staffs} Profile` : 'All Staffs'
+        }`}
+      />
+      <Settings currentType="staffs" />
+    </>
+  );
 }
-
-export default index
