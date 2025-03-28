@@ -33,6 +33,12 @@ export const constants = {
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
     filesUrl: `${URL}/files`,
+    administrationUrl: `${URL}/administration`,
+    classroomUrl: `${URL}/classroom`,
+    settingsUrl: `${URL}/settings`,
+    studentsUrl: `${URL}/students`,
+    teachersUrl: `${URL}/teachers`,
+    staffsUrl: `${URL}/staffs`,
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
