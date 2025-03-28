@@ -16,6 +16,7 @@ import {
   Col,
   Divider,
   Popconfirm,
+  Drawer,
 } from 'antd';
 import Link from 'next/link';
 import {
@@ -29,8 +30,6 @@ import { FilePenLine, Send, Trash2Icon } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-
 
 // Mock Data
 const initialStudentData = [
@@ -90,7 +89,6 @@ const initialStaffData = [
   },
 ];
 
-// Options
 const options = ['Administrator', 'Teacher', 'Support staffs', 'Student'];
 const departmentOptions = [
   'IT',
@@ -142,9 +140,11 @@ const Settings = ({ currentType: propCurrentType }) => {
   const segments = (pathname || '').split('/');
   const currentType = propCurrentType || segments[2] || '';
 
-  // Fixed: State moved inside component and duplicates removed
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
+  const [filterValues, setFilterValues] = useState({});
+  const [filterForm] = Form.useForm();
 
+  // Data state
   const [data, setData] = useState({
     administration: initialAdministrationData,
     students: initialStudentData,
@@ -152,6 +152,8 @@ const Settings = ({ currentType: propCurrentType }) => {
     staffs: initialStaffData,
   });
 
+  // Other states
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [modalVisible, setModalVisible] = useState({
     administration: false,
     students: false,
@@ -168,7 +170,115 @@ const Settings = ({ currentType: propCurrentType }) => {
 
   useEffect(() => {
     setSelectedRowKeys([]);
-  }, [propCurrentType]);
+    setFilterValues({});
+    filterForm.resetFields();
+  }, [propCurrentType, currentType]);
+
+  const renderFilterForm = () => {
+    if (!currentType) return null;
+
+    const commonFilters = (
+      <>
+        <Form.Item name="firstName" label="First Name">
+          <Input placeholder="Search first name" />
+        </Form.Item>
+        <Form.Item name="lastName" label="Last Name">
+          <Input placeholder="Search last name" />
+        </Form.Item>
+        <Form.Item name="email" label="Email">
+          <Input placeholder="Search email" />
+        </Form.Item>
+      </>
+    );
+
+    switch (currentType) {
+      case 'students':
+        return (
+          <>
+            {commonFilters}
+            <Form.Item name="faculty" label="Faculty">
+              <Input placeholder="Search faculty" />
+            </Form.Item>
+            <Form.Item name="program" label="Program">
+              <Input placeholder="Search program" />
+            </Form.Item>
+          </>
+        );
+      case 'teachers':
+        return (
+          <>
+            {commonFilters}
+            <Form.Item name="department" label="Department">
+              <Select
+                allowClear
+                options={departmentOptions.map((opt) => ({
+                  label: opt,
+                  value: opt,
+                }))}
+              />
+            </Form.Item>
+            <Form.Item name="subjects" label="Subjects">
+              <Select
+                mode="multiple"
+                allowClear
+                options={subjectOptions.map((opt) => ({
+                  label: opt,
+                  value: opt,
+                }))}
+              />
+            </Form.Item>
+          </>
+        );
+      case 'administration':
+      case 'staffs':
+        return (
+          <>
+            {commonFilters}
+            <Form.Item name="role" label="Role">
+              <Select
+                allowClear
+                options={options.map((opt) => ({
+                  label: opt,
+                  value: opt,
+                }))}
+              />
+            </Form.Item>
+            <Form.Item name="department" label="Department">
+              <Select
+                allowClear
+                options={departmentOptions.map((opt) => ({
+                  label: opt,
+                  value: opt,
+                }))}
+              />
+            </Form.Item>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const onFilter = (values) => {
+    setFilterValues(values);
+    setFilterDrawerVisible(false);
+  };
+
+  const filteredData =
+    data[currentType]?.filter((item) => {
+      return Object.entries(filterValues).every(([key, value]) => {
+        if (!value || (Array.isArray(value) && value.length === 0)) return true;
+
+        const itemValue = item[key];
+        if (Array.isArray(value)) {
+          return value.some((v) => itemValue?.includes(v));
+        }
+        if (typeof value === 'string') {
+          return itemValue?.toLowerCase().includes(value.toLowerCase());
+        }
+        return itemValue === value;
+      });
+    }) || [];
 
   const renderContent = () => {
     if (!currentType) return renderSettingsGrid();
@@ -189,7 +299,6 @@ const Settings = ({ currentType: propCurrentType }) => {
       );
     }
 
-    // Common Columns (without action)
     const commonColumns = (type) => [
       {
         title: 'Name',
@@ -204,46 +313,40 @@ const Settings = ({ currentType: propCurrentType }) => {
       { title: 'Start Date', dataIndex: 'startDate', key: 'startDate' },
     ];
 
-    // Action Column Component
     const actionColumn = (type) => ({
       title: 'Action',
       key: 'action',
       render: (_, record) => (
         <span className="space-x-2">
-          <>
+          <Button
+            type="link"
+            icon={<FilePenLine size={18} />}
+            onClick={() => onEdit(type, record)}
+          />
+          <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(type, record)}
+          >
             <Button
               type="link"
-              icon={<FilePenLine size={18} />}
-              onClick={() => onEdit(type, record)}
+              danger
+              icon={<Trash2Icon stroke="red" size={18} />}
             />
-            <Popconfirm
-              title="Delete the task"
-              description="Are you sure to delete this task?"
-              okText="Yes"
-              cancelText="No"
-              onConfirm={() => onDelete(type, record)}
-            >
-              <Button
-                type="link"
-                danger
-                icon={<Trash2Icon stroke="red" size={18} />}
-              />
-            </Popconfirm>
-          </>
-
-          {/* Add Send Links button only for students */}
+          </Popconfirm>
           {type === 'students' && (
             <Popconfirm
               title="Send the links"
               description="Are you sure to send the links?"
               okText="Yes"
               cancelText="No"
-              onConfirm={() => onSendLinks(type, record)}
+              onConfirm={() => onSendLinks(record)}
             >
               <Button
                 type="link"
                 style={{ color: '#1890ff' }}
-                confirm="Send Links"
                 icon={<Send size={18} />}
               />
             </Popconfirm>
@@ -252,12 +355,6 @@ const Settings = ({ currentType: propCurrentType }) => {
       ),
     });
 
-    // Send Links onr
-    const onSendLinks = (record) => {
-      // Send links to the student
-      console.log('Sending links to', record);
-    };
-    // Specific Columns
     const administrationColumns = [
       ...commonColumns('administration'),
       { title: 'Role', dataIndex: 'role', key: 'role' },
@@ -291,7 +388,6 @@ const Settings = ({ currentType: propCurrentType }) => {
       actionColumn('staffs'),
     ];
 
-    // onrs
     const onAdd = (type) => {
       setEditingKey((prev) => ({ ...prev, [type]: null }));
       form.resetFields();
@@ -308,7 +404,7 @@ const Settings = ({ currentType: propCurrentType }) => {
       setModalVisible((prev) => ({ ...prev, [type]: true }));
     };
 
-    const onDelete = (type, key) => {
+    const onDelete = (type, record) => {
       Modal.confirm({
         title: `Delete this ${type.slice(0, -1)}?`,
         content: 'This action cannot be undone.',
@@ -318,7 +414,7 @@ const Settings = ({ currentType: propCurrentType }) => {
         onOk: () => {
           setData((prev) => ({
             ...prev,
-            [type]: prev[type].filter((item) => item.key !== key),
+            [type]: prev[type].filter((item) => item.key !== record.key),
           }));
         },
       });
@@ -523,17 +619,21 @@ const Settings = ({ currentType: propCurrentType }) => {
               </Title>
               <Text type="secondary">Manage {currentType} records</Text>
             </div>
-            <Button type="primary" onClick={() => onAdd(currentType)}>
-              Add
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setFilterDrawerVisible(true)}>
+                Filter
+              </Button>
+              <Button type="primary" onClick={() => onAdd(currentType)}>
+                Add
+              </Button>
+            </div>
           </div>
 
           <Table
             rowSelection={{
               type: 'checkbox',
               selectedRowKeys,
-              onChange: (newSelectedKeys) =>
-                setSelectedRowKeys(newSelectedKeys),
+              onChange: setSelectedRowKeys,
             }}
             columns={
               currentType === 'administration'
@@ -542,9 +642,9 @@ const Settings = ({ currentType: propCurrentType }) => {
                 ? studentColumns
                 : currentType === 'teachers'
                 ? teacherColumns
-                : staffColumns // ons 'staffs' type
+                : staffColumns
             }
-            dataSource={data[currentType]}
+            dataSource={filteredData}
             pagination={{ pageSize: 10 }}
             bordered
             rowKey="key"
@@ -598,7 +698,46 @@ const Settings = ({ currentType: propCurrentType }) => {
     </div>
   );
 
-  return <div className="min-h-screen bg-gray-50">{renderContent()}</div>;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {renderContent()}
+      <Drawer
+        title="Filter Results"
+        width={400}
+        open={filterDrawerVisible}
+        onClose={() => setFilterDrawerVisible(false)}
+        destroyOnClose
+      >
+        <Form
+          form={filterForm}
+          layout="vertical"
+          onFinish={onFilter}
+          initialValues={filterValues}
+        >
+          {renderFilterForm()}
+          <Divider />
+          <Row gutter={16}>
+            <Col span={12}>
+              <Button htmlType="submit" type="primary" block>
+                Apply Filters
+              </Button>
+            </Col>
+            <Col span={12}>
+              <Button
+                block
+                onClick={() => {
+                  filterForm.resetFields();
+                  setFilterValues({});
+                }}
+              >
+                Clear Filters
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </Drawer>
+    </div>
+  );
 };
 
 export default Settings;
