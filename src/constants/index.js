@@ -33,7 +33,6 @@ export const constants = {
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
 
-
     // Socket
     notificationGateway: `${API_URL}/notifications`,
   },
@@ -84,4 +83,18 @@ export const ResourceActions = {
   restore: 'restore',
   acknowledegedBy: 'acknowledegedBy',
   downloadCsv: 'downloadCsv',
+};
+
+export const Modules = {
+  routines: 'routines',
+  tasks: 'tasks',
+  leaveRequest: 'leaveRequest',
+  documents: 'documents',
+  calendar: 'calendar',
+  announcements: 'announcements',
+  permissionGroups: 'permissionGroups',
+  classroom: 'classroom',
+  settings: 'settings',
+  inquiries: 'inquiries',
+  feedback: 'feedback',
 };
