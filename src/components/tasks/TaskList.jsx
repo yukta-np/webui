@@ -343,16 +343,14 @@ const TaskList = ({
     setIsFilterDrawerVisible(false);
   };
 
-  const onReset = () => {
+  const onClearOrReset = () => {
     setStatus(null);
     setAssignedTo(null);
     setCreatedBy(null);
     setStartDate(null);
     setEndDate(null);
     setArchived(null);
-
     filterForm.resetFields();
-
     tasksRevalidate();
   };
 
@@ -392,19 +390,6 @@ const TaskList = ({
   const filterByArchived = (value) => {
     setArchived(value || null);
     filterForm.setFieldsValue({ archived: value || undefined });
-    tasksRevalidate();
-  };
-
-  const clearAllFilters = () => {
-    setStartDate(null);
-    setEndDate(null);
-    setStatus(null);
-    setCreatedBy(null);
-    setAssignedTo(null);
-    setArchived(null);
-
-    filterForm.resetFields();
-
     tasksRevalidate();
   };
 
@@ -939,12 +924,12 @@ const TaskList = ({
           <Form form={filterForm} layout="vertical">
             <Space
               direction="vertical"
-              size={24}
+              size={10}
               style={{ width: '100%', paddingBottom: 24 }}
             >
               <Form.Item name="dateRange">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <p style={{ marginBottom: 8, fontWeight: 500 }}>Date Range</p>
+                  <p style={{ fontWeight: 500 }}>Date Range</p>
                   <RangePicker
                     presets={dateRanges}
                     style={{ width: '100%' }}
@@ -955,7 +940,7 @@ const TaskList = ({
 
               <Form.Item name="creator">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <p style={{ marginBottom: 8, fontWeight: 500 }}>By Creator</p>
+                  <p style={{ fontWeight: 500 }}>By Creator</p>
                   <Select
                     allowClear={true}
                     optionLabelProp="label"
@@ -994,9 +979,7 @@ const TaskList = ({
                     size={12}
                     style={{ width: '100%' }}
                   >
-                    <p style={{ marginBottom: 8, fontWeight: 500 }}>
-                      By Assignee
-                    </p>
+                    <p style={{ fontWeight: 500 }}>By Assignee</p>
                     <Select
                       allowClear={true}
                       optionLabelProp="label"
@@ -1033,7 +1016,7 @@ const TaskList = ({
 
               <Form.Item name="status">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <p style={{ marginBottom: 8, fontWeight: 500 }}>By Status</p>
+                  <p style={{ fontWeight: 500 }}>By Status</p>
                   <Select
                     showSearch
                     style={{ width: '100%' }}
@@ -1055,7 +1038,7 @@ const TaskList = ({
 
               <Form.Item name="archived">
                 <Space direction="vertical" size={12} style={{ width: '100%' }}>
-                  <p style={{ marginBottom: 8, fontWeight: 500 }}>Archived</p>
+                  <p style={{ fontWeight: 500 }}>Archived</p>
                   <Select
                     showSearch
                     allowClear
@@ -1080,12 +1063,11 @@ const TaskList = ({
                   display: 'flex',
                   justifyContent: 'flex-end',
                   gap: 8,
-                  marginTop: 24,
                   float: 'left',
                 }}
               >
                 <Button
-                  onClick={onReset}
+                  onClick={onClearOrReset}
                   style={{ width: screens.xs ? '50%' : 'auto' }}
                 >
                   Reset
@@ -1118,20 +1100,16 @@ const TaskList = ({
               <span style={{ fontWeight: 500 }}>Active Filters:</span>
 
               {startDate && (
-                <Tag closable onClose={() => filterByDateRange(null)}>
+                <Tag>
                   Date: {moment(startDate).format('MMM D')} -{' '}
                   {moment(endDate).format('MMM D')}
                 </Tag>
               )}
 
-              {status && (
-                <Tag closable onClose={() => filterByStatus(null)}>
-                  Status: {status}
-                </Tag>
-              )}
+              {status && <Tag color="#1677ff">Status: {status}</Tag>}
 
               {createdBy && (
-                <Tag closable onClose={() => filterByCreator(null)}>
+                <Tag>
                   Creator:{' '}
                   {tasks?.find((t) => t.createdBy === createdBy)?.creator
                     ?.fullName || createdBy}
@@ -1139,7 +1117,7 @@ const TaskList = ({
               )}
 
               {assignedTo && (
-                <Tag closable onClose={() => filterByAssignee(null)}>
+                <Tag>
                   Assignee:{' '}
                   {tasks?.find((t) => t.assignee?.id === assignedTo)?.assignee
                     ?.fullName || assignedTo}
@@ -1147,15 +1125,13 @@ const TaskList = ({
               )}
 
               {archived && (
-                <Tag closable onClose={() => filterByArchived(null)}>
-                  Archived: {archived === 'true' ? 'Yes' : 'No'}
-                </Tag>
+                <Tag>Archived: {archived === 'true' ? 'Yes' : 'No'}</Tag>
               )}
 
               <Button
                 type="link"
                 size="small"
-                onClick={clearAllFilters}
+                onClick={onClearOrReset}
                 style={{ padding: 0 }}
               >
                 Clear all
