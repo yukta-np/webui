@@ -45,12 +45,12 @@ import { useUsers } from '@/hooks/useUsers';
 import { useDocuments } from '@/hooks/useDocuments';
 import { createDocument, deleteDocument } from '@/services/documents.http';
 import Link from 'next/link';
+import CustomUpload from './CustomUpload';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 const { Search } = Input;
 const { TabPane } = Tabs;
-const { Dragger } = Upload;
 
 const Documents = () => {
   const screens = useBreakpoint();
@@ -58,22 +58,19 @@ const Documents = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
   const [viewMode, setViewMode] = useState('menu');
   const [selectedItem, setSelectedItem] = useState(null);
   const [myFiles, setMyFiles] = useState([]);
-  const [currentUploadBatch, setCurrentUploadBatch] = useState([]);
-  const [fileList, setFileList] = useState([]);
   const [sharedFilesDataSource, setSharedFilesDataSource] = useState([]);
   const [newFolderName, setNewFolderName] = useState('');
   const {
     documentsList: documents,
     revalidate: documentsRevalidate,
     meta: documentsMeta,
-  } = useDocuments({ disableAutoRefetch: true });
+  } = useDocuments();
   const { users } = useUsers();
 
   useEffect(() => {
@@ -82,10 +79,6 @@ const Documents = () => {
       setMyFiles(documents);
     }
   }, [documents]);
-
-  useEffect(() => {
-    console.log('files are being changes!', fileList);
-  }, [fileList]);
 
   const totalStorage = '5 GB'; // TODO: Replace with the actual total storage value
   const sizeUnits = {
@@ -238,7 +231,7 @@ const Documents = () => {
       key: `folder-${Date.now()}`,
       name: newFolderName,
       type: 'folder',
-      size: '0 B',
+      size: 0,
       date: new Date().toISOString().split('T')[0],
       children: [],
     };
@@ -259,114 +252,9 @@ const Documents = () => {
       setMyFiles([...myFiles, newFolder]);
     }
 
-    closeAddFolderModal();
+    setIsAddFolderModalOpen(false);
+
     message.success('Folder created successfully!');
-  };
-
-  const openUploadModal = () => {
-    setIsUploadModalOpen(true);
-  };
-
-  const closeUploadModal = () => {
-    setFileList([]);
-    setIsUploadModalOpen(false);
-  };
-
-  // TODO: not used, so remove soon!!!
-  const handleBeforeUpload = (file) => {
-    console.log('before upload called!', file);
-    const newFile = {
-      batchId: 'c62ac9e3-b939-46d8-97c0-9d07b2befb81',
-      fileName: file.name,
-      entity: 'documents',
-      category: 'random uploads',
-      sizeInByte: file.size,
-      organisationId: 1,
-      createdBy: 2,
-    };
-
-    if (currentFolder) {
-      // Add the new file to the current folder's children
-      const updatedCurrentFolder = {
-        ...currentFolder,
-        children: [...currentFolder.children, newFile],
-      };
-      setMyFiles((prev) =>
-        prev.map((item) =>
-          item.key === currentFolder.key ? updatedCurrentFolder : item
-        )
-      );
-    } else {
-      setCurrentUploadBatch([...currentUploadBatch, newFile]);
-    }
-
-    // closeUploadModal();
-    message.success('File uploaded successfully!');
-  };
-
-  const handleFileChange = ({ fileList: newFileList }) => {
-    console.log('File change called!!');
-
-    if (newFileList.length === 0) {
-      return setFileList(newFileList);
-    }
-
-    // !important for handling file removal and state update.
-    if (fileList.length > newFileList.length) {
-      return setFileList(newFileList);
-    }
-
-    const lastItem = newFileList[newFileList.length - 1];
-    const newFileData = {
-      file: lastItem.originFileObj,
-      batchId: 'c62ac9e3-b939-46d8-97c0-9d07b2befb81',
-      name: lastItem.name,
-      fileName: lastItem.name, // TODO: remove this in the backend as well...just accept 'name' in DTO
-      entity: 'attachments',
-      category: 'myFiles',
-      sizeInByte: lastItem.size,
-      organisationId: 1,
-      createdBy: 2,
-    };
-
-    setFileList([...fileList, newFileData]);
-  };
-
-  const handleFileUpload = async () => {
-    const file = fileList[0]; // TODO: loop through entire array for multifile upload
-
-    const formData = new FormData();
-
-    for (const key in file) {
-      formData.append(key, file[key]);
-    }
-
-    for (const pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
-    // Make the API request using fetch or axios
-    try {
-      const res = await createDocument(formData);
-      console.log(res);
-
-      if (res.status === 201) {
-        console.log('Successfully uploaded!');
-        message.success('File uploaded successfully!');
-
-        closeUploadModal();
-      } else {
-        console.log('OOpsy doopsy, not uploaded');
-        message.error('Upload failed!');
-
-        closeUploadModal();
-      }
-    } catch (error) {
-      console.log(error);
-      message.error('An error occurred!');
-
-      closeUploadModal();
-    }
   };
 
   const openShareModal = (item) => {
@@ -563,14 +451,7 @@ const Documents = () => {
           </Card>
 
           <Space>
-            <Button
-              size="large"
-              type="primary"
-              icon={<UploadIcon size={18} className="mt-1" />}
-              onClick={openUploadModal}
-            >
-              Upload
-            </Button>
+            <CustomUpload />
             <Button
               size="large"
               type="default"
@@ -660,48 +541,6 @@ const Documents = () => {
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
           />
-        </Modal>
-
-        {/* Upload Modal */}
-        <Modal
-          title="Upload Files"
-          open={isUploadModalOpen}
-          onCancel={closeUploadModal}
-          footer={[
-            <>
-              <Divider />
-              <Button key="cancel" onClick={closeUploadModal}>
-                Cancel
-              </Button>
-              <Button key="submit" type="primary" onClick={handleFileUpload}>
-                Upload
-              </Button>
-            </>,
-          ]}
-        >
-          <Upload
-            fileList={fileList}
-            style={{ marginTop: '20px' }}
-            accept=".pdf,.jpg,.jpeg,.png"
-            beforeUpload={() => {
-              return false;
-            }}
-            onChange={handleFileChange}
-          >
-            <p className="ant-upload-drag-icon">
-              <Inbox
-                size={30}
-                className="mx-auto"
-                style={{ display: 'flex', justifyContent: 'center' }}
-              />
-            </p>
-            <p className="ant-upload-text">
-              Click or drag files to this area to upload
-            </p>
-            <p className="ant-upload-hint">
-              Support for a single or bulk upload.
-            </p>
-          </Upload>
         </Modal>
 
         {/* Share Modal */}
