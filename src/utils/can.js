@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 import { createContextualCan } from '@casl/react';
 import { Roles, getLoggedInUser, getPermission } from '../utils';
 
-// export const AbilityContext = createContext();
+export const AbilityContext = createContext();
 export const Can = createContextualCan(AbilityContext.Consumer);
 
 function CanIDo({
