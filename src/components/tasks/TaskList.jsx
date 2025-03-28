@@ -1100,7 +1100,7 @@ const TaskList = ({
               <span style={{ fontWeight: 500 }}>Active Filters:</span>
 
               {startDate && (
-                <Tag>
+                <Tag color="#1677ff">
                   Date: {moment(startDate).format('MMM D')} -{' '}
                   {moment(endDate).format('MMM D')}
                 </Tag>
@@ -1109,7 +1109,7 @@ const TaskList = ({
               {status && <Tag color="#1677ff">Status: {status}</Tag>}
 
               {createdBy && (
-                <Tag>
+                <Tag color="#1677ff">
                   Creator:{' '}
                   {tasks?.find((t) => t.createdBy === createdBy)?.creator
                     ?.fullName || createdBy}
@@ -1117,7 +1117,7 @@ const TaskList = ({
               )}
 
               {assignedTo && (
-                <Tag>
+                <Tag color="#1677ff">
                   Assignee:{' '}
                   {tasks?.find((t) => t.assignee?.id === assignedTo)?.assignee
                     ?.fullName || assignedTo}
@@ -1125,7 +1125,9 @@ const TaskList = ({
               )}
 
               {archived && (
-                <Tag>Archived: {archived === 'true' ? 'Yes' : 'No'}</Tag>
+                <Tag color="#1677ff">
+                  Archived: {archived === 'true' ? 'Yes' : 'No'}
+                </Tag>
               )}
 
               <Button
