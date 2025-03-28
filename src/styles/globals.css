@@ -125,3 +125,8 @@ input[disabled],
 .task-link-item.selected:hover {
   background-color: #e6f2ff;
 }
+.centered-header {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

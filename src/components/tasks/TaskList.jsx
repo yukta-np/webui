@@ -27,6 +27,7 @@ import {
   Popover,
   Tooltip,
   Empty,
+  Drawer,
 } from 'antd';
 import {
   EllipsisVertical,
@@ -45,6 +46,7 @@ import {
   X,
   ChevronRight,
   ChevronDown,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Upload } from 'antd';
 import DOMPurify from 'dompurify';
@@ -87,6 +89,7 @@ const TaskList = ({
   } = theme.useToken();
   const [activeTab, setActiveTab] = useState('write');
   const [form] = Form.useForm();
+  const [filterForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [action, setAction] = useState(Actions.add);
@@ -111,6 +114,7 @@ const TaskList = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [isLinkedTasksExpanded, setIsLinkedTasksExpanded] = useState(true);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [isFilterDrawerVisible, setIsFilterDrawerVisible] = useState(false);
 
   const { loggedInUser } = useAppContext();
 
@@ -170,41 +174,6 @@ const TaskList = ({
     form.resetFields();
     setEditorContent('');
     setIsModalVisible(false);
-  };
-
-  const openTaskLinkModal = () => {
-    setIsTaskLinkModalVisible(true);
-  };
-
-  const closeTaskLinkModal = () => {
-    setIsTaskLinkModalVisible(false);
-  };
-
-  const toggleTaskSelection = async (task) => {
-    if (task.id === editingData?.id) return;
-
-    try {
-      const isCurrentlyLinked = linkedTasks.some((t) => t.id === task.id);
-
-      if (isCurrentlyLinked) {
-        await updateTask(task.id, { parentId: null });
-      } else {
-        await updateTask(task.id, { parentId: editingData?.id });
-      }
-
-      setLinkedTasks((prev) => {
-        return isCurrentlyLinked
-          ? prev.filter((t) => t.id !== task.id)
-          : [...prev, { ...task, parentId: editingData?.id }];
-      });
-
-      tasksRevalidate();
-      openNotification('Subtask updated successfully');
-    } catch (error) {
-      console.error('Failed to update task relationship:', error);
-    }
-
-    closeTaskLinkModal();
   };
 
   const onAdd = () => {
@@ -362,46 +331,80 @@ const TaskList = ({
   };
 
   //filters
+  const onFilter = () => {
+    openFilterDrawer();
+  };
+
+  const openFilterDrawer = () => {
+    setIsFilterDrawerVisible(true);
+  };
+
+  const closeFilterDrawer = () => {
+    setIsFilterDrawerVisible(false);
+  };
+
+  const onReset = () => {
+    setStatus(null);
+    setAssignedTo(null);
+    setCreatedBy(null);
+    setStartDate(null);
+    setEndDate(null);
+    setArchived(null);
+
+    filterForm.resetFields();
+
+    tasksRevalidate();
+  };
+
   const filterByDateRange = (value) => {
     if (!value) {
       setStartDate(null);
       setEndDate(null);
-      tasksRevalidate();
-      return;
+      filterForm.setFieldsValue({ dateRange: null });
+    } else {
+      const startDate = value[0];
+      const endDate = value[1];
+      setStartDate(startDate.format('YYYY-MM-DD'));
+      setEndDate(endDate.format('YYYY-MM-DD'));
+      filterForm.setFieldsValue({ dateRange: value });
     }
-    const startDate = value[0];
-    const endDate = value[1];
-    const formattedStartDate = startDate
-      ? startDate.format('YYYY-MM-DD')
-      : null;
-    const formattedEndDate = endDate ? endDate.format('YYYY-MM-DD') : null;
-    params = {
-      ...params,
-      startDate: formattedStartDate,
-      endDate: formattedEndDate,
-    };
-    setStartDate(formattedStartDate);
-    setEndDate(formattedEndDate);
     tasksRevalidate();
   };
 
   const filterByStatus = (value) => {
-    setStatus(value);
+    setStatus(value || null);
+    filterForm.setFieldsValue({ status: value || '' });
     tasksRevalidate();
   };
 
   const filterByCreator = (value) => {
-    setCreatedBy(value);
+    setCreatedBy(value || null);
+    filterForm.setFieldsValue({ creator: value || undefined });
     tasksRevalidate();
   };
 
   const filterByAssignee = (value) => {
-    setAssignedTo(value);
+    setAssignedTo(value || null);
+    filterForm.setFieldsValue({ assignee: value || undefined });
     tasksRevalidate();
   };
 
   const filterByArchived = (value) => {
-    setArchived(value);
+    setArchived(value || null);
+    filterForm.setFieldsValue({ archived: value || undefined });
+    tasksRevalidate();
+  };
+
+  const clearAllFilters = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setStatus(null);
+    setCreatedBy(null);
+    setAssignedTo(null);
+    setArchived(null);
+
+    filterForm.resetFields();
+
     tasksRevalidate();
   };
 
@@ -502,6 +505,41 @@ const TaskList = ({
   };
 
   //for subTasks
+
+  const openTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(true);
+  };
+
+  const closeTaskLinkModal = () => {
+    setIsTaskLinkModalVisible(false);
+  };
+
+  const toggleTaskSelection = async (task) => {
+    if (task.id === editingData?.id) return;
+
+    try {
+      const isCurrentlyLinked = linkedTasks.some((t) => t.id === task.id);
+
+      if (isCurrentlyLinked) {
+        await updateTask(task.id, { parentId: null });
+      } else {
+        await updateTask(task.id, { parentId: editingData?.id });
+      }
+
+      setLinkedTasks((prev) => {
+        return isCurrentlyLinked
+          ? prev.filter((t) => t.id !== task.id)
+          : [...prev, { ...task, parentId: editingData?.id }];
+      });
+
+      tasksRevalidate();
+      openNotification('Subtask updated successfully');
+    } catch (error) {
+      console.error('Failed to update task relationship:', error);
+    }
+
+    closeTaskLinkModal();
+  };
   const groupTasksByParent = (tasks = []) => {
     const taskMap = {};
     const parentTasks = [];
@@ -579,7 +617,7 @@ const TaskList = ({
 
   const columns = [
     {
-      title: 'ID',
+      title: <div className="centered-header">ID</div>,
       dataIndex: 'id',
       key: 'key',
       sorter: (a, b) => a.key - b.key,
@@ -820,182 +858,311 @@ const TaskList = ({
             gap: 16,
             justifyContent: 'space-between',
             marginBottom: 16,
+            alignItems: 'center', // Ensures vertical alignment
           }}
         >
           <p className="text-xl font-bold">
             {isMyTask ? 'My Task' : isAllTask ? 'All Task' : "My Team's Task"}
           </p>
-          {selectedTaskId?.length > 0 ? (
-            <Popconfirm
-              placement="topLeft"
-              title={`${
-                selectedTaskId.some((id) => {
-                  const task = tasks?.find((t) => t.id === id);
-                  return task?.isArchived;
-                })
-                  ? 'Unarchive'
-                  : 'Archive'
-              } ${selectedTaskId.length} selected task(s)?`}
-              onConfirm={() => onToggleArchiveClick(selectedTaskId)}
-              okText="Yes"
-              cancelText="No"
-              disabled={selectedTaskId.length === 0}
+
+          <div
+            style={{
+              display: 'flex',
+              gap: 16,
+              flexDirection: screens.xs ? 'column' : 'row',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              className="bg-white text-blue-500 border-blue-500"
+              icon={<SlidersHorizontal size={16} color="#1677ff" />}
+              onClick={onFilter}
             >
-              <Button
-                type="primary"
-                loading={isProcessing}
-                disabled={selectedTaskId.length === 0}
-                icon={
+              Filter
+            </Button>
+
+            {selectedTaskId?.length > 0 ? (
+              <Popconfirm
+                placement="topLeft"
+                title={`${
                   selectedTaskId.some((id) => {
                     const task = tasks?.find((t) => t.id === id);
                     return task?.isArchived;
-                  }) ? (
-                    <ArchiveRestore className="mt-1" size={16} />
-                  ) : (
-                    <Archive className="mt-1" size={16} />
-                  )
-                }
+                  })
+                    ? 'Unarchive'
+                    : 'Archive'
+                } ${selectedTaskId.length} selected task(s)?`}
+                onConfirm={() => onToggleArchiveClick(selectedTaskId)}
+                okText="Yes"
+                cancelText="No"
+                disabled={selectedTaskId.length === 0}
               >
-                {selectedTaskId.length === 0
-                  ? 'Select tasks to archive'
-                  : selectedTaskId.some((id) => {
+                <Button
+                  type="primary"
+                  loading={isProcessing}
+                  disabled={selectedTaskId.length === 0}
+                  icon={
+                    selectedTaskId.some((id) => {
                       const task = tasks?.find((t) => t.id === id);
                       return task?.isArchived;
-                    })
-                  ? 'Unarchive'
-                  : 'Archive'}
+                    }) ? (
+                      <ArchiveRestore className="mt-1" size={16} />
+                    ) : (
+                      <Archive className="mt-1" size={16} />
+                    )
+                  }
+                >
+                  {selectedTaskId.length === 0
+                    ? 'Select tasks to archive'
+                    : selectedTaskId.some((id) => {
+                        const task = tasks?.find((t) => t.id === id);
+                        return task?.isArchived;
+                      })
+                    ? 'Unarchive'
+                    : 'Archive'}
+                </Button>
+              </Popconfirm>
+            ) : (
+              <Button type="primary" onClick={onAdd}>
+                Add Task
               </Button>
-            </Popconfirm>
-          ) : (
-            <Button type="primary" onClick={onAdd}>
-              Add Task
-            </Button>
-          )}
+            )}
+          </div>
         </div>
 
-        <Space style={{ justifyContent: 'space-between', gap: '24px' }}>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>Date Range</p>
-            <RangePicker
-              presets={dateRanges}
-              style={{ width: 385 }}
-              onChange={(value) => filterByDateRange(value)}
-            />
-          </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Creator </p>
-            <Select
-              allowClear={true}
-              optionLabelProp="label"
-              showSearch
-              style={{ width: 200 }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              onChange={(values) => filterByCreator(values)}
+        <Drawer
+          title="Filter Tasks"
+          onClose={closeFilterDrawer}
+          open={isFilterDrawerVisible}
+          width={screens.xs ? '40%' : 380}
+        >
+          <Form form={filterForm} layout="vertical">
+            <Space
+              direction="vertical"
+              size={24}
+              style={{ width: '100%', paddingBottom: 24 }}
             >
-              {users?.map((u) => (
-                <Option
-                  key={u?.id}
-                  value={`${u?.id} `}
-                  label={`${u?.fullName} `}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
-                      {!u?.avatar && `${u?.firstName[0]}`}{' '}
-                    </Avatar>
-                    <span>{`${u?.fullName} `}</span>
-                  </div>
-                </Option>
-              ))}
-            </Select>
-          </Space>
-          {!isMyTask && (
-            <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-              <p>By Assignee</p>
-              <Select
-                allowClear={true}
-                optionLabelProp="label"
-                showSearch
-                style={{ width: 200 }}
-                optionFilterProp="label"
-                filterSort={(optionA, optionB) =>
-                  (optionA?.label ?? '')
-                    .toLowerCase()
-                    .localeCompare((optionB?.label ?? '').toLowerCase())
-                }
-                onChange={(values) => filterByAssignee(values)}
-              >
-                {users?.map((u) => (
-                  <Option
-                    key={u?.id}
-                    value={`${u?.id} `}
-                    label={`${u?.fullName} `}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
-                        {!u?.avatar && `${u?.firstName[0]}`}{' '}
-                      </Avatar>
-                      <span>{`${u?.fullName} `}</span>
-                    </div>
-                  </Option>
-                ))}
-              </Select>
-            </Space>
-          )}
+              <Form.Item name="dateRange">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <p style={{ marginBottom: 8, fontWeight: 500 }}>Date Range</p>
+                  <RangePicker
+                    presets={dateRanges}
+                    style={{ width: '100%' }}
+                    onChange={(value) => filterByDateRange(value)}
+                  />
+                </Space>
+              </Form.Item>
 
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>By Status </p>
-            <Select
-              showSearch
-              style={{ width: 200 }}
-              allowClear={true}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={taskStatus?.map((ts) => ({
-                label: ts?.name,
-                value: ts?.name,
-              }))}
-              onChange={(value) => filterByStatus(value)}
-            />
-          </Space>
-          <Space direction="vertical" size={12} style={{ marginBottom: 16 }}>
-            <p>Archived </p>
-            <Select
-              showSearch
-              allowClear
-              style={{ width: 150 }}
-              optionFilterProp="label"
-              filterSort={(optionA, optionB) =>
-                (optionA?.label ?? '')
-                  .toLowerCase()
-                  .localeCompare((optionB?.label ?? '').toLowerCase())
-              }
-              options={[
-                { value: 'false', label: 'No' },
-                { value: 'true', label: 'Yes' },
-              ]}
-              onChange={(value) => filterByArchived(value)}
-            />
-          </Space>
-        </Space>
+              <Form.Item name="creator">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <p style={{ marginBottom: 8, fontWeight: 500 }}>By Creator</p>
+                  <Select
+                    allowClear={true}
+                    optionLabelProp="label"
+                    showSearch
+                    style={{ width: '100%' }}
+                    optionFilterProp="label"
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? '')
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? '').toLowerCase())
+                    }
+                    onChange={(values) => filterByCreator(parseInt(values))}
+                  >
+                    {users?.map((u) => (
+                      <Option
+                        key={u?.id}
+                        value={`${u?.id} `}
+                        label={`${u?.fullName} `}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                            {!u?.avatar && `${u?.firstName[0]}`}
+                          </Avatar>
+                          <span>{`${u?.fullName} `}</span>
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </Space>
+              </Form.Item>
+
+              {!isMyTask && (
+                <Form.Item name="assignee">
+                  <Space
+                    direction="vertical"
+                    size={12}
+                    style={{ width: '100%' }}
+                  >
+                    <p style={{ marginBottom: 8, fontWeight: 500 }}>
+                      By Assignee
+                    </p>
+                    <Select
+                      allowClear={true}
+                      optionLabelProp="label"
+                      showSearch
+                      style={{ width: '100%' }}
+                      optionFilterProp="label"
+                      filterSort={(optionA, optionB) =>
+                        (optionA?.label ?? '')
+                          .toLowerCase()
+                          .localeCompare((optionB?.label ?? '').toLowerCase())
+                      }
+                      onChange={(values) => filterByAssignee(parseInt(values))}
+                    >
+                      {users?.map((u) => (
+                        <Option
+                          key={u?.id}
+                          value={`${u?.id} `}
+                          label={`${u?.fullName} `}
+                        >
+                          <div
+                            style={{ display: 'flex', alignItems: 'center' }}
+                          >
+                            <Avatar src={u?.avatar} style={{ marginRight: 8 }}>
+                              {!u?.avatar && `${u?.firstName[0]}`}
+                            </Avatar>
+                            <span>{`${u?.fullName} `}</span>
+                          </div>
+                        </Option>
+                      ))}
+                    </Select>
+                  </Space>
+                </Form.Item>
+              )}
+
+              <Form.Item name="status">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <p style={{ marginBottom: 8, fontWeight: 500 }}>By Status</p>
+                  <Select
+                    showSearch
+                    style={{ width: '100%' }}
+                    allowClear={true}
+                    optionFilterProp="label"
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? '')
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? '').toLowerCase())
+                    }
+                    options={taskStatus?.map((ts) => ({
+                      label: ts?.name,
+                      value: ts?.name,
+                    }))}
+                    onChange={(value) => filterByStatus(value)}
+                  />
+                </Space>
+              </Form.Item>
+
+              <Form.Item name="archived">
+                <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                  <p style={{ marginBottom: 8, fontWeight: 500 }}>Archived</p>
+                  <Select
+                    showSearch
+                    allowClear
+                    style={{ width: '100%' }}
+                    optionFilterProp="label"
+                    filterSort={(optionA, optionB) =>
+                      (optionA?.label ?? '')
+                        .toLowerCase()
+                        .localeCompare((optionB?.label ?? '').toLowerCase())
+                    }
+                    options={[
+                      { value: 'false', label: 'No' },
+                      { value: 'true', label: 'Yes' },
+                    ]}
+                    onChange={(value) => filterByArchived(value)}
+                  />
+                </Space>
+              </Form.Item>
+
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 8,
+                  marginTop: 24,
+                  float: 'left',
+                }}
+              >
+                <Button
+                  onClick={onReset}
+                  style={{ width: screens.xs ? '50%' : 'auto' }}
+                >
+                  Reset
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    closeFilterDrawer();
+                  }}
+                  style={{ width: screens.xs ? '50%' : 'auto' }}
+                >
+                  Apply
+                </Button>
+              </div>
+            </Space>
+          </Form>
+        </Drawer>
+
+        {(status || createdBy || assignedTo || archived || startDate) && (
+          <div
+            style={{
+              marginBottom: 16,
+              padding: '12px 16px',
+              background: '#f6f6f6',
+              borderRadius: 8,
+              border: '0.5px solid #d9d9d9',
+            }}
+          >
+            <Space size={[8, 8]} wrap>
+              <span style={{ fontWeight: 500 }}>Active Filters:</span>
+
+              {startDate && (
+                <Tag closable onClose={() => filterByDateRange(null)}>
+                  Date: {moment(startDate).format('MMM D')} -{' '}
+                  {moment(endDate).format('MMM D')}
+                </Tag>
+              )}
+
+              {status && (
+                <Tag closable onClose={() => filterByStatus(null)}>
+                  Status: {status}
+                </Tag>
+              )}
+
+              {createdBy && (
+                <Tag closable onClose={() => filterByCreator(null)}>
+                  Creator:{' '}
+                  {tasks?.find((t) => t.createdBy === createdBy)?.creator
+                    ?.fullName || createdBy}
+                </Tag>
+              )}
+
+              {assignedTo && (
+                <Tag closable onClose={() => filterByAssignee(null)}>
+                  Assignee:{' '}
+                  {tasks?.find((t) => t.assignee?.id === assignedTo)?.assignee
+                    ?.fullName || assignedTo}
+                </Tag>
+              )}
+
+              {archived && (
+                <Tag closable onClose={() => filterByArchived(null)}>
+                  Archived: {archived === 'true' ? 'Yes' : 'No'}
+                </Tag>
+              )}
+
+              <Button
+                type="link"
+                size="small"
+                onClick={clearAllFilters}
+                style={{ padding: 0 }}
+              >
+                Clear all
+              </Button>
+            </Space>
+          </div>
+        )}
 
         <Table
           rowSelection={{
