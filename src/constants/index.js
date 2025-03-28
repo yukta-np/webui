@@ -49,6 +49,7 @@ export const Actions = {
   add: 'add',
   edit: 'edit',
   read: 'read',
+  view: 'view',
   clone: 'clon',
 };
 
@@ -82,4 +83,5 @@ export const ResourceActions = {
   archive: 'archive',
   restore: 'restore',
   acknowledegedBy: 'acknowledegedBy',
+  downloadCsv: 'downloadCsv',
 };
