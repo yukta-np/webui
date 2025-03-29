@@ -215,14 +215,14 @@ const Announcements = () => {
       title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      width: '10%',
+      width: '8%',
       render: (text) => moment(text).format('DD/MM/YYYY'),
     },
     {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: '13%',
+      width: '15%',
       render: (text) => moment(text).format('DD/MM/YYYY hh:mm A'),
     },
     {
@@ -630,6 +630,7 @@ const Announcements = () => {
                             placeholder="Select group to exclude"
                             tagRender={tagRender}
                             optionRender={optionRender}
+                            loading={groupsLoading}
                           >
                             {groups?.map((group) => (
                               <Select.Option key={group.id} value={group.id}>
@@ -651,6 +652,7 @@ const Announcements = () => {
                             placeholder="Select user to exclude"
                             tagRender={tagRender}
                             optionRender={optionRender}
+                            loading={usersLoading}
                           >
                             {users?.map((user) => (
                               <Select.Option key={user.id} value={user.id}>
@@ -671,6 +673,7 @@ const Announcements = () => {
                             mode="multiple"
                             placeholder="Select group to exclude"
                             tagRender={tagRender}
+                            loading={groupsLoading}
                             optionRender={optionRender}
                           >
                             {groups?.map((group) => (
