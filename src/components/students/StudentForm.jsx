@@ -1,6 +1,3 @@
-// app/students/StudentForm.jsx
-'use client';
-
 import React, { useEffect } from 'react';
 import {
   Form,
@@ -12,23 +9,26 @@ import {
   Col,
   Typography,
   Alert,
+  Button,
 } from 'antd';
 import moment from 'moment';
+import { createStudent } from '@/services/students.http';
+import { openNotification } from '@/utils';
 
 const { Item } = Form;
 const { Title } = Typography;
 
 const StudentForm = ({
   initialValues,
-  onFinish,
   mode = 'create',
   error,
   loading,
+  onFinish,
 }) => {
   const [form] = Form.useForm();
 
-  // Phone and email validation patterns
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/; // E.164 format
+  // Validation patterns
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
   const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   useEffect(() => {
@@ -48,16 +48,23 @@ const StudentForm = ({
     }
   }, [initialValues, form]);
 
-  const onSubmit = (values) => {
+  const onSubmit = async (values) => {
+    console.log('Form values:', values);
     const processedValues = {
       ...values,
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
       enrollmentDate: values.enrollmentDate?.format('YYYY-MM-DD'),
       graduationDate: values.graduationDate?.format('YYYY-MM-DD'),
     };
-
-    if (onFinish) {
-      onFinish(processedValues);
+    try {
+      const response = await createStudent(processedValues);
+      openNotification(
+        'New Student Created Successfully! ID: ' + response.data.id);
+    } catch (error) {
+      console.error('Error creating student:', error);
+      const errorMessage = error.response?.data?.message;
+      openNotification(errorMessage || 'Error creating student', 'error');
+      // Handle error (e.g., show a message to the user)
     }
   };
 
@@ -354,6 +361,14 @@ const StudentForm = ({
           </Item>
         </Col>
       </Row>
+
+      {!isViewMode && (
+        <div className="mt-4">
+          <Button type="primary" htmlType="submit" loading={loading} block>
+            {isCreateMode ? 'Create Student' : 'Update Student'}
+          </Button>
+        </div>
+      )}
     </Form>
   );
 };

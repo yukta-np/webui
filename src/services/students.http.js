@@ -1,13 +1,35 @@
 // app/http/student.http.js
-import axios from 'axios';
 import { constants, headers } from '@/constants';
+
+import axios from 'axios';
 
 const URL = constants.urls.studentUrl;
 
-export const studentService = {
-   createStudent: (student) => axios.post(URL, student, { headers }),
-   updateStudent: (id, student) => axios.patch(`${URL}/${id}`, student, { headers }),
-   deleteStudent: (id) => axios.delete(`${URL}/${id}`, { headers }),
-   getStudent: (id) => axios.get(`${URL}/${id}`, { headers }),
-   getStudents: (params) => axios.get(URL, { headers, params }),
-};
+export async function createStudent(student) {
+  return axios.post(URL, student, { headers });
+}
+
+export async function updateStudent(id, student) {
+  return axios.patch(`${URL}/${id}`, student, { headers });
+}
+
+export async function deleteStudent(id) {
+  return axios.delete(`${URL}/${id}`, { headers });
+}
+
+export async function createStudentComment(id, comment) {
+  return axios.post(`${URL}/${id}/comment`, comment, { headers });
+}
+
+export async function getStudentComments(id) {
+  return axios.get(`${URL}/${id}/comment`, { headers });
+}
+
+export async function updateStudentComment(id) {
+  return axios.patch(`${URL}/${id}/comment`, { headers });
+}
+
+export async function deleteStudentComment(id, commentId) {
+  return axios.delete(`${URL}/${id}/comment/${commentId}`, { headers });
+}
+

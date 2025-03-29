@@ -1,5 +1,5 @@
 // app/students/page.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import {
   Table,
   Button,
@@ -18,52 +18,34 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FilePenLine, Trash2Icon, PlusCircle } from 'lucide-react';
-import { studentService } from '@/services/students.http';
+import { useStudents } from '@/hooks/useStudents';
+import { deleteStudent } from '@/services/students.http';
+import { openNotification } from '@/utils';
+
 
 const { Title, Text } = Typography;
 
 const StudentListPage = () => {
   const router = useRouter();
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [filterValues, setFilterValues] = useState({});
   const [filterForm] = Form.useForm();
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        const response = await studentService.getStudents();
-        setStudents(response.data);
-      } catch (error) {
-        message.error('Failed to fetch students');
-        console.error('Error fetching students:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStudents();
-  }, []);
 
+
+  const {students, meta, loading} = useStudents()
   const onDelete = async (id) => {
     try {
-      await studentService.deleteStudent(id);
-      setStudents((prev) => prev.filter((student) => student.id !== id));
-      message.success('Student deleted successfully');
+      await deleteStudent(id);
+      openNotification('Student deleted successfully');
     } catch (error) {
       message.error('Failed to delete student');
       console.error('Error deleting student:', error);
     }
   };
 
-  const filteredData = students.filter((item) => {
-    return Object.entries(filterValues).every(([key, value]) => {
-      if (!value) return true;
-      return String(item[key]).toLowerCase().includes(value.toLowerCase());
-    });
-  });
+
 
   const columns = [
     {
@@ -149,7 +131,7 @@ const StudentListPage = () => {
             onChange: setSelectedRowKeys,
           }}
           columns={columns}
-          dataSource={filteredData}
+          dataSource={students}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           bordered
