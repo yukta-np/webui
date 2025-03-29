@@ -16,7 +16,7 @@ const EditStudentPage = ({ params }) => {
   const router = useRouter();
   const student = initialStudentData.find((s) => s.key === params.id);
 
-  const handleSubmit = (values) => {
+  const onSubmit = (values) => {
     // Update logic
     router.push('/students');
   };
@@ -34,7 +34,7 @@ const EditStudentPage = ({ params }) => {
       </Breadcrumb>
 
       <Card title={`Edit Student - ${student.firstName}`}>
-        <StudentForm initialValues={student} onFinish={handleSubmit} />
+        <StudentForm initialValues={student} onFinish={onSubmit} />
         <div className="mt-4">
           <Button type="primary" htmlType="submit" form="student-form">
             Save Changes

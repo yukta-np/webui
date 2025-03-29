@@ -11,7 +11,7 @@ const { Title } = Typography;
 const NewStudentPage = () => {
   const router = useRouter();
 
-  const handleSubmit = (values) => {
+  const onSubmit = (values) => {
     // Create logic
     router.push('/students');
   };
@@ -29,7 +29,7 @@ const NewStudentPage = () => {
       </Breadcrumb>
 
       <Card title="Create New Student">
-        <StudentForm onFinish={handleSubmit} />
+        <StudentForm onFinish={onSubmit} />
         <div className="mt-4">
           <Button type="primary" htmlType="submit" form="student-form">
             Create Student

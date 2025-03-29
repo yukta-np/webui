@@ -7,7 +7,7 @@ export default function Page() {
   const router = useRouter();
   const { students } = router.query; // Get student from router
 
-  // Handle undefined student safely
+  // on undefined student safely
   const currentType = students || '';
 
   return (
