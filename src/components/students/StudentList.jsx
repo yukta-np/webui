@@ -116,10 +116,9 @@ const StudentListPage = () => {
             <Button onClick={() => setFilterDrawerVisible(true)}>Filter</Button>
             <Button
               type="primary"
-              icon={<PlusCircle size={16} />}
               onClick={() => router.push('/students/new')}
             >
-              Add Student
+              Add
             </Button>
           </div>
         </div>
