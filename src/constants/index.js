@@ -20,7 +20,7 @@ export const constants = {
     taskStatusUrl: `${URL}/task-status`,
     taskChangeHistoriesUrl: `${URL}/task-change-histories`,
     roleUrl: `${URL}/role`,
-    studentUrl: `${URL}/student`,
+    // studentUrl: `${URL}/student`,
     universitiesUrl: `${URL}/universities`,
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-category`,
@@ -35,7 +35,7 @@ export const constants = {
     administrationUrl: `${URL}/administration`,
     classroomUrl: `${URL}/classroom`,
     settingsUrl: `${URL}/settings`,
-    studentsUrl: `${URL}/students`,
+    studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
 
