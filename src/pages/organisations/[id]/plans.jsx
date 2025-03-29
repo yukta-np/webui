@@ -1,7 +1,13 @@
 import React from 'react';
 
+import ControlCenter from '@/components/organisations/ControlCenter';
+
 const plans = () => {
-  return <div>plan</div>;
+  return (
+    <>
+      <ControlCenter>Plans</ControlCenter>
+    </>
+  );
 };
 
 export default plans;
