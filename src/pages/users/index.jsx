@@ -35,7 +35,7 @@ const { Title, Text } = Typography;
 
 export default function FileManager() {
   const [collapsed, setCollapsed] = useState(false);
-  const [currentPath, setCurrentPath] = useState('');
+  const [currentPath, setCurrentPath] = useState('/Home');
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileInfoVisible, setFileInfoVisible] = useState(false);
   const [files, setFiles] = useState([]);
@@ -51,35 +51,35 @@ export default function FileManager() {
               name: 'Documents',
               type: 'folder',
               modified: '2023-10-15',
-              path: '',
+              path: '/Home',
             },
             {
               id: '2',
               name: 'Work',
               type: 'folder',
               modified: '2023-10-15',
-              path: '/Documents',
+              path: '/Home/Documents',
             },
             {
               id: '10',
               name: 'analytics.py',
               type: 'txt',
               modified: '2023-10-15',
-              path: '/Documents/Work',
+              path: '/Home/Documents/Work',
             },
             {
               id: '3',
               name: 'Personal',
               type: 'folder',
               modified: '2023-10-15',
-              path: '/Documents',
+              path: '/Home/Documents',
             },
             {
               id: '4',
               name: 'Images',
               type: 'folder',
               modified: '2023-10-14',
-              path: '/Documents',
+              path: '/Home/Documents',
             },
             {
               id: '5',
@@ -87,7 +87,7 @@ export default function FileManager() {
               type: 'doc',
               size: '2.3 MB',
               modified: '2023-10-12',
-              path: '/Documents/Personal',
+              path: '/Home/Documents/Personal',
             },
             {
               id: '6',
@@ -95,7 +95,7 @@ export default function FileManager() {
               type: 'excel',
               size: '1.5 MB',
               modified: '2023-10-10',
-              path: '/Documents/Work',
+              path: '/Home/Documents/Work',
             },
             {
               id: '7',
@@ -103,7 +103,7 @@ export default function FileManager() {
               type: 'pdf',
               size: '4.2 MB',
               modified: '2023-10-08',
-              path: '/Documents/Work',
+              path: '/Home/Documents/Work',
             },
             {
               id: '8',
@@ -111,7 +111,7 @@ export default function FileManager() {
               type: 'image',
               size: '3.1 MB',
               modified: '2023-10-05',
-              path: '/Documenets/Images',
+              path: '/Home/Documenets/Images',
             },
             {
               id: '9',
@@ -119,7 +119,7 @@ export default function FileManager() {
               type: 'text',
               size: '12 KB',
               modified: '2023-10-03',
-              path: '/Documents/Personal',
+              path: '/Home/Documents/Personal',
             },
             {
               id: '10',
@@ -127,7 +127,7 @@ export default function FileManager() {
               type: 'text',
               size: '4 KB',
               modified: '2023-10-03',
-              path: '',
+              path: '/Home',
             },
           ],
         });
@@ -140,6 +140,10 @@ export default function FileManager() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    console.log({ currentPath });
+  }, [currentPath]);
 
   const getFileIcon = (type) => {
     switch (type) {
@@ -189,9 +193,18 @@ export default function FileManager() {
     }
   };
 
-  const handleBreadcrumbClick = (path) => {
+  const handleBreadcrumbClick = () => {
     // TODO: fix this bug
-    setCurrentPath(`/${path}`);
+    console.log('prev. currentPath: ', currentPath);
+
+    const newPath = currentPath
+      .split('/')
+      .slice(0, currentPath.split('/').length - 1)
+      .join('/');
+
+    console.log('new path: ', newPath);
+
+    setCurrentPath(newPath);
   };
 
   const fileActions = [
@@ -243,6 +256,7 @@ export default function FileManager() {
               New
             </Button>
             <Button icon={<UploadOutlined />}>Upload</Button>
+            <Button onClick={() => setCurrentPath('/Home')}>Reset State</Button>
           </Space>
         </div>
         <Search placeholder="Search files..." style={{ width: 300 }} />
@@ -261,7 +275,7 @@ export default function FileManager() {
               {currentPath.split('/').map((path, index) => (
                 <Breadcrumb.Item
                   key={index}
-                  onClick={handleBreadcrumbClick}
+                  onClick={() => handleBreadcrumbClick()}
                   style={{ cursor: 'pointer' }}
                 >
                   {path}
