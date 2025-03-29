@@ -24,16 +24,16 @@ import {
   Input,
   Breadcrumb,
   Typography,
-  Avatar,
   Tooltip,
   Modal,
   Progress,
+  Upload,
 } from 'antd';
 import { File } from 'lucide-react';
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
 const { Search } = Input;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export default function FileManager() {
   const [currentPath, setCurrentPath] = useState(['Home']);
@@ -41,12 +41,12 @@ export default function FileManager() {
   const [fileInfoVisible, setFileInfoVisible] = useState(false);
   const [files, setFiles] = useState([]);
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
-  const [storageUsed, setStorageUsed] = useState(70); // Example storage used (in percentage)
-  const [totalStorage, setTotalStorage] = useState('5 GB'); // Total storage available (in GB, for example)
+  const [storageUsed, setStorageUsed] = useState(70);
+  const [totalStorage, setTotalStorage] = useState('5 GB');
 
-  // You can calculate the usage percentage based on your actual storage data
   const storagePercentage = (storageUsed / totalStorage) * 100;
 
   const sizeUnits = {
@@ -102,8 +102,8 @@ export default function FileManager() {
             },
             {
               id: '10',
-              name: 'analytics.py',
-              type: 'txt',
+              name: 'analytics.pdf',
+              type: 'application/pdf',
               modified: '2023-10-15',
               path: ['Home', 'Documents', 'Work'],
             },
@@ -124,7 +124,7 @@ export default function FileManager() {
             {
               id: '5',
               name: 'Project Proposal.docx',
-              type: 'doc',
+              type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               size: '2.3 MB',
               modified: '2023-10-12',
               path: ['Home', 'Documents', 'Personal'],
@@ -132,7 +132,7 @@ export default function FileManager() {
             {
               id: '6',
               name: 'Budget.xlsx',
-              type: 'excel',
+              type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               size: '1.5 MB',
               modified: '2023-10-10',
               path: ['Home', 'Documents', 'Work'],
@@ -140,7 +140,7 @@ export default function FileManager() {
             {
               id: '7',
               name: 'Presentation.pdf',
-              type: 'pdf',
+              type: 'application/pdf',
               size: '4.2 MB',
               modified: '2023-10-08',
               path: ['Home', 'Documents', 'Work'],
@@ -148,7 +148,7 @@ export default function FileManager() {
             {
               id: '8',
               name: 'Profile Picture.jpg',
-              type: 'image',
+              type: 'image/jpeg',
               size: '3.1 MB',
               modified: '2023-10-05',
               path: ['Home', 'Documents', 'Images'],
@@ -156,7 +156,7 @@ export default function FileManager() {
             {
               id: '9',
               name: 'Notes.txt',
-              type: 'text',
+              type: 'text/plain',
               size: '12 KB',
               modified: '2023-10-03',
               path: ['Home', 'Documents', 'Personal'],
@@ -164,7 +164,7 @@ export default function FileManager() {
             {
               id: '10',
               name: 'vision.txt',
-              type: 'text',
+              type: 'text/plain',
               size: '4 KB',
               modified: '2023-10-03',
               path: ['Home'],
@@ -185,32 +185,65 @@ export default function FileManager() {
     console.log({ currentPath });
   }, [currentPath]);
 
+  const uploadProps = {
+    beforeUpload: () => false,
+    onChange({ fileList }) {
+      console.log({ fileList });
+      if (fileList.length === 0) {
+        return;
+      }
+
+      const lastFile = fileList[fileList.length - 1];
+      const newFile = {
+        id: files.length + 1,
+        name: lastFile.name,
+        type: lastFile.type,
+        size: `${lastFile.size} B`,
+        modified: lastFile.lastModified,
+        path: currentPath,
+      };
+      setFiles([...files, newFile]);
+    },
+  };
+
   const getFileIcon = (type) => {
     switch (type) {
       case 'folder':
         return (
           <FolderOutlined style={{ fontSize: '24px', color: '#faad14' }} />
         );
-      case 'image':
+      case 'image/jpeg':
+      case 'image/jpg':
+      case 'image/png':
+      case 'image/gif':
+      case 'image/bmp':
+      case 'image/webp':
         return (
           <FileImageOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
         );
-      case 'pdf':
+
+      case 'application/pdf':
         return (
           <FilePdfOutlined style={{ fontSize: '24px', color: '#f5222d' }} />
         );
-      case 'doc':
+
+      case 'application/msword':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
         return (
           <FileWordOutlined style={{ fontSize: '24px', color: '#1890ff' }} />
         );
-      case 'excel':
+
+      case 'application/vnd.ms-excel':
+      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
         return (
           <FileExcelOutlined style={{ fontSize: '24px', color: '#52c41a' }} />
         );
-      case 'text':
+
+      case 'text/plain':
         return (
           <FileTextOutlined style={{ fontSize: '24px', color: '#722ed1' }} />
         );
+
       default:
         return <FileOutlined style={{ fontSize: '24px', color: '#8c8c8c' }} />;
     }
@@ -253,6 +286,14 @@ export default function FileManager() {
     setNewFolderName('');
   };
 
+  const closeUploadModal = () => {
+    setIsUploadModalOpen(false);
+  };
+
+  const openUploadModal = () => {
+    setIsUploadModalOpen(true);
+  };
+
   const handleFolderNameChange = (e) => {
     setNewFolderName(e.target.value);
   };
@@ -263,7 +304,7 @@ export default function FileManager() {
 
     // Create the new folder object
     const newFolder = {
-      id: 98, // Generate a new unique ID
+      id: files.length + 1,
       name: newFolderName,
       type: 'folder',
       modified: new Date().toISOString(), // Current time as the modification time
@@ -327,8 +368,16 @@ export default function FileManager() {
             >
               New Folder
             </Button>
-            <Button icon={<UploadOutlined />}>Upload</Button>
-            <Button onClick={() => setCurrentPath(['Home'])}>
+            <Button onClick={openUploadModal} icon={<UploadOutlined />}>
+              Upload a file
+            </Button>
+            <Button
+              onClick={async () => {
+                await fetchData();
+
+                setCurrentPath(['Home']);
+              }}
+            >
               Reset State
             </Button>
           </Space>
@@ -336,34 +385,34 @@ export default function FileManager() {
         <Search placeholder="Search files..." style={{ width: 300 }} />
       </Header>
 
-      <Card size="small" style={{ width: '30%', height: 96 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Progress
-            type="circle"
-            percent={progressPercentage}
-            size={60}
-            strokeColor="#1890ff"
-            format={() => (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <File stroke="#1890ff" size={18} className="mt-1" />
-              </div>
-            )}
-          />
-          <div style={{ marginLeft: 16 }}>
-            <p className="m-0 text-lg ml-3">Total Storage</p>
-            <p className="m-0">
-              <span className="text-lg font-bold">
-                {formatSize(usedStorageBytes)}
-              </span>
-              <span className="mx-1">of</span>
-              <span className="text-lg font-bold">{totalStorage}</span>
-            </p>
+      <Layout style={{ padding: '16px', background: '#fff' }}>
+        <Card size="small" style={{ width: '30%', height: 96 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Progress
+              type="circle"
+              percent={progressPercentage}
+              size={60}
+              strokeColor="#1890ff"
+              format={() => (
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <File stroke="#1890ff" size={18} className="mt-1" />
+                </div>
+              )}
+            />
+            <div style={{ marginLeft: 16 }}>
+              <p className="m-0 text-lg ml-3">Total Storage</p>
+              <p className="m-0">
+                <span className="text-lg font-bold">
+                  {formatSize(usedStorageBytes)}
+                </span>
+                <span className="mx-1">of</span>
+                <span className="text-lg font-bold">{totalStorage}</span>
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      <Layout>
-        <Content style={{ padding: '16px', background: '#fff' }}>
+        <Content>
           <div
             style={{
               marginBottom: '16px',
@@ -488,6 +537,32 @@ export default function FileManager() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        title="Upload Files"
+        open={isUploadModalOpen}
+        onCancel={closeUploadModal}
+        footer={[
+          <>
+            <Button key="cancel" onClick={closeUploadModal}>
+              Cancel
+            </Button>
+            <Button key="submit" type="primary" onClick={closeUploadModal}>
+              Upload
+            </Button>
+          </>,
+        ]}
+      >
+        <Upload {...uploadProps} accept=".pdf,.jpg,.jpeg,.png">
+          <p className="ant-upload-drag-icon"></p>
+          <p className="ant-upload-text">
+            Click or drag files to this area to upload
+          </p>
+          <p className="ant-upload-hint">
+            Support for a single or bulk upload.
+          </p>
+        </Upload>
       </Modal>
     </Layout>
   );
