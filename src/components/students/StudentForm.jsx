@@ -1,24 +1,52 @@
 // app/students/StudentForm.jsx
-import React from 'react';
+'use client';
+
+import React, { useEffect } from 'react';
 import {
   Form,
   Input,
-  Select,
   DatePicker,
   InputNumber,
   Checkbox,
   Row,
   Col,
   Typography,
+  Alert,
 } from 'antd';
 import moment from 'moment';
 
 const { Item } = Form;
-const { Option } = Select;
 const { Title } = Typography;
 
-const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
+const StudentForm = ({
+  initialValues,
+  onFinish,
+  mode = 'create',
+  error,
+  loading,
+}) => {
   const [form] = Form.useForm();
+
+  // Phone and email validation patterns
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/; // E.164 format
+  const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        ...initialValues,
+        dateOfBirth: initialValues?.dateOfBirth
+          ? moment(initialValues.dateOfBirth)
+          : null,
+        enrollmentDate: initialValues?.enrollmentDate
+          ? moment(initialValues.enrollmentDate)
+          : null,
+        graduationDate: initialValues?.graduationDate
+          ? moment(initialValues.graduationDate)
+          : null,
+      });
+    }
+  }, [initialValues, form]);
 
   const onSubmit = (values) => {
     const processedValues = {
@@ -33,97 +61,127 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
     }
   };
 
+  const isViewMode = mode === 'view';
+  const isCreateMode = mode === 'create';
+
   return (
     <Form
       form={form}
       layout="vertical"
-      initialValues={{
-        ...initialValues,
-        dateOfBirth: initialValues?.dateOfBirth
-          ? moment(initialValues.dateOfBirth)
-          : null,
-        enrollmentDate: initialValues?.enrollmentDate
-          ? moment(initialValues.enrollmentDate)
-          : null,
-        graduationDate: initialValues?.graduationDate
-          ? moment(initialValues.graduationDate)
-          : null,
-      }}
       onFinish={onSubmit}
       id="student-form"
+      initialValues={{
+        isActive: true,
+        scholarshipStatus: false,
+        ...initialValues,
+      }}
     >
+      {error && (
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          className="mb-6"
+        />
+      )}
+
       <Title level={4} className="mb-6">
         Personal Information
       </Title>
+
       <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="firstName"
             label="First Name"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: 'Please input first name!' }]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="John" />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item name="middleName" label="Middle Name">
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="Michael" />
           </Item>
         </Col>
-        <Col span={8}>
-          <Item name="lastName" label="Last Name" rules={[{ required: true }]}>
-            <Input disabled={mode === 'view'} />
+        <Col xs={24} md={8}>
+          <Item
+            name="lastName"
+            label="Last Name"
+            rules={[{ required: true, message: 'Please input last name!' }]}
+          >
+            <Input disabled={isViewMode} placeholder="Doe" />
           </Item>
         </Col>
       </Row>
 
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Item
             name="email"
             label="Email"
-            rules={[{ type: 'email', required: true }]}
+            rules={[
+              { required: true, message: 'Please input email!' },
+              { pattern: emailRegex, message: 'Invalid email format' },
+            ]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input
+              disabled={isViewMode}
+              type="email"
+              placeholder="john.doe@example.com"
+            />
           </Item>
         </Col>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Item
             name="phoneNumber"
             label="Phone Number"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: 'Please input phone number!' },
+              { pattern: phoneRegex, message: 'Invalid phone number format' },
+            ]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="+1234567890" />
           </Item>
         </Col>
       </Row>
 
       <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="dateOfBirth"
             label="Date of Birth"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: 'Please select date of birth!' },
+            ]}
           >
             <DatePicker
               format="YYYY-MM-DD"
               className="w-full"
-              disabled={mode === 'view'}
+              disabled={isViewMode}
+              disabledDate={(current) =>
+                current && current > moment().endOf('day')
+              }
             />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="nationality"
             label="Nationality"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: 'Please input nationality!' }]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="American" />
           </Item>
         </Col>
-        <Col span={8}>
-          <Item name="address" label="Address" rules={[{ required: true }]}>
-            <Input disabled={mode === 'view'} />
+        <Col xs={24} md={8}>
+          <Item
+            name="address"
+            label="Address"
+            rules={[{ required: true, message: 'Please input address!' }]}
+          >
+            <Input disabled={isViewMode} placeholder="123 Main Street" />
           </Item>
         </Col>
       </Row>
@@ -131,57 +189,62 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
       <Title level={4} className="mb-6 mt-6">
         Academic Information
       </Title>
+
       <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
-            name="facultyId"
-            label="Faculty ID"
-            rules={[{ required: true }]}
+            name="faculty"
+            label="Faculty"
+            rules={[{ required: true, message: 'Please input faculty!' }]}
           >
-            <InputNumber className="w-full" disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="Computer Science" />
           </Item>
         </Col>
-        <Col span={8}>
-          <Item name="faculty" label="Faculty" rules={[{ required: true }]}>
-            <Input disabled={mode === 'view'} />
+        <Col xs={24} md={8}>
+          <Item
+            name="program"
+            label="Program"
+            rules={[{ required: true, message: 'Please input program!' }]}
+          >
+            <Input disabled={isViewMode} placeholder="Bachelor's Degree" />
           </Item>
         </Col>
-        <Col span={8}>
-          <Item name="program" label="Program" rules={[{ required: true }]}>
-            <Input disabled={mode === 'view'} />
+        <Col xs={24} md={8}>
+          <Item
+            name="batchNumber"
+            label="Batch Number"
+            rules={[{ required: true, message: 'Please input batch number!' }]}
+          >
+            <Input disabled={isViewMode} placeholder="2023A" />
           </Item>
         </Col>
       </Row>
 
       <Row gutter={16}>
-        <Col span={8}>
-          <Item
-            name="batchNumber"
-            label="Batch Number"
-            rules={[{ required: true }]}
-          >
-            <Input disabled={mode === 'view'} />
-          </Item>
-        </Col>
-        <Col span={8}>
+        <Col xs={24} md={12}>
           <Item
             name="enrollmentDate"
             label="Enrollment Date"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: 'Please select enrollment date!' },
+            ]}
           >
             <DatePicker
               format="YYYY-MM-DD"
               className="w-full"
-              disabled={mode === 'view'}
+              disabled={isViewMode}
             />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={12}>
           <Item name="graduationDate" label="Graduation Date">
             <DatePicker
               format="YYYY-MM-DD"
               className="w-full"
-              disabled={mode === 'view'}
+              disabled={isViewMode}
+              disabledDate={(current) =>
+                current && current < form.getFieldValue('enrollmentDate')
+              }
             />
           </Item>
         </Col>
@@ -190,23 +253,31 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
       <Title level={4} className="mb-6 mt-6">
         Financial Information
       </Title>
+
       <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={12}>
           <Item
             name="dueAmount"
-            label="Due Amount"
-            rules={[{ required: true }]}
+            label="Due Amount ($)"
+            rules={[{ required: true, message: 'Please input due amount!' }]}
           >
-            <InputNumber className="w-full" disabled={mode === 'view'} />
+            <InputNumber
+              className="w-full"
+              disabled={isViewMode}
+              min={0}
+              formatter={(value) =>
+                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+              }
+            />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={12}>
           <Item
             name="scholarshipStatus"
             label="Scholarship Status"
             valuePropName="checked"
           >
-            <Checkbox disabled={mode === 'view'} />
+            <Checkbox disabled={isViewMode} />
           </Item>
         </Col>
       </Row>
@@ -214,24 +285,32 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
       <Title level={4} className="mb-6 mt-6">
         Additional Information
       </Title>
+
       <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="isCr"
             label="Class Representative"
             valuePropName="checked"
           >
-            <Checkbox disabled={mode === 'view'} />
+            <Checkbox disabled={isViewMode} />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item name="isActive" label="Active Status" valuePropName="checked">
-            <Checkbox disabled={mode === 'view'} />
+            <Checkbox disabled={isViewMode || isCreateMode} />
           </Item>
         </Col>
-        <Col span={8}>
-          <Item name="avatar" label="Avatar URL">
-            <Input disabled={mode === 'view'} />
+        <Col xs={24} md={8}>
+          <Item
+            name="avatar"
+            label="Avatar URL"
+            rules={[{ type: 'url', message: 'Please enter valid URL' }]}
+          >
+            <Input
+              disabled={isViewMode}
+              placeholder="https://example.com/avatar.jpg"
+            />
           </Item>
         </Col>
       </Row>
@@ -239,49 +318,39 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
       <Title level={4} className="mb-6 mt-6">
         Guardian Information
       </Title>
+
       <Row gutter={16}>
-        <Col span={8}>
-          <Item
-            name="guardianUserId"
-            label="Guardian User ID"
-            rules={[{ required: true }]}
-          >
-            <InputNumber className="w-full" disabled={mode === 'view'} />
-          </Item>
-        </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="guardianName"
             label="Guardian Name"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: 'Please input guardian name!' }]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="Jane Doe" />
           </Item>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="guardianContact"
             label="Guardian Contact"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: 'Please input guardian contact!' },
+              { pattern: phoneRegex, message: 'Invalid phone number format' },
+            ]}
           >
-            <Input disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="+1987654321" />
           </Item>
         </Col>
-      </Row>
-
-      <Row gutter={16}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Item
             name="emergencyContact"
             label="Emergency Contact"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: 'Please input emergency contact!' },
+              { pattern: phoneRegex, message: 'Invalid phone number format' },
+            ]}
           >
-            <Input disabled={mode === 'view'} />
-          </Item>
-        </Col>
-        <Col span={8}>
-          <Item name="userId" label="User ID" rules={[{ required: true }]}>
-            <InputNumber className="w-full" disabled={mode === 'view'} />
+            <Input disabled={isViewMode} placeholder="+1122334455" />
           </Item>
         </Col>
       </Row>
