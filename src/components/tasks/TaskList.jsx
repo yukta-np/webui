@@ -760,6 +760,7 @@ const TaskList = ({
 
     {
       title: 'Action',
+      dataIndex: 'action',
       key: 'action',
       width: '10%',
       render: (_, record) =>

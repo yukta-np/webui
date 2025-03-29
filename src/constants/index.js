@@ -85,17 +85,3 @@ export const ResourceActions = {
   acknowledegedBy: 'acknowledegedBy',
   downloadCsv: 'downloadCsv',
 };
-
-export const Modules = {
-  routines: 'routines',
-  tasks: 'tasks',
-  leaveRequest: 'leaveRequest',
-  documents: 'documents',
-  calendar: 'calendar',
-  announcements: 'announcements',
-  permissionGroups: 'permissionGroups',
-  classroom: 'classroom',
-  settings: 'settings',
-  inquiries: 'inquiries',
-  feedback: 'feedback',
-};

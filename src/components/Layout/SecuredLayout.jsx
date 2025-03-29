@@ -16,6 +16,8 @@ import {
   PanelLeftOpen,
   PanelLeftClose,
   UserRoundPlus,
+  Building2,
+  X,
 } from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
@@ -126,7 +128,7 @@ const SecuredLayout = ({ children }) => {
           key: 'my-team-leave-request',
           icon: (
             <>
-              <Users size={18} /> <CloseOutlined style={{ fontSize: '8px' }} />
+              <Users size={18} /> <X size={10} />
             </>
           ),
           href: '/leave-request/team-leave',
@@ -186,6 +188,12 @@ const SecuredLayout = ({ children }) => {
       key: 'groups',
       icon: <Users size={18} />,
       href: '/groups',
+    },
+    {
+      label: 'Organisations',
+      key: 'organisations',
+      icon: <Building2 size={18} />,
+      href: '/organisations',
     },
     {
       label: 'Inquiries',
