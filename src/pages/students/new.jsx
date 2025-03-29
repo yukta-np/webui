@@ -1,20 +1,10 @@
-// app/students/new/page.jsx
-
-import { Card, Typography, Breadcrumb, Button } from 'antd';
+import { Breadcrumb, Card } from 'antd';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import StudentForm from '@/components/students/StudentForm';
+import React from 'react'
 
-const { Title } = Typography;
-
-const NewStudentPage = () => {
-  const router = useRouter();
-
-  const onSubmit = (values) => {
-    // Create logic
-    router.push('/students');
-  };
-
+function index() {
   return (
     <div className="p-6">
       <Breadcrumb className="mb-4">
@@ -28,16 +18,11 @@ const NewStudentPage = () => {
       </Breadcrumb>
 
       <Card title="Create New Student">
-        <StudentForm onFinish={onSubmit} />
-        <div className="mt-4">
-          <Button type="primary" htmlType="submit" form="student-form">
-            Create Student
-          </Button>
-        </div>
+        <StudentForm/>
+       
       </Card>
     </div>
   );
-};
+}
 
-export default NewStudentPage;
-
+export default index
