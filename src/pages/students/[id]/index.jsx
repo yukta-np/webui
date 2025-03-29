@@ -1,5 +1,5 @@
 // app/students/[id]/page.jsx
-'use client';
+
 
 import { Card, Typography, Breadcrumb, Button, Row, Col, Tag } from 'antd';
 import { useRouter } from 'next/navigation';
