@@ -27,18 +27,58 @@ import {
   Avatar,
   Tooltip,
   Modal,
+  Progress,
 } from 'antd';
+import { File } from 'lucide-react';
 
 const { Header, Sider, Content } = Layout;
 const { Search } = Input;
 const { Title, Text } = Typography;
 
 export default function FileManager() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [currentPath, setCurrentPath] = useState('/Home');
+  const [currentPath, setCurrentPath] = useState(['Home']);
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileInfoVisible, setFileInfoVisible] = useState(false);
   const [files, setFiles] = useState([]);
+  const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
+
+  const [storageUsed, setStorageUsed] = useState(70); // Example storage used (in percentage)
+  const [totalStorage, setTotalStorage] = useState('5 GB'); // Total storage available (in GB, for example)
+
+  // You can calculate the usage percentage based on your actual storage data
+  const storagePercentage = (storageUsed / totalStorage) * 100;
+
+  const sizeUnits = {
+    B: 1,
+    KB: 1024,
+    MB: 1024 ** 2,
+    GB: 1024 ** 3,
+    TB: 1024 ** 4,
+  };
+
+  const convertToBytes = (size) => {
+    const [_, num, unit] = size.match(/([\d.]+)\s*([A-Za-z]+)/) || [];
+    return num ? parseFloat(num) * (sizeUnits[unit] || 1) : 0;
+  };
+
+  const totalStorageBytes = convertToBytes(totalStorage);
+  const usedStorageBytes = files
+    .map((item) => convertToBytes(item.size || '0'))
+    .reduce((acc, val) => acc + val, 0);
+
+  const formatSize = (bytes) => {
+    if (bytes >= sizeUnits.TB) return (bytes / sizeUnits.TB).toFixed(2) + ' TB';
+    if (bytes >= sizeUnits.GB) return (bytes / sizeUnits.GB).toFixed(2) + ' GB';
+    if (bytes >= sizeUnits.MB) return (bytes / sizeUnits.MB).toFixed(2) + ' MB';
+    if (bytes >= sizeUnits.KB) return (bytes / sizeUnits.KB).toFixed(2) + ' KB';
+    return bytes + ' B';
+  };
+
+  const progressPercentage = (
+    (usedStorageBytes / totalStorageBytes) *
+    100
+  ).toFixed(2);
 
   // Mock API call to fetch data
   const fetchData = async () => {
@@ -51,35 +91,35 @@ export default function FileManager() {
               name: 'Documents',
               type: 'folder',
               modified: '2023-10-15',
-              path: '/Home',
+              path: ['Home'],
             },
             {
               id: '2',
               name: 'Work',
               type: 'folder',
               modified: '2023-10-15',
-              path: '/Home/Documents',
+              path: ['Home', 'Documents'],
             },
             {
               id: '10',
               name: 'analytics.py',
               type: 'txt',
               modified: '2023-10-15',
-              path: '/Home/Documents/Work',
+              path: ['Home', 'Documents', 'Work'],
             },
             {
               id: '3',
               name: 'Personal',
               type: 'folder',
               modified: '2023-10-15',
-              path: '/Home/Documents',
+              path: ['Home', 'Documents'],
             },
             {
               id: '4',
               name: 'Images',
               type: 'folder',
               modified: '2023-10-14',
-              path: '/Home/Documents',
+              path: ['Home', 'Documents'],
             },
             {
               id: '5',
@@ -87,7 +127,7 @@ export default function FileManager() {
               type: 'doc',
               size: '2.3 MB',
               modified: '2023-10-12',
-              path: '/Home/Documents/Personal',
+              path: ['Home', 'Documents', 'Personal'],
             },
             {
               id: '6',
@@ -95,7 +135,7 @@ export default function FileManager() {
               type: 'excel',
               size: '1.5 MB',
               modified: '2023-10-10',
-              path: '/Home/Documents/Work',
+              path: ['Home', 'Documents', 'Work'],
             },
             {
               id: '7',
@@ -103,7 +143,7 @@ export default function FileManager() {
               type: 'pdf',
               size: '4.2 MB',
               modified: '2023-10-08',
-              path: '/Home/Documents/Work',
+              path: ['Home', 'Documents', 'Work'],
             },
             {
               id: '8',
@@ -111,7 +151,7 @@ export default function FileManager() {
               type: 'image',
               size: '3.1 MB',
               modified: '2023-10-05',
-              path: '/Home/Documenets/Images',
+              path: ['Home', 'Documents', 'Images'],
             },
             {
               id: '9',
@@ -119,7 +159,7 @@ export default function FileManager() {
               type: 'text',
               size: '12 KB',
               modified: '2023-10-03',
-              path: '/Home/Documents/Personal',
+              path: ['Home', 'Documents', 'Personal'],
             },
             {
               id: '10',
@@ -127,7 +167,7 @@ export default function FileManager() {
               type: 'text',
               size: '4 KB',
               modified: '2023-10-03',
-              path: '/Home',
+              path: ['Home'],
             },
           ],
         });
@@ -177,7 +217,10 @@ export default function FileManager() {
   };
 
   const getFilteredFiles = () => {
-    const filtered = files.filter((file) => file.path === currentPath);
+    const filtered = files.filter((file) => {
+      // Compare paths by joining them into strings for comparison
+      return file.path.join('/') === currentPath.join('/');
+    });
 
     console.log(filtered);
     return filtered;
@@ -185,26 +228,51 @@ export default function FileManager() {
 
   const handleFileClick = (file) => {
     if (file.type === 'folder') {
-      console.log('Navigating to: ', `${file.path}/${file.name}`);
-      setCurrentPath(`${file.path}/${file.name}`); // Navigate to the folder
+      // Navigate to the folder, append the folder name to the current path
+      console.log('Navigating to: ', [...file.path, file.name]);
+      setCurrentPath([...file.path, file.name]); // Navigate to the folder
     } else {
       setSelectedFile(file);
       setFileInfoVisible(true); // Show file info modal
     }
   };
 
-  const handleBreadcrumbClick = () => {
-    // TODO: fix this bug
+  const handleBreadcrumbClick = (index) => {
     console.log('prev. currentPath: ', currentPath);
 
-    const newPath = currentPath
-      .split('/')
-      .slice(0, currentPath.split('/').length - 1)
-      .join('/');
+    // Slice the path array to get up to the selected index (inclusive)
+    const newPath = currentPath.slice(0, index + 1);
 
     console.log('new path: ', newPath);
 
-    setCurrentPath(newPath);
+    setCurrentPath(newPath); // Update the path to the clicked breadcrumb's path
+  };
+
+  const closeAddFolderModal = () => {
+    setIsAddFolderModalOpen(false);
+    setNewFolderName('');
+  };
+
+  const handleFolderNameChange = (e) => {
+    setNewFolderName(e.target.value);
+  };
+
+  const handleAddFolder = () => {
+    console.log('currentPath', currentPath);
+    console.log(`Creating folder ${newFolderName} on path ${currentPath}`);
+
+    // Create the new folder object
+    const newFolder = {
+      id: 98, // Generate a new unique ID
+      name: newFolderName,
+      type: 'folder',
+      modified: new Date().toISOString(), // Current time as the modification time
+      path: currentPath,
+    };
+
+    // Update the files array with the new folder
+    setFiles([...files, newFolder]);
+    closeAddFolderModal();
   };
 
   const fileActions = [
@@ -252,15 +320,48 @@ export default function FileManager() {
             File Manager
           </Title>
           <Space>
-            <Button type="primary" icon={<PlusOutlined />}>
-              New
+            <Button
+              onClick={() => setIsAddFolderModalOpen(true)}
+              type="primary"
+              icon={<PlusOutlined />}
+            >
+              New Folder
             </Button>
             <Button icon={<UploadOutlined />}>Upload</Button>
-            <Button onClick={() => setCurrentPath('/Home')}>Reset State</Button>
+            <Button onClick={() => setCurrentPath(['Home'])}>
+              Reset State
+            </Button>
           </Space>
         </div>
         <Search placeholder="Search files..." style={{ width: 300 }} />
       </Header>
+
+      <Card size="small" style={{ width: '30%', height: 96 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Progress
+            type="circle"
+            percent={progressPercentage}
+            size={60}
+            strokeColor="#1890ff"
+            format={() => (
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <File stroke="#1890ff" size={18} className="mt-1" />
+              </div>
+            )}
+          />
+          <div style={{ marginLeft: 16 }}>
+            <p className="m-0 text-lg ml-3">Total Storage</p>
+            <p className="m-0">
+              <span className="text-lg font-bold">
+                {formatSize(usedStorageBytes)}
+              </span>
+              <span className="mx-1">of</span>
+              <span className="text-lg font-bold">{totalStorage}</span>
+            </p>
+          </div>
+        </div>
+      </Card>
+
       <Layout>
         <Content style={{ padding: '16px', background: '#fff' }}>
           <div
@@ -272,10 +373,10 @@ export default function FileManager() {
             }}
           >
             <Breadcrumb>
-              {currentPath.split('/').map((path, index) => (
+              {currentPath.map((path, index) => (
                 <Breadcrumb.Item
                   key={index}
-                  onClick={() => handleBreadcrumbClick()}
+                  onClick={() => handleBreadcrumbClick(index)}
                   style={{ cursor: 'pointer' }}
                 >
                   {path}
@@ -284,7 +385,7 @@ export default function FileManager() {
             </Breadcrumb>
           </div>
 
-          {/* Grid View for Files */}
+          {/* Grid View for Files & Folders */}
           <List
             grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 6, xxl: 6 }}
             dataSource={getFilteredFiles()}
@@ -354,10 +455,39 @@ export default function FileManager() {
               </p>
             )}
             <p>
-              <strong>Location:</strong> {selectedFile.path}
+              <strong>Location:</strong> {selectedFile.path.join('/')}
             </p>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title="Create New Folder"
+        open={isAddFolderModalOpen}
+        onCancel={closeAddFolderModal}
+        footer={null}
+        centered
+      >
+        <div>
+          <Input
+            value={newFolderName}
+            onChange={handleFolderNameChange}
+            placeholder="Enter folder name"
+            autoFocus
+          />
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Button onClick={closeAddFolderModal} style={{ marginRight: 8 }}>
+              Cancel
+            </Button>
+            <Button
+              disabled={!newFolderName}
+              type="primary"
+              onClick={handleAddFolder}
+            >
+              Create Folder
+            </Button>
+          </div>
+        </div>
       </Modal>
     </Layout>
   );
