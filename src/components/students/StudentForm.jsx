@@ -14,6 +14,7 @@ import {
 import moment from 'moment';
 import { createStudent } from '@/services/students.http';
 import { openNotification } from '@/utils';
+import { emailRegex, phoneRegex } from '@/utils';
 
 const { Item } = Form;
 const { Title } = Typography;
@@ -27,9 +28,9 @@ const StudentForm = ({
 }) => {
   const [form] = Form.useForm();
 
-  // Validation patterns
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-  const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  // // Validation patterns
+  // const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+  // const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
   useEffect(() => {
     if (initialValues) {
@@ -364,7 +365,12 @@ const StudentForm = ({
 
       {!isViewMode && (
         <div className="mt-4">
-          <Button type="primary" htmlType="submit" loading={loading} block>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            className="w-32"
+          >
             {isCreateMode ? 'Create Student' : 'Update Student'}
           </Button>
         </div>
