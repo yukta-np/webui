@@ -22,7 +22,7 @@ const { Title } = Typography;
 const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
   const [form] = Form.useForm();
 
-  const handleSubmit = (values) => {
+  const onSubmit = (values) => {
     const processedValues = {
       ...values,
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
@@ -51,7 +51,7 @@ const StudentForm = ({ initialValues, onFinish, mode = 'edit' }) => {
           ? moment(initialValues.graduationDate)
           : null,
       }}
-      onFinish={handleSubmit}
+      onFinish={onSubmit}
       id="student-form"
     >
       <Title level={4} className="mb-6">
