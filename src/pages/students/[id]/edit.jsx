@@ -1,5 +1,4 @@
 // app/students/[id]/edit/page.jsx
-'use client';
 
 import { Modal, Typography, Breadcrumb, Button } from 'antd';
 import { useRouter } from 'next/navigation';
