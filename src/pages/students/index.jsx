@@ -1,13 +1,13 @@
 // pages/settings/[id]/index.jsx
 import { useRouter } from 'next/router';
 import CustomHead from '@/components/customHead/CustomHead';
-import Settings from '@/components/settings/Settings';
+import StudentListPage from '@/components/students/StudentList';
 
 export default function Page() {
   const router = useRouter();
   const { students } = router.query; // Get student from router
 
-  // Handle undefined student safely
+  // on undefined student safely
   const currentType = students || '';
 
   return (
@@ -17,7 +17,7 @@ export default function Page() {
           students ? `${students} Profile` : 'All Students'
         }`}
       />
-      <Settings currentType="students" />
+      <StudentListPage />
     </>
   );
 }
