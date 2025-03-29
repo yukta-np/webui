@@ -106,7 +106,7 @@ const StudentListPage = () => {
           <Popconfirm
             title="Delete student"
             description="Are you sure to delete this student?"
-            onConfirm={() => handleDelete(record.key)}
+            onConfirm={() => onDelete(record.key)}
           >
             <Button type="link" danger icon={<Trash2Icon size={16} />} />
           </Popconfirm>
@@ -115,8 +115,8 @@ const StudentListPage = () => {
     },
   ];
 
-  // Handlers
-  const handleDelete = (key) => {
+  // onrs
+  const onDelete = (key) => {
     // In real app, you would make API call here
     console.log('Deleted student with key:', key);
   };
