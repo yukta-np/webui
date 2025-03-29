@@ -3,13 +3,13 @@ import { Menu, Layout, Grid, theme, Breadcrumb } from 'antd';
 import { ChartNoAxesGantt, User, Component, Settings } from 'lucide-react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Plans from './Plans'; // Adjust the import path as needed
+import Plans from '../plans/Plans'; // Adjust the import path as needed
 import { useOrganisation } from '@/hooks/useOrganisation';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 
-const ControlCenter = () => {
+const ControlCenter = ({ children }) => {
   const screens = useBreakpoint();
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -18,7 +18,6 @@ const ControlCenter = () => {
   const currentId = parseInt(router.query.id);
   const { organisation } = useOrganisation();
 
-  const activeTab = router.pathname.split('/').pop() || 'plans';
   const orgName =
     organisation?.find((org) => org.id === currentId)?.name || 'Organisation';
 
@@ -47,21 +46,6 @@ const ControlCenter = () => {
     },
   ];
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'plans':
-        return <Plans organisationId={currentId} />;
-      case 'users':
-        return <div>Users Content</div>;
-      case 'modules':
-        return <div>Modules Content</div>;
-      case 'settings':
-        return <div>Settings Content</div>;
-      default:
-        return <Plans organisationId={currentId} />;
-    }
-  };
-
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <Breadcrumb style={{ margin: '16px 0' }}>
@@ -80,23 +64,15 @@ const ControlCenter = () => {
         }}
       >
         <p className="text-xl font-bold mb-4">{orgName}</p>
-        <div style={{ display: 'flex' }}>
+        <div className="grid grid-cols-12">
           <Menu
             mode="inline"
-            style={{ width: 200, height: '60vh' }}
+            style={{ width: 230, height: '60vh' }}
             items={menuItems}
+            className="col-span-2"
           />
-          <div style={{ padding: '24px', flex: 1 }}>
-            <p
-              className="
-            text-xl font-semibold mb-4"
-            >
-              Organisation Information
-            </p>
-            <p>Main content area for </p>
-          </div>
+          <div className="col-span-10"> {children}</div>
         </div>
-        <div>{renderContent()}</div>
       </div>
     </Content>
   );

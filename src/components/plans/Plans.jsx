@@ -1,8 +1,8 @@
 import React from 'react';
-import ControlCenter from './ControlCenter';
+import ControlCenter from '../organisations/ControlCenter';
 
 const Plans = (organisationId) => {
-  return <div>Plans</div>;
+  return <>Plans</>;
 };
 
 export default Plans;
