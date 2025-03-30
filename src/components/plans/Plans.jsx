@@ -13,11 +13,23 @@ import {
   DatePicker,
   Select,
   Divider,
+  theme,
+  Breadcrumb,
+  Grid,
+  Layout,
 } from 'antd';
 import { FilePenLine, Trash2Icon, Search } from 'lucide-react';
 import dayjs from 'dayjs';
+import Link from 'next/link';
+
+const { useBreakpoint } = Grid;
+const { Content } = Layout;
 
 const Plans = () => {
+  const screens = useBreakpoint();
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,26 +39,28 @@ const Plans = () => {
     {
       key: '1',
       name: 'Basic Plan',
-      price: '$9.99/month',
+      price: 'Rs.10000/month',
       startDate: '2023-01-01',
       endDate: '2023-12-31',
       createdAt: '2022-11-15 10:30',
-      status: 'active',
+      admins: 2,
       managers: 1,
       teachers: 3,
       students: 50,
+      storage: 2,
     },
     {
       key: '2',
       name: 'Premium Plan',
-      price: '$19.99/month',
+      price: 'Rs.5000/month',
       startDate: '2023-02-15',
       endDate: '2023-12-31',
       createdAt: '2022-12-20 14:45',
-      status: 'active',
+      admins: 3,
       managers: 2,
       teachers: 5,
       students: 100,
+      storage: 5,
     },
     {
       key: '3',
@@ -55,10 +69,11 @@ const Plans = () => {
       startDate: '2023-03-01',
       endDate: '2023-03-31',
       createdAt: '2023-02-28 09:15',
-      status: 'expired',
+      admins: 1,
       managers: 1,
       teachers: 1,
       students: 10,
+      storage: 1,
     },
   ];
 
@@ -165,15 +180,11 @@ const Plans = () => {
       key: 'price',
     },
     {
-      title: 'Start Date',
-      dataIndex: 'startDate',
-      key: 'startDate',
+      title: 'Admins',
+      dataIndex: 'admins',
+      key: 'admins',
     },
-    {
-      title: 'End Date',
-      dataIndex: 'endDate',
-      key: 'endDate',
-    },
+
     {
       title: 'Managers',
       dataIndex: 'managers',
@@ -190,28 +201,16 @@ const Plans = () => {
       key: 'students',
     },
     {
+      title: 'Storage (in Gbs)',
+      dataIndex: 'storage',
+      key: 'storage',
+    },
+    {
       title: 'Creation Time',
       dataIndex: 'createdAt',
       key: 'createdAt',
     },
-    {
-      title: 'Status',
-      key: 'status',
-      dataIndex: 'status',
-      render: (status) => {
-        let color = status === 'active' ? 'green' : 'volcano';
-        return (
-          <Tag color={color} key={status}>
-            {status.toUpperCase()}
-          </Tag>
-        );
-      },
-      filters: [
-        { text: 'Active', value: 'active' },
-        { text: 'Expired', value: 'expired' },
-      ],
-      onFilter: (value, record) => record.status === value,
-    },
+
     {
       title: 'Action',
       dataIndex: 'action',
@@ -238,159 +237,154 @@ const Plans = () => {
   ];
 
   return (
-    <div className="p-4 ml-4">
-      <div className="flex justify-between items-center mb-4">
-        <p className="text-lg font-semibold">Plans</p>
-        <Space>
-          <Input.Search
-            placeholder="Search plans..."
-            allowClear
-            enterButton
-            style={{ width: 300 }}
-            onSearch={(value) => setSearchText(value)}
-          />
-          <Button type="primary" onClick={showModal}>
-            Add New
-          </Button>
-        </Space>
-      </div>
-
-      <Table
-        size="small"
-        columns={columns}
-        dataSource={plansData.filter((item) =>
-          Object.keys(item).some((key) =>
-            item[key]
-              ?.toString()
-              .toLowerCase()
-              .includes(searchText.toLowerCase())
-          )
-        )}
-        bordered
-        pagination={{ pageSize: 5 }}
-      />
-
-      <Modal
-        title="Create New Plan"
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        width={500}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleOk}>
-            Create Plan
-          </Button>,
-        ]}
+    <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
+      <Breadcrumb style={{ margin: '16px 0' }}>
+        <Breadcrumb.Item>
+          <Link href="/dashboard">Home</Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>Plans</Breadcrumb.Item>
+      </Breadcrumb>
+      <div
+        style={{
+          padding: screens.xs ? 16 : 24,
+          minHeight: 360,
+          background: colorBgContainer,
+          borderRadius: borderRadiusLG,
+        }}
       >
-        <Divider />
-        <Form form={form} layout="vertical" initialValues={{ active: true }}>
-          <Form.Item
-            name="name"
-            label="Plan Name"
-            rules={[{ required: true, message: 'Please input the plan name!' }]}
-          >
-            <Input placeholder="Enter plan name" />
-          </Form.Item>
-
-          <Form.Item
-            name="price"
-            label="Price ($)"
-            rules={[{ required: true, message: 'Please input the price!' }]}
-          >
-            <InputNumber
-              style={{ width: '100%' }}
-              min={0}
-              step={0.01}
-              formatter={(value) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-              }
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-xl font-bold">Plans</p>
+          <Space>
+            <Input.Search
+              placeholder="Search plans..."
+              allowClear
+              enterButton
+              style={{ width: 300 }}
+              onSearch={(value) => setSearchText(value)}
             />
-          </Form.Item>
+            <Button type="primary" onClick={showModal}>
+              Add New
+            </Button>
+          </Space>
+        </div>
 
-          {/* Date Range Row */}
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                name="startDate"
-                label="Start Date"
-                rules={[
-                  { required: true, message: 'Please select start date!' },
-                ]}
-              >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </div>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                name="endDate"
-                label="End Date"
-                rules={[{ required: true, message: 'Please select end date!' }]}
-              >
-                <DatePicker style={{ width: '100%' }} />
-              </Form.Item>
-            </div>
-          </div>
+        <Table
+          size="small"
+          columns={columns}
+          dataSource={plansData.filter((item) =>
+            Object.keys(item).some((key) =>
+              item[key]
+                ?.toString()
+                .toLowerCase()
+                .includes(searchText.toLowerCase())
+            )
+          )}
+          bordered
+          pagination={{ pageSize: 5 }}
+        />
 
-          {/* Counts Row */}
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                name="managers"
-                label="Managers"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input number of managers!',
-                  },
-                ]}
-              >
-                <InputNumber min={1} style={{ width: '100%' }} />
-              </Form.Item>
-            </div>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                name="teachers"
-                label="Teachers"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input number of teachers!',
-                  },
-                ]}
-              >
-                <InputNumber min={1} style={{ width: '100%' }} />
-              </Form.Item>
-            </div>
-            <div style={{ flex: 1 }}>
-              <Form.Item
-                name="students"
-                label="Students"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Please input number of students!',
-                  },
-                ]}
-              >
-                <InputNumber min={1} style={{ width: '100%' }} />
-              </Form.Item>
-            </div>
-          </div>
+        <Modal
+          title="Create New Plan"
+          open={isModalOpen}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          width={500}
+          footer={[
+            <Button key="back" onClick={handleCancel}>
+              Cancel
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleOk}>
+              Create
+            </Button>,
+          ]}
+        >
+          <Divider />
+          <Form form={form} layout="vertical" initialValues={{ active: true }}>
+            <Form.Item
+              name="name"
+              label="Plan Name"
+              rules={[
+                { required: true, message: 'Please input the plan name!' },
+              ]}
+            >
+              <Input placeholder="Enter plan name" />
+            </Form.Item>
 
-          <Form.Item name="active" label="Status" valuePropName="checked">
-            <Switch
-              checkedChildren="Active"
-              unCheckedChildren="Inactive"
-              defaultChecked
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+            <Form.Item
+              name="admins"
+              label="Number of Admins"
+              rules={[
+                { required: true, message: 'Please input number of admins' },
+              ]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={1}
+                placeholder="Enter number of admins"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="managers"
+              label="Number of Managers"
+              rules={[
+                { required: true, message: 'Please input number of managers' },
+              ]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={1}
+                placeholder="Enter number of managers"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="teachers"
+              label="Number of Teachers"
+              rules={[
+                { required: true, message: 'Please input number of teachers' },
+              ]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={1}
+                placeholder="Enter number of teachers"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="students"
+              label="Number of Students"
+              rules={[
+                { required: true, message: 'Please input number of students' },
+              ]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={1}
+                placeholder="Enter number of students"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="price"
+              label="Price (NPR)"
+              rules={[{ required: true, message: 'Please input the price!' }]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                formatter={(value) =>
+                  `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
+              />
+            </Form.Item>
+          </Form>
+          <Divider />
+        </Modal>
+      </div>
+    </Content>
   );
 };
 
