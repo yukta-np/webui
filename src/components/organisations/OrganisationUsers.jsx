@@ -70,25 +70,25 @@ const OrganisationUsers = () => {
     { value: 'user', label: 'User' },
   ];
 
-  const handleStatusChange = (checked, record) => {
+  const onStatusChange = (checked, record) => {
     const updatedUsers = users.map((user) =>
       user.key === record.key ? { ...user, active: checked } : user
     );
     setUsers(updatedUsers);
   };
 
-  const handleEdit = (record) => {
+  const onEdit = (record) => {
     setEditingUser(record);
     form.setFieldsValue(record);
     setIsModalVisible(true);
   };
 
-  const handleResetPassword = (record) => {
+  const onResetPassword = (record) => {
     setResettingUser(record);
     setIsPasswordModalVisible(true);
   };
 
-  const handlePasswordReset = () => {
+  const onPasswordReset = () => {
     passwordForm
       .validateFields()
       .then((values) => {
@@ -101,7 +101,7 @@ const OrganisationUsers = () => {
       .catch((err) => console.log('Validation failed:', err));
   };
 
-  const handleSave = () => {
+  const onSave = () => {
     form
       .validateFields()
       .then((values) => {
@@ -115,11 +115,11 @@ const OrganisationUsers = () => {
       .catch((err) => console.log('Validation failed:', err));
   };
 
-  const handleSearch = (key, value) => {
+  const onSearch = (key, value) => {
     setSearchInputs((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleResetSearch = (key) => {
+  const onResetSearch = (key) => {
     setSearchInputs((prev) => ({ ...prev, [key]: '' }));
   };
 
@@ -133,27 +133,36 @@ const OrganisationUsers = () => {
     return nameMatch && emailMatch;
   });
 
+  const validatePasswordConfirmation = ({ getFieldValue }) => ({
+    validator(_, value) {
+      if (!value || getFieldValue('newPassword') === value) {
+        return Promise.resolve();
+      }
+      return Promise.reject(new Error('Passwords do not match!'));
+    },
+  });
+
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: () => (
       <div style={{ padding: 8 }}>
         <Input
           placeholder={`Search ${dataIndex}`}
           value={searchInputs[dataIndex]}
-          onChange={(e) => handleSearch(dataIndex, e.target.value)}
+          onChange={(e) => onSearch(dataIndex, e.target.value)}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
             size="small"
-            onClick={() => handleSearch(dataIndex, searchInputs[dataIndex])}
+            onClick={() => onSearch(dataIndex, searchInputs[dataIndex])}
             icon={<Search size={14} />}
           >
             Search
           </Button>
           <Button
             size="small"
-            onClick={() => handleResetSearch(dataIndex)}
+            onClick={() => onResetSearch(dataIndex)}
             icon={<TimerReset size={14} />}
           >
             Reset
@@ -208,7 +217,7 @@ const OrganisationUsers = () => {
       render: (active, record) => (
         <Switch
           checked={active}
-          onChange={(checked) => handleStatusChange(checked, record)}
+          onChange={(checked) => onStatusChange(checked, record)}
         />
       ),
     },
@@ -221,13 +230,13 @@ const OrganisationUsers = () => {
           <Button
             type="link"
             icon={<FilePenLine size={18} />}
-            onClick={() => handleEdit(record)}
+            onClick={() => onEdit(record)}
           />
           <Button
             type="link"
             danger
             icon={<TimerReset size={18} />}
-            onClick={() => handleResetPassword(record)}
+            onClick={() => onResetPassword(record)}
           />
         </Space>
       ),
@@ -244,7 +253,7 @@ const OrganisationUsers = () => {
           style={{ width: 300 }}
           allowClear
           value={searchInputs.name}
-          onChange={(e) => handleSearch('name', e.target.value)}
+          onChange={(e) => onSearch('name', e.target.value)}
         />
       </div>
 
@@ -259,13 +268,13 @@ const OrganisationUsers = () => {
       <Modal
         title="Edit User"
         visible={isModalVisible}
-        onOk={handleSave}
+        onOk={onSave}
         onCancel={() => setIsModalVisible(false)}
         footer={[
           <Button key="back" onClick={() => setIsModalVisible(false)}>
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={handleSave}>
+          <Button key="submit" type="primary" onClick={onSave}>
             Save
           </Button>,
         ]}
@@ -323,13 +332,13 @@ const OrganisationUsers = () => {
       <Modal
         title={`Reset Password for ${resettingUser?.firstName} ${resettingUser?.lastName}`}
         visible={isPasswordModalVisible}
-        onOk={handlePasswordReset}
+        onOk={onPasswordReset}
         onCancel={() => setIsPasswordModalVisible(false)}
         footer={[
           <Button key="back" onClick={() => setIsPasswordModalVisible(false)}>
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={handlePasswordReset}>
+          <Button key="submit" type="primary" onClick={onPasswordReset}>
             Reset
           </Button>,
         ]}
@@ -352,14 +361,7 @@ const OrganisationUsers = () => {
             dependencies={['newPassword']}
             rules={[
               { required: true, message: 'Please confirm password!' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(new Error('Passwords do not match!'));
-                },
-              }),
+              validatePasswordConfirmation,
             ]}
           >
             <Input.Password />

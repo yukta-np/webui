@@ -81,26 +81,23 @@ const Plans = () => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        form.resetFields();
-        console.log('New plan:', {
-          ...values,
-          startDate: values.startDate.format('YYYY-MM-DD'),
-          endDate: values.endDate.format('YYYY-MM-DD'),
-          status: values.active ? 'active' : 'inactive',
-          createdAt: dayjs().format('YYYY-MM-DD HH:mm'),
-          price: `$${values.price}/month`,
-          key: `${plansData.length + 1}`,
-        });
-        setIsModalOpen(false);
-        // Here you would typically update your state or make an API call
-      })
-      .catch((info) => {
-        console.log('Validate Failed:', info);
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      form.resetFields();
+      console.log('New plan:', {
+        ...values,
+        startDate: values.startDate.format('YYYY-MM-DD'),
+        endDate: values.endDate.format('YYYY-MM-DD'),
+        status: values.active ? 'active' : 'inactive',
+        createdAt: dayjs().format('YYYY-MM-DD HH:mm'),
+        price: `$${values.price}/month`,
+        key: `${plansData.length + 1}`,
       });
+      setIsModalOpen(false);
+    } catch (error) {
+      console.log('Validate Failed:', error);
+    }
   };
 
   const handleCancel = () => {

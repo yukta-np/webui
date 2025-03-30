@@ -104,13 +104,14 @@ const OrganisationPlan = () => {
               label="Plan Name"
               rules={[{ required: true }]}
             >
-              <Select placeholder="Select a plan">
-                {planOptions.map((option) => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
+              <Select
+                placeholder="Select a plan"
+                options={planOptions.map((option) => ({
+                  value: option.value,
+                  label: option.label,
+                  key: option.value,
+                }))}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} md={12}>
