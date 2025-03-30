@@ -12,6 +12,8 @@ import {
   Button,
   Popover,
   List,
+  Form,
+  Divider,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
 import { clearStorageAndRedirect, fetcher } from '@/utils';
@@ -27,6 +29,7 @@ const { useBreakpoint } = Grid;
 const TopHeader = () => {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
   const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
   const [isAnnouncementPopupOpen, setIsAnnouncementPopupOpen] = useState(false);
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] =
@@ -35,6 +38,7 @@ const TopHeader = () => {
     useState(false);
   const [loggedInUser, setLoggedInUser] = useState();
   const [notifications, setNotifications] = useState([]);
+  const [impersonateForm] = Form.useForm();
 
   const { announcements } = useAnnouncement(
     { disableAutoRefetch: true },
@@ -73,6 +77,24 @@ const TopHeader = () => {
     clearStorageAndRedirect();
   };
 
+  const openSearchModal = () => {
+    setIsSearchModalOpen(true);
+  };
+  const closeSearchModal = () => {
+    setIsSearchModalOpen(false);
+  };
+
+  const openImpersonateModal = () => {
+    setIsImpersonateModalOpen(true);
+  };
+  const closeImpersonateModal = () => {
+    setIsImpersonateModalOpen(false);
+  };
+
+  const onImpersonateSubmit = () => {
+    setIsImpersonateModalOpen(false);
+  };
+
   const menuItems = [
     {
       label: <Link href="/users/profile">Profile</Link>,
@@ -80,11 +102,19 @@ const TopHeader = () => {
     },
     {
       key: '2',
-      label: 'Settings',
-      onClick: () => console.log('Settings Clicked'),
+      label: 'Impersonate',
+      onClick: () => openImpersonateModal(),
     },
     {
       key: '3',
+      label: <Link href="/users/security">Security</Link>,
+      onClick: () => console.log('Settings Clicked'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: '4',
       label: 'Logout',
       danger: true,
       onClick: onLogout,
@@ -196,7 +226,7 @@ const TopHeader = () => {
               backgroundColor: '#f5f5f5',
               width: '100%',
             }}
-            onClick={() => setIsSearchModalOpen(true)}
+            onClick={openSearchModal}
           />
         )}
       </div>
@@ -204,7 +234,7 @@ const TopHeader = () => {
       <Modal
         title="Search"
         open={isSearchModalOpen}
-        onCancel={() => setIsSearchModalOpen(false)}
+        onCancel={closeSearchModal}
         footer={null}
         width="80%"
         style={{ top: 65, left: 40 }}
@@ -214,6 +244,34 @@ const TopHeader = () => {
           allowClear
           onSearch={(value) => console.log(value)}
         />
+      </Modal>
+
+      <Modal
+        title="Impersonate"
+        open={isImpersonateModalOpen}
+        onCancel={closeImpersonateModal}
+      >
+        <Divider />
+        <Form
+          form={impersonateForm}
+          onFinish={onImpersonateSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            label="Email"
+            name="email"
+            type="email"
+            rules={[
+              {
+                required: true,
+                message: 'Please enter an email',
+              },
+            ]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+        </Form>
+        <Divider />
       </Modal>
 
       {/* Notifications and User Area */}
