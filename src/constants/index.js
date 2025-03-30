@@ -38,6 +38,7 @@ export const constants = {
     studentsUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
+    routinesUrl: `${URL}/routines`,
 
 
     // Socket
@@ -91,3 +92,13 @@ export const ResourceActions = {
   acknowledegedBy: 'acknowledegedBy',
   downloadCsv: 'downloadCsv',
 };
+
+export const WeekDay  = {
+  SUNDAY :'SUNDAY',
+  MONDAY :'MONDAY',
+  TUESDAY :'TUESDAY',
+  WEDNESDAY :'WEDNESDAY',
+  THURSDAY :'THURSDAY',
+  FRIDAY :'FRIDAY',
+  SATURDAY :'SATURDAY',
+}
