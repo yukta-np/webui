@@ -5,7 +5,7 @@ import ControlCenter from '@/components/organisations/ControlCenter';
 const plans = () => {
   return (
     <>
-      <ControlCenter>Plans</ControlCenter>
+      <ControlCenter></ControlCenter>
     </>
   );
 };
