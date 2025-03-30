@@ -3,7 +3,6 @@ import { Menu, Layout, Grid, theme, Breadcrumb } from 'antd';
 import { ChartNoAxesGantt, User, Component, Settings } from 'lucide-react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import Plans from '../plans/Plans'; // Adjust the import path as needed
 import { useOrganisation } from '@/hooks/useOrganisation';
 
 const { useBreakpoint } = Grid;
@@ -67,7 +66,7 @@ const ControlCenter = ({ children }) => {
         <div className="grid grid-cols-12">
           <Menu
             mode="inline"
-            style={{ width: 230, height: '60vh' }}
+            style={{ width: screens.xs ? 180 : 200, height: '60vh' }}
             items={menuItems}
             className="col-span-2"
           />
