@@ -51,7 +51,9 @@ const ControlCenter = ({ children }) => {
         <Breadcrumb.Item>
           <Link href="/dashboard">Home</Link>
         </Breadcrumb.Item>
-        <Breadcrumb.Item>Organisations</Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Link href="/organisations">Organisations</Link>
+        </Breadcrumb.Item>
       </Breadcrumb>
 
       <div
