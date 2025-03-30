@@ -35,8 +35,8 @@ const OrganisationDetails = () => {
               <Text strong>{orgData?.name || '-'}</Text>
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              <Tag color={orgData?.status === 'active' ? 'green' : 'red'}>
-                {orgData?.status?.toUpperCase() || '-'}
+              <Tag color={orgData?.isActive === true ? 'green' : 'red'}>
+                {orgData?.isActive === true ? 'ACTIVE' : 'INACTIVE'}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Plan">
@@ -62,13 +62,39 @@ const OrganisationDetails = () => {
         <Col span={24}>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="Email">
-              {orgData?.contact?.email || '-'}
+              {orgData?.email || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Phone">
-              {orgData?.contact?.phone || '-'}
+              {orgData?.phone || '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="Address" span={2}>
-              {orgData?.contact?.address || '-'}
+            <Descriptions.Item label="Address">
+              {orgData?.address || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Website">
+              {orgData?.website || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Pan Number">
+              {orgData?.panNumber || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Vat Number">
+              {orgData?.vatNumber || '-'}
+            </Descriptions.Item>
+          </Descriptions>
+        </Col>
+      </Row>
+
+      <Divider orientation="left" className="mt-6">
+        <p className="text-xl font-bold">Other Details</p>
+      </Divider>
+
+      <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Descriptions bordered column={2}>
+            <Descriptions.Item label="No reply Email">
+              {orgData?.noreplyEmail || '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="No reply Phone">
+              {orgData?.noreplyPhone || '-'}
             </Descriptions.Item>
           </Descriptions>
         </Col>
