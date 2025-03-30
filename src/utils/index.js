@@ -240,3 +240,7 @@ export const Roles = {
 };
 
 export const cl = (...args) => console.log(...args);
+
+// validate phone number and email address
+export const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -19,9 +19,9 @@ import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
 import { clearStorageAndRedirect, fetcher } from '@/utils';
 import useSWRImmutable from 'swr/immutable';
 import { constants } from '@/constants';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 import useWebSocket from '@/hooks/useWebsocket';
+import { useAnnouncement } from '@/hooks/useAnnouncement';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -40,21 +40,10 @@ const TopHeader = () => {
   const [notifications, setNotifications] = useState([]);
   const [impersonateForm] = Form.useForm();
 
-  const [announcements] = useState([
-    {
-      id: 1,
-      title: 'Holiday Notice',
-      description: 'Office closed on National Day',
-      date: '2024-02-20',
-    },
-    {
-      id: 2,
-      title: 'New Feature',
-      description: 'Check out the latest updates in v2.0',
-      date: '2024-02-18',
-    },
-  ]);
-
+  const { announcements } = useAnnouncement(
+    { disableAutoRefetch: true },
+    { shared: true }
+  );
   const meUrl = constants.urls.meUrl;
   const { data: userData } = useSWRImmutable(meUrl, fetcher);
 
@@ -135,18 +124,18 @@ const TopHeader = () => {
   const renderPopupContent = (items, type) => (
     <div style={{ width: 300 }}>
       <List
-        dataSource={items.slice(0, 3)}
+        dataSource={items?.slice(0, 3)}
         renderItem={(item) => (
           <List.Item
             style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}
           >
             <List.Item.Meta
-              title={item.title}
+              title={item?.title}
               description={
                 <>
-                  <div style={{ fontSize: 12 }}>{item.description}</div>
+                  <div style={{ fontSize: 12 }}>{item?.description}</div>
                   <div style={{ color: colorTextSecondary, fontSize: 10 }}>
-                    {item.date}
+                    {item?.date}
                   </div>
                 </>
               }
@@ -179,12 +168,12 @@ const TopHeader = () => {
             style={{ padding: '16px 0', borderBottom: '1px solid #f0f0f0' }}
           >
             <List.Item.Meta
-              title={item.title}
+              title={item?.title}
               description={
                 <>
-                  <div>{item.description}</div>
+                  <div>{item?.description}</div>
                   <div style={{ color: colorTextSecondary, fontSize: 12 }}>
-                    {item.date}
+                    {item?.date}
                   </div>
                 </>
               }
@@ -299,7 +288,7 @@ const TopHeader = () => {
             onOpenChange={setIsNotificationPopupOpen}
           >
             <Badge
-              count={notifications.length}
+              count={notifications?.length}
               style={{
                 boxShadow: `0 0 0 2px ${colorBgContainer}`,
                 cursor: 'pointer',
@@ -316,7 +305,7 @@ const TopHeader = () => {
             onOpenChange={setIsAnnouncementPopupOpen}
           >
             <Badge
-              count={announcements.length}
+              count={announcements?.length}
               style={{
                 boxShadow: `0 0 0 2px ${colorBgContainer}`,
                 cursor: 'pointer',

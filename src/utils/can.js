@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import { createContextualCan } from '@casl/react';
-import { Roles, getLoggedInUser, getPermission } from '../utils';
+import { Roles, getLoggedInUser } from '../utils';
 
 export const AbilityContext = createContext();
 export const Can = createContextualCan(AbilityContext.Consumer);
@@ -14,13 +14,15 @@ function CanIDo({
   children,
 }) {
   const loggedInUser = getLoggedInUser();
-  const ability = useContext(AbilityContext);
+
   if (
-    loggedInUser?.role === Roles.SYSADMIN ||
-    loggedInUser?.role === Roles.ADMIN
+    loggedInUser?.role === Roles.ADMIN ||
+    loggedInUser?.role === Roles.SYSADMIN
   ) {
     return <>{children}</>;
   }
+
+  const ability = useContext(AbilityContext);
 
   console.debug('Permissions request:', { action, resource });
 
