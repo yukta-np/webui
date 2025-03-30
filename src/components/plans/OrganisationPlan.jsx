@@ -37,14 +37,14 @@ const OrganisationPlan = () => {
     { value: 'Enterprise', label: 'Enterprise' },
   ];
 
-  const onSave = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        setPlanData(values);
-        setEditing(false);
-      })
-      .catch((err) => console.log('Validation failed:', err));
+  const onSave = async () => {
+    try {
+      const values = await form.validateFields();
+      setPlanData(values);
+      setEditing(false);
+    } catch (err) {
+      console.log('Validation failed:', err);
+    }
   };
 
   const onEdit = () => {
