@@ -3,14 +3,14 @@ import { constants, headers } from '@/constants';
 
 const URL = constants.urls.routinesUrl;
 
-export async function createLeaves(leaves) {
-  return axios.post(URL, leaves, { headers });
+export async function createRoutines(routines) {
+  return axios.post(URL, routines, { headers });
 }
 
-export async function updateLeaves(id, leaves) {
-  return axios.patch(`${URL}/${id}`, leaves, { headers });
+export async function updateRoutines(id, routines) {
+  return axios.patch(`${URL}/${id}`, routines, { headers });
 }
 
-export async function deleteLeaves(id) {
+export async function deleteRoutines(id) {
   return axios.delete(`${URL}/${id}`, { headers });
 }

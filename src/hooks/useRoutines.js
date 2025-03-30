@@ -4,7 +4,7 @@ import { fetcher} from '../utils';
 import { useMemo } from 'react';
 
 
-export function useRoutine(params) {
+export function useRoutines(params) {
      const queryString = useMemo(() => {
        if (!params || Object.keys(params).length === 0) return '';
        return new URLSearchParams(params).toString();
