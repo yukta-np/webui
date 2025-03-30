@@ -25,11 +25,6 @@ export default function App({ Component, pageProps }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    toast.success("Test toast loaded");
-    console.log("i am called1212")
-  }, []);
-
-  useEffect(() => {
     setIsClient(true); // Mark that we're on the client side
   }, []);
 
@@ -44,7 +39,7 @@ export default function App({ Component, pageProps }) {
     ) {
       const user = getLoggedInUser();
       if (!user?.userId) {
-        clearStorageAndRedirect();
+        clearStorageAndRedirect(window.location.pathname);
       }
     }
   }, [path]);
