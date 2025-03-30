@@ -70,30 +70,117 @@ const Routine = () => {
     setCurrentProgramLevel(value);
     console.log('value', value);
   };
-
-  const filteredRoutines = currentProgramLevel
-    ? routines?.filter((r) => r.programLevel === currentProgramLevel)
-    : routines;
-
-  // Group routines by day
-  const routinesByDay = Object.keys(WeekDay).reduce((acc, day) => {
-    acc[day] =
-      filteredRoutines?.filter((routine) => routine.weekDay === day) || [];
-    return acc;
-  }, {});
-
+  const formatTime = (timeString) =>
+    timeString.split(':').slice(0, 2).join(':');
   const data =
     routines
       ?.filter(
         (r) => r.weekDay === weekDay && r.programLevel === currentProgramLevel
       )
-      .map((routine) => ({
-        title: `${routine.subject}`,
-        description: `${routine.weekDay} - ${routine.startTime} to ${routine.endTime}`,
-      })) || [];
+      .map((routine) => {
+        // Format time without seconds (HH:MM format)
+
+        return {
+          ...routine, // Include all original routine data
+          title: `${routine.subject}`,
+          weekDay: `${routine.weekDay}- `,
+          description: `${formatTime(routine.startTime)} to ${formatTime(
+            routine.endTime
+          )}`,
+        };
+      }) || [];
 
   if (error) return <div>Error loading routines</div>;
 
+  const filterAndSortRoutines = (routines, weekDay, currentProgramLevel) => {
+    return (
+      routines
+        ?.filter(
+          (r) => r.weekDay === weekDay && r.programLevel === currentProgramLevel
+        )
+        ?.sort((a, b) => {
+          // Convert "HH:MM" to minutes for accurate comparison
+          const [aHours, aMins] = a.startTime.split(':').map(Number);
+          const [bHours, bMins] = b.startTime.split(':').map(Number);
+          return aHours * 60 + aMins - (bHours * 60 + bMins);
+        })
+        .map((routine) => ({
+          ...routine,
+          title: `${routine.subject}`,
+          teacher: `${routine.userId}`,
+          description: `${formatTime(routine.startTime)} to ${formatTime(
+            routine.endTime
+          )}`,
+        })) || []
+    );
+  };
+
+  if (error) return <div>Error loading routines</div>;
+
+  // TimetableMainView.jsx
+  const TimetableMainView = ({ routines, currentProgramLevel, WeekDay }) => {
+    return (
+      <div className="flex flex-col gap-4 border-2 border-solid border-blue-500 h-[500px] border-l ml-6 p-4 overflow-y-auto">
+        {Object.keys(WeekDay).map((day) => {
+          const dayRoutines = filterAndSortRoutines(
+            routines,
+            day,
+            currentProgramLevel
+          );
+          return <DayColumn key={day} day={day} routines={dayRoutines} />;
+        })}
+      </div>
+    );
+  };
+
+  // DayColumn.jsx
+  const DayColumn = ({ day, routines }) => {
+    return (
+      <div className="flex flex-col gap-2">
+        <DayHeader day={day} />
+        <RoutineCards routines={routines} />
+      </div>
+    );
+  };
+
+  // DayHeader.jsx
+  const DayHeader = ({ day }) => {
+    return <div className="font-bold text-lg">{day}</div>;
+  };
+
+  // RoutineCards.jsx
+  const RoutineCards = ({ routines }) => {
+    if (!routines?.length) {
+      return <NoRoutinesMessage />;
+    }
+
+    return (
+      <div className="flex flex-wrap gap-3">
+        {routines.map((routine) => (
+          <RoutineCard
+            key={`${routine.weekDay}-${routine.startTime}`}
+            routine={routine}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  // RoutineCard.jsx
+  const RoutineCard = ({ routine }) => {
+    return (
+      <Card size="small" className="w-[200px]" title={routine.title}>
+        <p>Time: {routine.description}</p>
+        {routine.room && <p>Room: {routine.room} </p>}
+        {routine.userId && <p>Instructor: {routine.userId}</p>}
+      </Card>
+    );
+  };
+
+  // NoRoutinesMessage.jsx
+  const NoRoutinesMessage = () => {
+    return <div className="text-gray-500">No routines scheduled</div>;
+  };
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
       <div
@@ -134,14 +221,11 @@ const Routine = () => {
         <Divider orientation="left">Routine</Divider>
         <Row gutter={16}>
           <Col span={19} className="flex-col gap-2">
-            <div className="flex gap-2 border-2 border-solid border-blue-500 h-[500px] border-l ml-6">
-              <Col>
-                {Object.keys(WeekDay).map((day, index) => (
-                  <Row key={index}>{day}</Row>
-                ))}
-              </Col>
-              <Col></Col>
-            </div>
+            <TimetableMainView
+              routines={routines}
+              currentProgramLevel={currentProgramLevel}
+              WeekDay={WeekDay}
+            />
             <div className="border-2 border-solid border-green-500 h-40 border-l ml-6 mt-6"></div>
           </Col>
           <Col span={5}>
