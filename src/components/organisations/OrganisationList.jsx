@@ -136,7 +136,12 @@ const OrganisationList = () => {
             </Button>
           </div>
         </div>
-        <Table columns={columns} dataSource={organisation} />
+        <Table
+          columns={columns}
+          dataSource={organisation}
+          bordered
+          pagination
+        />
         <Modal
           title="Organisation"
           open={isModalOpen}

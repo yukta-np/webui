@@ -10,9 +10,9 @@ import {
   Space,
   Typography,
 } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/router';
 import { useOrganisation } from '@/hooks/useOrganisation';
+import moment from 'moment';
 
 const { Title, Text } = Typography;
 
@@ -46,7 +46,9 @@ const OrganisationDetails = () => {
               {orgData?.createdAt || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Updated At">
-              {orgData?.updatedAt || '-'}
+              {orgData?.updatedAt
+                ? moment(orgData.updatedAt).format('MMMM Do YYYY, h:mm:ss a')
+                : '-'}
             </Descriptions.Item>
           </Descriptions>
         </Col>
