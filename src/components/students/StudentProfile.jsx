@@ -1,5 +1,4 @@
-// app/students/[id]/page.jsx
-
+'use client';
 import {
   Card,
   Typography,
@@ -10,10 +9,10 @@ import {
   Tag,
   Image,
   Divider,
+  Descriptions,
 } from 'antd';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import StudentForm from '@/components/students/StudentForm';
 import {
   FilePenLine,
   Mail,
@@ -22,44 +21,23 @@ import {
   User,
   GraduationCap,
 } from 'lucide-react';
-const initialStudentData = [
-  {
-    key: '1',
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@example.com',
-    faculty: 'BBA',
-    program: 'Computer Science',
-    startDate: '2023-08-15',
-    phoneNumber: '+1234567890',
-    dateOfBirth: '2000-01-01',
-    nationality: 'American',
-    address: '123 Main Street, City, Country',
-    batchNumber: '2025A',
-  },
-  {
-    key: '2',
-    firstName: 'Jane',
-    lastName: 'Doe',
-    email: 'jane@example.com',
-    faculty: 'Arts',
-    program: 'English Literature',
-    startDate: '2023-02-01',
-    phoneNumber: '+1987654321',
-    dateOfBirth: '2001-05-15',
-    nationality: 'Canadian',
-    address: '456 Oak Street, City, Country',
-    batchNumber: '2025B',
-  },
-];
+import { BankFilled } from '@ant-design/icons';
+import { useStudents } from '@/hooks/useStudents';
+
 
 const { Title, Text } = Typography;
 
+
 const StudentProfile = ({ params }) => {
   const router = useRouter();
-  const student = initialStudentData.find((s) => s.key === params.id);
+  const { students, isLoading, isError } = useStudents({ }, params.id);
+  console.log('params', params.id);
 
-  if (!student) {
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading students data.</p>;
+
+console.log('students', students?.id);
+  if (!students) {
     return (
       <div className="p-6">
         <Card className="text-center">
@@ -67,7 +45,7 @@ const StudentProfile = ({ params }) => {
             Student Not Found
           </Title>
           <Text className="mb-4 block">
-            The requested student does not exist or has been removed.
+            The requested students does not exist or has been removed.
           </Text>
           <Button type="primary" onClick={() => router.push('/students')}>
             Return to Student List
@@ -87,17 +65,17 @@ const StudentProfile = ({ params }) => {
           <Link href="/students">Students</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          {student.firstName} {student.lastName}
+          {students.firstName} {students.lastName}
         </Breadcrumb.Item>
       </Breadcrumb>
 
       <Card
         className="shadow-lg"
         cover={
-          student.avatar && (
+          students.avatar && (
             <div className="h-48 bg-gray-100 overflow-hidden flex items-center justify-center">
               <Image
-                src={student.avatar}
+                src={students.avatar}
                 alt="Student avatar"
                 preview={false}
                 className="object-cover"
@@ -109,10 +87,10 @@ const StudentProfile = ({ params }) => {
         <div className="flex justify-between items-start mb-6">
           <div>
             <Title level={2} className="mb-0">
-              {student.firstName} {student.middleName} {student.lastName}
+              {students.firstName} {students.middleName} {students.lastName}
             </Title>
             <Text type="secondary" className="text-lg">
-              {student.faculty} - {student.program}
+              {students.faculty} - {students.program}
             </Text>
           </div>
           <Button
@@ -124,62 +102,59 @@ const StudentProfile = ({ params }) => {
           </Button>
         </div>
 
-        {/* Quick Info Panel */}
         <Card.Grid className="w-full hover:shadow-none">
           <Row gutter={24}>
             <Col span={8}>
               <div className="flex items-center gap-2">
                 <User size={18} className="text-gray-500" />
                 <Text strong>Student ID:</Text>
-                <Text>{student.key}</Text>
+                <Text>{students.id}</Text>
               </div>
             </Col>
             <Col span={8}>
               <div className="flex items-center gap-2">
                 <GraduationCap size={18} className="text-gray-500" />
                 <Text strong>Batch:</Text>
-                <Text>{student.batchNumber}</Text>
+                <Text>{students.batchNumber}</Text>
               </div>
             </Col>
             <Col span={8}>
               <div className="flex items-center gap-2">
-                <Bank size={18} className="text-gray-500" />
+                <BankFilled size={18} className="text-gray-500" />
                 <Text strong>Faculty ID:</Text>
-                <Text>{student.facultyId}</Text>
+                <Text>{students.facultyId}</Text>
               </div>
             </Col>
           </Row>
         </Card.Grid>
 
-        {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Left Column */}
           <div>
             <Card title="Personal Information" className="mb-6">
               <Descriptions column={1}>
                 <Descriptions.Item label="Email">
                   <div className="flex items-center gap-2">
                     <Mail size={16} />
-                    <Text>{student.email}</Text>
+                    <Text>{students.email}</Text>
                   </div>
                 </Descriptions.Item>
                 <Descriptions.Item label="Phone">
                   <div className="flex items-center gap-2">
                     <Phone size={16} />
-                    <Text>{student.phoneNumber}</Text>
+                    <Text>{students.phoneNumber}</Text>
                   </div>
                 </Descriptions.Item>
                 <Descriptions.Item label="Address">
                   <div className="flex items-center gap-2">
                     <Home size={16} />
-                    <Text>{student.address}</Text>
+                    <Text>{students.address}</Text>
                   </div>
                 </Descriptions.Item>
                 <Descriptions.Item label="Date of Birth">
-                  <Text>{student.dateOfBirth}</Text>
+                  <Text>{students.dateOfBirth}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Nationality">
-                  <Tag color="blue">{student.nationality}</Tag>
+                  <Tag color="blue">{students.nationality}</Tag>
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -187,37 +162,36 @@ const StudentProfile = ({ params }) => {
             <Card title="Academic Information">
               <Descriptions column={1}>
                 <Descriptions.Item label="Enrollment Date">
-                  <Text>{student.enrollmentDate}</Text>
+                  <Text>{students.enrollmentDate}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Expected Graduation">
-                  <Text>{student.graduationDate}</Text>
+                  <Text>{students.graduationDate}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
-                  <Tag color={student.isActive ? 'green' : 'red'}>
-                    {student.isActive ? 'Active' : 'Inactive'}
+                  <Tag color={students.isActive ? 'green' : 'red'}>
+                    {students.isActive ? 'Active' : 'Inactive'}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Class Representative">
-                  <Tag color={student.isCr ? 'geekblue' : 'default'}>
-                    {student.isCr ? 'Yes' : 'No'}
+                  <Tag color={students.isCr ? 'geekblue' : 'default'}>
+                    {students.isCr ? 'Yes' : 'No'}
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
             </Card>
           </div>
 
-          {/* Right Column */}
           <div>
             <Card title="Financial Information" className="mb-6">
               <Descriptions column={1}>
                 <Descriptions.Item label="Due Amount">
-                  <Text type={student.dueAmount > 0 ? 'danger' : 'success'}>
-                    ${student.dueAmount}
+                  <Text type={students.dueAmount > 0 ? 'danger' : 'success'}>
+                    ${students.dueAmount}
                   </Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Scholarship Status">
-                  <Tag color={student.scholarshipStatus ? 'green' : 'red'}>
-                    {student.scholarshipStatus ? 'Awarded' : 'Not Awarded'}
+                  <Tag color={students.scholarshipStatus ? 'green' : 'red'}>
+                    {students.scholarshipStatus ? 'Awarded' : 'Not Awarded'}
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
@@ -226,16 +200,13 @@ const StudentProfile = ({ params }) => {
             <Card title="Guardian Information">
               <Descriptions column={1}>
                 <Descriptions.Item label="Name">
-                  <Text>{student.guardianName}</Text>
+                  <Text>{students.guardianName}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Contact">
-                  <Text>{student.guardianContact}</Text>
+                  <Text>{students.guardianContact}</Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Emergency Contact">
-                  <Text>{student.emergencyContact}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="User ID">
-                  <Text>{student.guardianUserId}</Text>
+                  <Text>{students.emergencyContact}</Text>
                 </Descriptions.Item>
               </Descriptions>
             </Card>

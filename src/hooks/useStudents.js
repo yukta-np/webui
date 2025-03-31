@@ -4,14 +4,14 @@ import useSWR from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
-export function useStudents(params) {
+export function useStudents(params,id) {
    const queryString = useMemo(() => {
       if (!params || Object.keys(params).length === 0) return '';
       return new URLSearchParams(params).toString();
    }, [params]);
-
    const URL = constants.urls.studentUrl;
-   const fullUrl = queryString ? `${URL}?${queryString}` : URL;
+   const AURL = id ? `${URL}/${id}` : URL;
+   const fullUrl = queryString ? `${AURL}?${queryString}` : AURL;
 
    const { disableAutoRefetch } = params || {};
    const autoRefetchConfig = disableAutoRefetch ? disableRefetchBlock : null;
