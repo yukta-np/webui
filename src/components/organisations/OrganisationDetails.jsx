@@ -1,26 +1,11 @@
 import React from 'react';
-import {
-  Card,
-  Descriptions,
-  Button,
-  Tag,
-  Divider,
-  Row,
-  Col,
-  Space,
-  Typography,
-} from 'antd';
-import { useRouter } from 'next/router';
+import { Card, Descriptions, Tag, Divider, Row, Col, Typography } from 'antd';
 import { useOrganisation } from '@/hooks/useOrganisation';
 import moment from 'moment';
-
 const { Title, Text } = Typography;
 
-const OrganisationDetails = () => {
-  const router = useRouter();
-  const currentId = parseInt(router.query.id);
-  const { organisation } = useOrganisation();
-  const orgData = organisation?.find((org) => org.id === currentId);
+const OrganisationDetails = ({ params: { id } }) => {
+  const { organisation } = useOrganisation(id);
 
   return (
     <div className="p-4 ml-4">
@@ -32,22 +17,24 @@ const OrganisationDetails = () => {
         <Col span={24}>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="Name" span={2}>
-              <Text strong>{orgData?.name || '-'}</Text>
+              <Text strong>{organisation?.name || '-'}</Text>
             </Descriptions.Item>
             <Descriptions.Item label="Status">
-              <Tag color={orgData?.isActive === true ? 'green' : 'red'}>
-                {orgData?.isActive === true ? 'ACTIVE' : 'INACTIVE'}
+              <Tag color={organisation?.isActive === true ? 'green' : 'red'}>
+                {organisation?.isActive === true ? 'ACTIVE' : 'INACTIVE'}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Plan">
-              {orgData?.plan || 'No plan assigned'}
+              {organisation?.plan || 'No plan assigned'}
             </Descriptions.Item>
             <Descriptions.Item label="Created At">
-              {orgData?.createdAt || '-'}
+              {organisation?.createdAt || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Updated At">
-              {orgData?.updatedAt
-                ? moment(orgData.updatedAt).format('MMMM Do YYYY, h:mm:ss a')
+              {organisation?.updatedAt
+                ? moment(organisation.updatedAt).format(
+                    'MMMM Do YYYY, h:mm:ss a'
+                  )
                 : '-'}
             </Descriptions.Item>
           </Descriptions>
@@ -62,22 +49,22 @@ const OrganisationDetails = () => {
         <Col span={24}>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="Email">
-              {orgData?.email || '-'}
+              {organisation?.email || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Phone">
-              {orgData?.phone || '-'}
+              {organisation?.phone || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Address">
-              {orgData?.address || '-'}
+              {organisation?.address || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Website">
-              {orgData?.website || '-'}
+              {organisation?.website || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Pan Number">
-              {orgData?.panNumber || '-'}
+              {organisation?.panNumber || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Vat Number">
-              {orgData?.vatNumber || '-'}
+              {organisation?.vatNumber || '-'}
             </Descriptions.Item>
           </Descriptions>
         </Col>
@@ -91,10 +78,10 @@ const OrganisationDetails = () => {
         <Col span={24}>
           <Descriptions bordered column={2}>
             <Descriptions.Item label="No reply Email">
-              {orgData?.noreplyEmail || '-'}
+              {organisation?.noreplyEmail || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="No reply Phone">
-              {orgData?.noreplyPhone || '-'}
+              {organisation?.noreplyPhone || '-'}
             </Descriptions.Item>
           </Descriptions>
         </Col>
@@ -107,19 +94,21 @@ const OrganisationDetails = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <Card size="small" title="Users">
-            <Title level={3}>{orgData?.stats?.users || 0}</Title>
+            <Title level={3}>{organisation?.stats?.users || 0}</Title>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" title="Storage Used">
             <Title level={3}>
-              {orgData?.stats?.storage ? `${orgData.stats.storage} GB` : '0 GB'}
+              {organisation?.stats?.storage
+                ? `${organisation.stats.storage} GB`
+                : '0 GB'}
             </Title>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" title="Active Modules">
-            <Title level={3}>{orgData?.stats?.modules || 0}</Title>
+            <Title level={3}>{organisation?.stats?.modules || 0}</Title>
           </Card>
         </Col>
       </Row>

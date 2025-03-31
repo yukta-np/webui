@@ -15,30 +15,29 @@ import {
   message,
   Divider,
 } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
 import { FilePenLine, TimerReset, Search } from 'lucide-react';
-import { useRouter } from 'next/router';
 import { useUsers } from '@/hooks/useUsers';
 import { openNotification, Roles } from '@/utils';
 import { getUser, updateUser } from '@/services/users.http';
 
-const OrganisationUsers = () => {
+const OrganisationUsers = ({ params: { id } }) => {
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
-  const [id, setId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [resettingUser, setResettingUser] = useState(null);
   const [searchInputs, setSearchInputs] = useState({
     name: '',
     email: '',
   });
-  const router = useRouter();
-  const currentId = parseInt(router.query.id);
-  const { users, meta, revalidate } = useUsers(currentId);
 
-  console.log('all users', users);
+  let params = {};
+  if (id) {
+    params.organisationId = id;
+  }
+
+  const { users, meta, revalidate } = useUsers(params);
 
   const roleOptions = Object.keys(Roles).map((key) => ({
     value: key,
@@ -71,7 +70,6 @@ const OrganisationUsers = () => {
   };
 
   const onEdit = async (id) => {
-    setId(id);
     const { data } = await getUser(id);
     populateFrom(data);
     setIsModalVisible(true);
