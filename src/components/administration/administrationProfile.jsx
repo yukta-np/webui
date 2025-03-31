@@ -28,7 +28,7 @@ import {
   GraduationCap,
   BookOpen,
   Clock,
-  FirstAidKit,
+  Contact,
 } from 'lucide-react';
 import { BankFilled } from '@ant-design/icons';
 import { useAdministration } from '@/hooks/useAdministration';
@@ -37,7 +37,9 @@ const { Title, Text } = Typography;
 
 const AdministrationProfile = ({ params }) => {
   const router = useRouter();
-   const { administration, isLoading, isError } = useAdministration({}, params.id);
+   const {administrationById: administration, isLoading, isError } = useAdministration({}, params.id);
+   console.log(params.id)
+   console.log(administration)
 
   if (isLoading)
     return (
@@ -80,7 +82,7 @@ const AdministrationProfile = ({ params }) => {
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item className="text-gray-700 font-medium">
-          {administration.firstName} {administration.lastName}
+          {administration?.firstName} {administration?.lastName}
         </Breadcrumb.Item>
       </Breadcrumb>
 
@@ -90,7 +92,7 @@ const AdministrationProfile = ({ params }) => {
           administration.avatar && (
             <div className="h-48 bg-gray-50 overflow-hidden flex items-center justify-center border-b">
               <Image
-                src={administration.avatar}
+                src={administration?.avatar}
                 alt="Staff avatar"
                 preview={false}
                 className="object-contain"
@@ -335,7 +337,7 @@ const AdministrationProfile = ({ params }) => {
                 level={4}
                 className="mb-4 text-gray-800 flex items-center gap-2"
               >
-                <FirstAidKit size={18} /> Emergency Contact
+                <briefcase-medical size={18} /> Emergency Contact
               </Title>
               <Descriptions column={1}>
                 <Descriptions.Item
