@@ -76,7 +76,7 @@ const StudentForm = ({
     <Form
       form={form}
       layout="vertical"
-      onFinish={onSubmit}
+      onFinish={onFinish || onSubmit}
       id="student-form"
       initialValues={{
         isActive: true,
