@@ -16,9 +16,9 @@ export const resources = [
     ],
   },
   {
-    title: 'Documents',
-    namespace: 'Document',
-    name: 'documents',
+    title: 'Files',
+    namespace: 'File',
+    name: 'files',
     actions: [
       ResourceActions.create,
       ResourceActions.update,

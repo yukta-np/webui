@@ -11,6 +11,7 @@ export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
+    impersonateUrl: `${URL}/auth/impersonate`,
     verifyUrl: `${URL}/auth/verify`,
     forgotPasswordUrl: `${URL}/auth/forgot-password`,
     meUrl: `${URL}/users/me`,
@@ -32,13 +33,15 @@ export const constants = {
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
+
     administrationUrl: `${URL}/administration`,
     classroomUrl: `${URL}/classroom`,
     settingsUrl: `${URL}/settings`,
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
-    administrationUrl: `${URL}/administration`,
+    organisationsUrl: `${URL}/organisations`,
+    filesUrl: `${URL}/files`,    administrationUrl: `${URL}/administration`,
 
 
     // Socket

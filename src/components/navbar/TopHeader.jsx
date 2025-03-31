@@ -12,14 +12,23 @@ import {
   Button,
   Popover,
   List,
+  Form,
+  Divider,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
-import { clearStorageAndRedirect, fetcher } from '@/utils';
+import {
+  clearStorageAndRedirect,
+  fetcher,
+  setSessionStorageData,
+  token,
+} from '@/utils';
 import useSWRImmutable from 'swr/immutable';
-import { constants } from '@/constants';
-import { useRouter } from 'next/router';
+import { constants, headers } from '@/constants';
 import Link from 'next/link';
 import useWebSocket from '@/hooks/useWebsocket';
+import { useAnnouncement } from '@/hooks/useAnnouncement';
+import axios from 'axios';
+import { Roles } from '@/utils';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -27,6 +36,7 @@ const { useBreakpoint } = Grid;
 const TopHeader = () => {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
   const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
   const [isAnnouncementPopupOpen, setIsAnnouncementPopupOpen] = useState(false);
   const [isNotificationsModalOpen, setIsNotificationsModalOpen] =
@@ -35,22 +45,12 @@ const TopHeader = () => {
     useState(false);
   const [loggedInUser, setLoggedInUser] = useState();
   const [notifications, setNotifications] = useState([]);
+  const [impersonateForm] = Form.useForm();
 
-  const [announcements] = useState([
-    {
-      id: 1,
-      title: 'Holiday Notice',
-      description: 'Office closed on National Day',
-      date: '2024-02-20',
-    },
-    {
-      id: 2,
-      title: 'New Feature',
-      description: 'Check out the latest updates in v2.0',
-      date: '2024-02-18',
-    },
-  ]);
-
+  const { announcements } = useAnnouncement(
+    { disableAutoRefetch: true },
+    { shared: true }
+  );
   const meUrl = constants.urls.meUrl;
   const { data: userData } = useSWRImmutable(meUrl, fetcher);
 
@@ -79,44 +79,88 @@ const TopHeader = () => {
     token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
   } = theme.useToken();
   const screens = useBreakpoint();
+  const isSysAdmin = loggedInUser?.role === Roles.SYSADMIN;
 
   const onLogout = () => {
     clearStorageAndRedirect();
   };
 
+  const openSearchModal = () => {
+    setIsSearchModalOpen(true);
+  };
+  const closeSearchModal = () => {
+    setIsSearchModalOpen(false);
+  };
+
+  const openImpersonateModal = () => {
+    setIsImpersonateModalOpen(true);
+  };
+  const closeImpersonateModal = () => {
+    setIsImpersonateModalOpen(false);
+  };
+
+  const onImpersonateSubmit = async () => {
+    try {
+      const data = impersonateForm.getFieldsValue();
+
+      const response = await axios.post(constants.urls.impersonateUrl, data, {
+        headers,
+      });
+      if (response.status === 200) {
+        setIsImpersonateModalOpen(false);
+      }
+      const { token } = response.data;
+      setSessionStorageData(token);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Impersonation failed:', error);
+    }
+  };
+
   const menuItems = [
     {
-      label: <Link href="/users/profile">Profile</Link>,
-      key: 'profile',
+      label: <Link href="/users/my-profile">Profile</Link>,
+      key: 1,
     },
     {
-      key: '2',
-      label: 'Settings',
+      key: 3,
+      label: <Link href="/users/security">Security</Link>,
       onClick: () => console.log('Settings Clicked'),
     },
     {
-      key: '3',
+      type: 'divider',
+    },
+    {
+      key: 4,
       label: 'Logout',
       danger: true,
       onClick: onLogout,
     },
   ];
 
+  if (isSysAdmin) {
+    menuItems.splice(1, 0, {
+      key: 2,
+      label: 'Impersonate',
+      onClick: () => openImpersonateModal(),
+    });
+  }
+
   const renderPopupContent = (items, type) => (
     <div style={{ width: 300 }}>
       <List
-        dataSource={items.slice(0, 3)}
+        dataSource={items?.slice(0, 3)}
         renderItem={(item) => (
           <List.Item
             style={{ padding: '8px 0', borderBottom: '1px solid #f0f0f0' }}
           >
             <List.Item.Meta
-              title={item.title}
+              title={item?.title}
               description={
                 <>
-                  <div style={{ fontSize: 12 }}>{item.description}</div>
+                  <div style={{ fontSize: 12 }}>{item?.description}</div>
                   <div style={{ color: colorTextSecondary, fontSize: 10 }}>
-                    {item.date}
+                    {item?.date}
                   </div>
                 </>
               }
@@ -149,12 +193,12 @@ const TopHeader = () => {
             style={{ padding: '16px 0', borderBottom: '1px solid #f0f0f0' }}
           >
             <List.Item.Meta
-              title={item.title}
+              title={item?.title}
               description={
                 <>
-                  <div>{item.description}</div>
+                  <div>{item?.description}</div>
                   <div style={{ color: colorTextSecondary, fontSize: 12 }}>
-                    {item.date}
+                    {item?.date}
                   </div>
                 </>
               }
@@ -207,7 +251,7 @@ const TopHeader = () => {
               backgroundColor: '#f5f5f5',
               width: '100%',
             }}
-            onClick={() => setIsSearchModalOpen(true)}
+            onClick={openSearchModal}
           />
         )}
       </div>
@@ -215,7 +259,7 @@ const TopHeader = () => {
       <Modal
         title="Search"
         open={isSearchModalOpen}
-        onCancel={() => setIsSearchModalOpen(false)}
+        onCancel={closeSearchModal}
         footer={null}
         width="80%"
         style={{ top: 65, left: 40 }}
@@ -225,6 +269,35 @@ const TopHeader = () => {
           allowClear
           onSearch={(value) => console.log(value)}
         />
+      </Modal>
+
+      <Modal
+        title="Impersonate"
+        open={isImpersonateModalOpen}
+        onCancel={closeImpersonateModal}
+        onOk={() => impersonateForm.submit()}
+      >
+        <Divider />
+        <Form
+          form={impersonateForm}
+          onFinish={onImpersonateSubmit}
+          layout="vertical"
+        >
+          <Form.Item
+            label="Email"
+            name="email"
+            type="email"
+            rules={[
+              {
+                required: true,
+                message: 'Please enter an email',
+              },
+            ]}
+          >
+            <Input placeholder="Email" />
+          </Form.Item>
+        </Form>
+        <Divider />
       </Modal>
 
       {/* Notifications and User Area */}
@@ -241,7 +314,7 @@ const TopHeader = () => {
             onOpenChange={setIsNotificationPopupOpen}
           >
             <Badge
-              count={notifications.length}
+              count={notifications?.length}
               style={{
                 boxShadow: `0 0 0 2px ${colorBgContainer}`,
                 cursor: 'pointer',
@@ -258,7 +331,7 @@ const TopHeader = () => {
             onOpenChange={setIsAnnouncementPopupOpen}
           >
             <Badge
-              count={announcements.length}
+              count={announcements?.length}
               style={{
                 boxShadow: `0 0 0 2px ${colorBgContainer}`,
                 cursor: 'pointer',
