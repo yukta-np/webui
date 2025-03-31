@@ -17,69 +17,63 @@ import {
 } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { FilePenLine, TimerReset, Search } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { useUsers } from '@/hooks/useUsers';
+import { openNotification, Roles } from '@/utils';
+import { getUser, updateUser } from '@/services/users.http';
 
 const OrganisationUsers = () => {
   const [form] = Form.useForm();
   const [passwordForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [id, setId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [resettingUser, setResettingUser] = useState(null);
   const [searchInputs, setSearchInputs] = useState({
     name: '',
     email: '',
   });
+  const router = useRouter();
+  const currentId = parseInt(router.query.id);
+  const { users, meta, revalidate } = useUsers(currentId);
 
-  // Sample data with avatar URLs
-  const [users, setUsers] = useState([
-    {
-      key: '1',
-      firstName: 'John',
-      middleName: 'Michael',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      role: 'admin',
-      active: true,
-      avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    },
-    {
-      key: '2',
-      firstName: 'Jane',
-      middleName: 'Elizabeth',
-      lastName: 'Smith',
-      email: 'jane@example.com',
-      role: 'manager',
-      active: false,
-      avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-    },
-    {
-      key: '3',
-      firstName: 'Bob',
-      middleName: 'William',
-      lastName: 'Johnson',
-      email: 'bob@example.com',
-      role: 'user',
-      active: true,
-      avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
-    },
-  ]);
+  console.log('all users', users);
 
-  const roleOptions = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'manager', label: 'Manager' },
-    { value: 'user', label: 'User' },
-  ];
+  const roleOptions = Object.keys(Roles).map((key) => ({
+    value: key,
+    label: key,
+  }));
 
-  const onStatusChange = (checked, record) => {
-    const updatedUsers = users.map((user) =>
-      user.key === record.key ? { ...user, active: checked } : user
-    );
-    setUsers(updatedUsers);
+  const roleColors = {
+    [Roles.ADMIN]: 'red',
+    [Roles.MANAGER]: 'blue',
+    [Roles.TEACHER]: 'orange',
+    [Roles.STAFF]: 'gold',
+    [Roles.PARENT]: 'green',
+    [Roles.STUDENT]: 'cyan',
   };
 
-  const onEdit = (record) => {
-    setEditingUser(record);
-    form.setFieldsValue(record);
+  const populateFrom = (data) => {
+    form.setFieldsValue(data);
+  };
+
+  const onActiveChange = async (checked, users) => {
+    console.log(users.id);
+    try {
+      await updateUser(users.id, { isActive: checked });
+      openNotification('User updated successfully');
+      await revalidate();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      openNotification('Failed to update user', true);
+    }
+  };
+
+  const onEdit = async (id) => {
+    setId(id);
+    const { data } = await getUser(id);
+    populateFrom(data);
     setIsModalVisible(true);
   };
 
@@ -88,31 +82,37 @@ const OrganisationUsers = () => {
     setIsPasswordModalVisible(true);
   };
 
-  const onPasswordReset = () => {
-    passwordForm
-      .validateFields()
-      .then((values) => {
-        message.success(
-          `Password reset for ${resettingUser.firstName} ${resettingUser.lastName}`
-        );
-        setIsPasswordModalVisible(false);
-        passwordForm.resetFields();
-      })
-      .catch((err) => console.log('Validation failed:', err));
+  const onPasswordReset = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      message.success(
+        `Password reset for ${resettingUser.firstName} ${resettingUser.lastName}`
+      );
+      setIsPasswordModalVisible(false);
+      passwordForm.resetFields();
+    } catch (err) {
+      console.log('Validation failed:', err);
+    }
   };
 
-  const onSave = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const updatedUsers = users.map((user) =>
-          user.key === editingUser.key ? { ...user, ...values } : user
-        );
-        setUsers(updatedUsers);
-        setIsModalVisible(false);
-        message.success('User updated successfully');
-      })
-      .catch((err) => console.log('Validation failed:', err));
+  const onFinish = async (values) => {
+    setIsProcessing(true);
+    console.log(values);
+    try {
+      const payload = {
+        ...values,
+      };
+      await updateUser(id, payload);
+      setIsModalVisible(false);
+      openNotification('User updated successfully');
+      revalidate();
+      form.resetFields();
+    } catch (err) {
+      openNotification('Failed to update user', true);
+      console.log('Validation failed:', err);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const onSearch = (key, value) => {
@@ -123,7 +123,7 @@ const OrganisationUsers = () => {
     setSearchInputs((prev) => ({ ...prev, [key]: '' }));
   };
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users?.filter((user) => {
     const fullName =
       `${user.firstName} ${user.middleName} ${user.lastName}`.toLowerCase();
     const nameMatch = fullName.includes(searchInputs.name.toLowerCase());
@@ -160,11 +160,7 @@ const OrganisationUsers = () => {
           >
             Search
           </Button>
-          <Button
-            size="small"
-            onClick={() => onResetSearch(dataIndex)}
-            icon={<TimerReset size={14} />}
-          >
+          <Button size="small" onClick={() => onResetSearch(dataIndex)}>
             Reset
           </Button>
         </Space>
@@ -182,10 +178,10 @@ const OrganisationUsers = () => {
       ...getColumnSearchProps('name'),
       render: (_, record) => (
         <Space>
-          <Avatar src={record.avatar} icon={<UserOutlined />} size="default" />
-          <span className="font-medium">
-            {`${record.firstName} ${record.middleName} ${record.lastName}`}
-          </span>
+          <Avatar size="default">
+            {`${record.firstName[0].toUpperCase()}${record.lastName[0].toUpperCase()}`}
+          </Avatar>
+          <span className="font-medium">{`${record.fullName}`}</span>
         </Space>
       ),
     },
@@ -200,27 +196,20 @@ const OrganisationUsers = () => {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
-      render: (role) => (
-        <Tag
-          color={
-            role === 'admin' ? 'red' : role === 'manager' ? 'blue' : 'green'
-          }
-        >
-          {role.toUpperCase()}
-        </Tag>
-      ),
+      render: (role) => <Tag color={roleColors[role]}>{role}</Tag>,
     },
     {
-      title: 'Status',
-      dataIndex: 'active',
+      title: 'Active',
+      dataIndex: 'isActive',
       key: 'active',
-      render: (active, record) => (
+      render: (isActive, record) => (
         <Switch
-          checked={active}
-          onChange={(checked) => onStatusChange(checked, record)}
+          checked={!!isActive}
+          onChange={(checked) => onActiveChange(checked, record)}
         />
       ),
     },
+
     {
       title: 'Actions',
       key: 'actions',
@@ -230,7 +219,7 @@ const OrganisationUsers = () => {
           <Button
             type="link"
             icon={<FilePenLine size={18} />}
-            onClick={() => onEdit(record)}
+            onClick={() => onEdit(record.id)}
           />
           <Button
             type="link"
@@ -268,19 +257,18 @@ const OrganisationUsers = () => {
       <Modal
         title="Edit User"
         visible={isModalVisible}
-        onOk={onSave}
         onCancel={() => setIsModalVisible(false)}
         footer={[
           <Button key="back" onClick={() => setIsModalVisible(false)}>
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={onSave}>
+          <Button key="submit" type="primary" onClick={() => form.submit()}>
             Save
           </Button>,
         ]}
       >
         <Divider />
-        <Form form={form} layout="vertical">
+        <Form form={form} onFinish={onFinish} layout="vertical">
           <Row gutter={16}>
             <Col span={8}>
               <Form.Item

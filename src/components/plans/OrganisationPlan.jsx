@@ -12,8 +12,6 @@ import {
 } from 'antd';
 import { FilePenLine, X, Save } from 'lucide-react';
 
-const { Option } = Select;
-
 const OrganisationPlan = () => {
   const [form] = Form.useForm();
   const [editing, setEditing] = useState(false);
