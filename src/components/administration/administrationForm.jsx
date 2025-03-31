@@ -12,7 +12,7 @@ import {
   Button,
 } from 'antd';
 import moment from 'moment';
-import { createAdministration } from '@/services/administrations.http'; // Update this import to your actual service
+import { createAdministration } from '@/services/administration.http';
 import { openNotification } from '@/utils';
 import { emailRegex, phoneRegex } from '@/utils';
 
@@ -45,6 +45,8 @@ const AdministrationForm = ({
   const onSubmit = async (values) => {
     const processedValues = {
       ...values,
+      facultyId: 1, // Replace with actual faculty ID
+      userId: 1, // Replace with actual user ID
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
       hireDate: values.hireDate?.format('YYYY-MM-DD'),
     };
@@ -240,15 +242,6 @@ const AdministrationForm = ({
       </Title>
 
       <Row gutter={16}>
-        <Col xs={24} md={8}>
-          <Item
-            name="facultyId"
-            label="Faculty ID"
-            rules={[{ required: true, message: 'Please input faculty ID!' }]}
-          >
-            <InputNumber min={1} className="w-full" disabled={isViewMode} />
-          </Item>
-        </Col>
         <Col xs={24} md={8}>
           <Item
             name="academicProgram"

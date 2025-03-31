@@ -129,12 +129,12 @@ const AdministrationList = () => {
     setFilterDrawerVisible(false);
   };
 
-  const filteredData = administration.filter((item) => {
-    return Object.entries(filterValues).every(([key, value]) => {
-      if (!value) return true;
-      return String(item[key]).toLowerCase().includes(value.toLowerCase());
-    });
-  });
+  // const filteredData = administration.filter((item) => {
+  //   return Object.entries(filterValues).every(([key, value]) => {
+  //     if (!value) return true;
+  //     return String(item[key]).toLowerCase().includes(value.toLowerCase());
+  //   });
+  // });
 
   return (
     <div className="p-6">
@@ -171,11 +171,10 @@ const AdministrationList = () => {
             onChange: setSelectedRowKeys,
           }}
           columns={columns}
-          dataSource={filteredData}
+          dataSource={administration}
           rowKey="id"
           pagination={{ pageSize: 10 }}
           bordered
-          scroll={{ x: 1300 }}
         />
       </Card>
 
