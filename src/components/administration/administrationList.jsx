@@ -102,7 +102,7 @@ const AdministrationList = () => {
         <div className="flex gap-2">
           <Button
             type="link"
-            onClick={() => router.push(`/administration/${record.id}`)}
+            onClick={() => router.push(`/administration/${record.id}/view`)}
           >
             View
           </Button>
@@ -128,13 +128,6 @@ const AdministrationList = () => {
     setFilterValues(values);
     setFilterDrawerVisible(false);
   };
-
-  // const filteredData = administration.filter((item) => {
-  //   return Object.entries(filterValues).every(([key, value]) => {
-  //     if (!value) return true;
-  //     return String(item[key]).toLowerCase().includes(value.toLowerCase());
-  //   });
-  // });
 
   return (
     <div className="p-6">
