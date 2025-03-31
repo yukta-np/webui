@@ -1,9 +1,15 @@
-import React from 'react'
+import { useRouter } from 'next/router';
+import AdministrationEditForm from '@/components/administration/AdministrationEditForm';
+import React from 'react';
 
-function edit() {
-  return (
-    <div>edit</div>
-  )
-}
+const EditAdministration = () => {
+  const router = useRouter();
+  const { id } = router.query;
 
-export default edit
+  if (!id) return <p>Loading...</p>;
+
+  return <AdministrationEditForm params={{ id }} />;
+};
+
+export default EditAdministration;
+
