@@ -98,7 +98,7 @@ export default function StaffProfile() {
                   <Progress percent={35} status="active" />
                 </div>
                 <div>
-                  <h4 className="font-medium">Processed Documents</h4>
+                  <h4 className="font-medium">Processed Files</h4>
                   <Progress percent={78} status="success" />
                 </div>
               </div>
