@@ -27,6 +27,7 @@ export function useAdministration(params, id) {
 
    return {
       administration: responseData?.data,
+      administrationById: responseData,
       meta: responseData?.meta,
       isLoading: isValidating,
       isError: error,
