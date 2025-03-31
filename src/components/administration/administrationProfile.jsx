@@ -31,39 +31,13 @@ import {
   FirstAidKit,
 } from 'lucide-react';
 import { BankFilled } from '@ant-design/icons';
+import { useAdministration } from '@/hooks/useAdministration';
 
 const { Title, Text } = Typography;
 
 const AdministrationProfile = ({ params }) => {
   const router = useRouter();
-  // In real implementation, replace with your actual data fetching hook
-  const administration = {
-    // Sample data
-    firstName: 'John',
-    middleName: 'A',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phoneNumber: '+1234567890',
-    dateOfBirth: '1990-05-15T00:00:00.000Z',
-    isTeacher: true,
-    nationality: 'American',
-    address: '123 Main St, Springfield',
-    facultyId: 1,
-    academicProgram: 101,
-    hireDate: '2022-09-01T00:00:00.000Z',
-    salary: 50000,
-    isActive: true,
-    avatar: 'https://example.com/avatar.jpg',
-    userId: 10,
-    highestQualification: 'PhD in Computer Science',
-    specialization: 'Artificial Intelligence',
-    experienceYears: 10,
-    emergencyContact: '+9876543210',
-  };
-
-  // Simulated loading state
-  const isLoading = false;
-  const isError = false;
+   const { administration, isLoading, isError } = useAdministration({}, params.id);
 
   if (isLoading)
     return (
