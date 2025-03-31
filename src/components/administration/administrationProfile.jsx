@@ -20,67 +20,53 @@ import {
   Phone,
   Home,
   User,
-  GraduationCap,
+  Briefcase,
   Cake,
   CalendarDays,
   ShieldAlert,
-  Wallet,
-  School,
+  DollarSign,
+  GraduationCap,
+  BookOpen,
+  Clock,
   Contact,
 } from 'lucide-react';
 import { BankFilled } from '@ant-design/icons';
-import { useStudents } from '@/hooks/useStudents';
+import { useAdministration } from '@/hooks/useAdministration';
 
 const { Title, Text } = Typography;
 
-const StudentProfile = ({ params }) => {
+const AdministrationProfile = ({ params }) => {
   const router = useRouter();
-  const { students, isLoading, isError } = useStudents({}, params.id);
+   const {administrationById: administration, isLoading, isError } = useAdministration({}, params.id);
+   console.log(params.id)
+   console.log(administration)
 
   if (isLoading)
     return (
-      <div className="p-4 max-w-8xl mx-auto">
+      <div className="p-6 max-w-7xl mx-auto">
         <Skeleton active paragraph={{ rows: 8 }} />
       </div>
     );
 
   if (isError)
     return (
-      <div className="p-4 gap-4">
+      <div className="p-6 max-w-7xl mx-auto">
         <Card className="text-center">
           <Title level={3} className="mb-4 text-red-600">
             Loading Error
           </Title>
           <Text className="mb-4 block text-gray-600">
-            Failed to load student data. Please try again later.
+            Failed to load staff data. Please try again later.
           </Text>
-          <Button type="primary" onClick={() => router.push('/students')}>
-            Return to Student List
+          <Button type="primary" onClick={() => router.push('/administration')}>
+            Return to Staff Directory
           </Button>
         </Card>
       </div>
     );
-
-  if (!students) {
-    return (
-      <div className="p-4 gap-4">
-        <Card className="text-center">
-          <Title level={3} className="mb-4 text-gray-800">
-            Student Not Found
-          </Title>
-          <Text className="mb-4 block text-gray-600">
-            The requested student record does not exist in our system.
-          </Text>
-          <Button type="primary" onClick={() => router.push('/students')}>
-            Return to Student Directory
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 gap-4">
+    <div className="p-4 gap-4">
       <Breadcrumb className="mb-6 text-sm">
         <Breadcrumb.Item>
           <Link href="/" className="text-gray-500 hover:text-gray-700">
@@ -88,23 +74,26 @@ const StudentProfile = ({ params }) => {
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link href="/students" className="text-gray-500 hover:text-gray-700">
-            Students
+          <Link
+            href="/administration"
+            className="text-gray-500 hover:text-gray-700"
+          >
+            Staff
           </Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item className="text-gray-700 font-medium">
-          {students.firstName} {students.lastName}
+          {administration?.firstName} {administration?.lastName}
         </Breadcrumb.Item>
       </Breadcrumb>
 
       <Card
         className="shadow-sm border-0"
         cover={
-          students.avatar && (
+          administration.avatar && (
             <div className="h-48 bg-gray-50 overflow-hidden flex items-center justify-center border-b">
               <Image
-                src={students.avatar}
-                alt="Student avatar"
+                src={administration?.avatar}
+                alt="Staff avatar"
                 preview={false}
                 className="object-contain"
                 width={200}
@@ -117,20 +106,23 @@ const StudentProfile = ({ params }) => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <Title level={2} className="mb-1 text-gray-800">
-              {students.firstName} {students.middleName} {students.lastName}
+              {administration.firstName} {administration.middleName}{' '}
+              {administration.lastName}
             </Title>
             <Text
               type="secondary"
               className="text-gray-500 text-lg flex items-center gap-2"
             >
-              <School size={18} />
-              {students.faculty} • {students.program}
+              <Briefcase size={18} />
+              {administration.isTeacher
+                ? 'Teaching Staff'
+                : 'Administrative Staff'}
             </Text>
           </div>
           <Button
             type="default"
             icon={<FilePenLine size={16} />}
-            onClick={() => router.push(`/students/${params.id}/edit`)}
+            onClick={() => router.push(`/administration/${params.id}/edit`)}
             className="flex items-center gap-2 border-gray-300 text-gray-600 hover:border-gray-400"
           >
             Edit Profile
@@ -146,19 +138,21 @@ const StudentProfile = ({ params }) => {
                 <User size={18} className="text-gray-500" />
                 <div>
                   <Text strong className="text-gray-600">
-                    Student ID
+                    Employee ID
                   </Text>
-                  <Text className="block text-gray-800">{students.id}</Text>
+                  <Text className="block text-gray-800">
+                    #{administration.userId}
+                  </Text>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <GraduationCap size={18} className="text-gray-500" />
+                <Clock size={18} className="text-gray-500" />
                 <div>
                   <Text strong className="text-gray-600">
-                    Batch
+                    Experience
                   </Text>
                   <Text className="block text-gray-800">
-                    {students.batchNumber}
+                    {administration.experienceYears} years
                   </Text>
                 </div>
               </div>
@@ -169,7 +163,7 @@ const StudentProfile = ({ params }) => {
                     Faculty ID
                   </Text>
                   <Text className="block text-gray-800">
-                    {students.facultyId}
+                    #{administration.facultyId}
                   </Text>
                 </div>
               </div>
@@ -184,20 +178,22 @@ const StudentProfile = ({ params }) => {
                     level={4}
                     className="mb-4 text-gray-800 flex items-center gap-2"
                   >
-                    <Contact size={18} /> Contact Information
+                    <Contact size={18} /> Personal Information
                   </Title>
                   <Descriptions column={1}>
                     <Descriptions.Item label="Email" className="text-gray-600">
                       <div className="flex items-center gap-2">
                         <Mail size={16} className="text-gray-500" />
-                        <Text className="text-gray-800">{students.email}</Text>
+                        <Text className="text-gray-800">
+                          {administration.email}
+                        </Text>
                       </div>
                     </Descriptions.Item>
                     <Descriptions.Item label="Phone">
                       <div className="flex items-center gap-2">
                         <Phone size={16} className="text-gray-500" />
                         <Text className="text-gray-800">
-                          {students.phoneNumber}
+                          {administration.phoneNumber}
                         </Text>
                       </div>
                     </Descriptions.Item>
@@ -205,9 +201,24 @@ const StudentProfile = ({ params }) => {
                       <div className="flex items-center gap-2">
                         <Home size={16} className="text-gray-500" />
                         <Text className="text-gray-800">
-                          {students.address}
+                          {administration.address}
                         </Text>
                       </div>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Date of Birth">
+                      <div className="flex items-center gap-2">
+                        <Cake size={16} className="text-gray-500" />
+                        <Text className="text-gray-800">
+                          {new Date(
+                            administration.dateOfBirth
+                          ).toLocaleDateString()}
+                        </Text>
+                      </div>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Nationality">
+                      <Tag color="blue" className="rounded-full">
+                        {administration.nationality}
+                      </Tag>
                     </Descriptions.Item>
                   </Descriptions>
                 </Card>
@@ -219,18 +230,20 @@ const StudentProfile = ({ params }) => {
                     level={4}
                     className="mb-4 text-gray-800 flex items-center gap-2"
                   >
-                    <CalendarDays size={18} /> Academic Details
+                    <GraduationCap size={18} /> Professional Information
                   </Title>
                   <Row gutter={[16, 16]}>
                     <Col xs={24} md={12}>
                       <div className="flex items-center gap-3">
-                        <Cake size={16} className="text-gray-500" />
+                        <CalendarDays size={16} className="text-gray-500" />
                         <div>
                           <Text strong className="text-gray-600">
-                            Date of Birth
+                            Hire Date
                           </Text>
                           <Text className="block text-gray-800">
-                            {students.dateOfBirth}
+                            {new Date(
+                              administration.hireDate
+                            ).toLocaleDateString()}
                           </Text>
                         </div>
                       </div>
@@ -240,14 +253,40 @@ const StudentProfile = ({ params }) => {
                         <ShieldAlert size={16} className="text-gray-500" />
                         <div>
                           <Text strong className="text-gray-600">
-                            Status
+                            Employment Status
                           </Text>
                           <Tag
-                            color={students.isActive ? 'green' : 'red'}
+                            color={administration.isActive ? 'green' : 'red'}
                             className="rounded-full px-3"
                           >
-                            {students.isActive ? 'Active' : 'Inactive'}
+                            {administration.isActive ? 'Active' : 'Inactive'}
                           </Tag>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <div className="flex items-center gap-3">
+                        <BookOpen size={16} className="text-gray-500" />
+                        <div>
+                          <Text strong className="text-gray-600">
+                            Highest Qualification
+                          </Text>
+                          <Text className="block text-gray-800">
+                            {administration.highestQualification}
+                          </Text>
+                        </div>
+                      </div>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <div className="flex items-center gap-3">
+                        <Briefcase size={16} className="text-gray-500" />
+                        <div>
+                          <Text strong className="text-gray-600">
+                            Specialization
+                          </Text>
+                          <Text className="block text-gray-800">
+                            {administration.specialization}
+                          </Text>
                         </div>
                       </div>
                     </Col>
@@ -267,35 +306,25 @@ const StudentProfile = ({ params }) => {
                 level={4}
                 className="mb-4 text-gray-800 flex items-center gap-2"
               >
-                <Wallet size={18} /> Financial Information
+                <DollarSign size={18} /> Compensation
               </Title>
               <Descriptions column={1}>
-                <Descriptions.Item label="Due Amount" className="text-gray-600">
+                <Descriptions.Item
+                  label="Annual Salary"
+                  className="text-gray-600"
+                >
                   <div className="flex items-center gap-2">
-                    <Text
-                      className={`text-lg ${
-                        students.dueAmount > 0
-                          ? 'text-red-600'
-                          : 'text-green-600'
-                      }`}
-                    >
-                      ${students.dueAmount}
+                    <Text className="text-lg text-green-600">
+                      ${administration.salary.toLocaleString()}
                     </Text>
-                    {students.dueAmount > 0 && (
-                      <Tag color="red" className="rounded-full">
-                        Payment Due
-                      </Tag>
-                    )}
+                    <Tag color="green" className="rounded-full">
+                      Current
+                    </Tag>
                   </div>
                 </Descriptions.Item>
-                <Descriptions.Item label="Scholarship Status">
-                  <Tag
-                    color={students.scholarshipStatus ? 'green' : 'red'}
-                    className="rounded-full px-3"
-                  >
-                    {students.scholarshipStatus
-                      ? 'Scholarship Awarded'
-                      : 'No Scholarship'}
+                <Descriptions.Item label="Payment Status">
+                  <Tag color="green" className="rounded-full px-3">
+                    Regular
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
@@ -308,21 +337,19 @@ const StudentProfile = ({ params }) => {
                 level={4}
                 className="mb-4 text-gray-800 flex items-center gap-2"
               >
-                <Contact size={18} /> Guardian Details
+                <briefcase-medical size={18} /> Emergency Contact
               </Title>
               <Descriptions column={1}>
-                <Descriptions.Item label="Name" className="text-gray-600">
-                  <Text className="text-gray-800">{students.guardianName}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Contact">
-                  <Text className="text-gray-800">
-                    {students.guardianContact}
-                  </Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Emergency Contact">
+                <Descriptions.Item
+                  label="Contact Number"
+                  className="text-gray-600"
+                >
                   <Text className="text-red-600">
-                    {students.emergencyContact}
+                    {administration.emergencyContact}
                   </Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Relation">
+                  <Text className="text-gray-800">Emergency Contact</Text>
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -344,4 +371,4 @@ const StudentProfile = ({ params }) => {
   );
 };
 
-export default StudentProfile;
+export default AdministrationProfile;

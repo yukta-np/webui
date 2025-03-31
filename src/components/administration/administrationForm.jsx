@@ -12,14 +12,14 @@ import {
   Button,
 } from 'antd';
 import moment from 'moment';
-import { createStudent } from '@/services/students.http';
+import { createAdministration } from '@/services/administration.http';
 import { openNotification } from '@/utils';
 import { emailRegex, phoneRegex } from '@/utils';
 
 const { Item } = Form;
 const { Title } = Typography;
 
-const StudentForm = ({
+const AdministrationForm = ({
   initialValues,
   mode = 'create',
   error,
@@ -35,33 +35,30 @@ const StudentForm = ({
         dateOfBirth: initialValues?.dateOfBirth
           ? moment(initialValues.dateOfBirth)
           : null,
-        enrollmentDate: initialValues?.enrollmentDate
-          ? moment(initialValues.enrollmentDate)
-          : null,
-        graduationDate: initialValues?.graduationDate
-          ? moment(initialValues.graduationDate)
+        hireDate: initialValues?.hireDate
+          ? moment(initialValues.hireDate)
           : null,
       });
     }
   }, [initialValues, form]);
 
   const onSubmit = async (values) => {
-    console.log('Form values:', values);
     const processedValues = {
       ...values,
+      facultyId: 1, // Replace with actual faculty ID
+      userId: 1, // Replace with actual user ID
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
-      enrollmentDate: values.enrollmentDate?.format('YYYY-MM-DD'),
-      graduationDate: values.graduationDate?.format('YYYY-MM-DD'),
+      hireDate: values.hireDate?.format('YYYY-MM-DD'),
     };
     try {
-      const response = await createStudent(processedValues);
+      const response = await createAdministration(processedValues); // Update to your actual API call
       openNotification(
-        'New Student Created Successfully! ID: ' + response.data.id);
+        'New Administration Created Successfully! ID: ' + response.data.id
+      );
     } catch (error) {
-      console.error('Error creating student:', error);
+      console.error('Error creating record:', error);
       const errorMessage = error.response?.data?.message;
-      openNotification(errorMessage || 'Error creating student', 'error');
-      // Handle error (e.g., show a message to the user)
+      openNotification(errorMessage || 'Error creating record', 'error');
     }
   };
 
@@ -72,11 +69,11 @@ const StudentForm = ({
     <Form
       form={form}
       layout="vertical"
-      onFinish={onFinish || onSubmit}
-      id="student-form"
+      onFinish={onSubmit}
+      id="administration-form"
       initialValues={{
         isActive: true,
-        scholarshipStatus: false,
+        isTeacher: false,
         ...initialValues,
       }}
     >
@@ -106,7 +103,7 @@ const StudentForm = ({
         </Col>
         <Col xs={24} md={8}>
           <Item name="middleName" label="Middle Name">
-            <Input disabled={isViewMode} placeholder="Michael" />
+            <Input disabled={isViewMode} placeholder="A" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -185,7 +182,10 @@ const StudentForm = ({
             label="Address"
             rules={[{ required: true, message: 'Please input address!' }]}
           >
-            <Input disabled={isViewMode} placeholder="123 Main Street" />
+            <Input
+              disabled={isViewMode}
+              placeholder="123 Main St, Springfield"
+            />
           </Item>
         </Col>
       </Row>
@@ -197,73 +197,83 @@ const StudentForm = ({
       <Row gutter={16}>
         <Col xs={24} md={8}>
           <Item
-            name="faculty"
-            label="Faculty"
-            // rules={[{ required: true, message: 'Please input faculty!' }]}
+            name="highestQualification"
+            label="Highest Qualification"
+            rules={[{ required: true, message: 'Please input qualification!' }]}
           >
-            <Input disabled={isViewMode} placeholder="Computer Science" />
-          </Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Item
-            name="program"
-            label="Program"
-            // rules={[{ required: true, message: 'Please input program!' }]}
-          >
-            <Input disabled={isViewMode} placeholder="Bachelor's Degree" />
-          </Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Item
-            name="batchNumber"
-            label="Batch Number"
-            rules={[{ required: true, message: 'Please input batch number!' }]}
-          >
-            <Input disabled={isViewMode} placeholder="2023A" />
-          </Item>
-        </Col>
-      </Row>
-
-      <Row gutter={16}>
-        <Col xs={24} md={12}>
-          <Item
-            name="enrollmentDate"
-            label="Enrollment Date"
-            rules={[
-              { required: true, message: 'Please select enrollment date!' },
-            ]}
-          >
-            <DatePicker
-              format="YYYY-MM-DD"
-              className="w-full"
+            <Input
               disabled={isViewMode}
+              placeholder="PhD in Computer Science"
             />
           </Item>
         </Col>
-        <Col xs={24} md={12}>
-          <Item name="graduationDate" label="Graduation Date">
-            <DatePicker
-              format="YYYY-MM-DD"
+        <Col xs={24} md={8}>
+          <Item
+            name="specialization"
+            label="Specialization"
+            rules={[
+              { required: true, message: 'Please input specialization!' },
+            ]}
+          >
+            <Input
+              disabled={isViewMode}
+              placeholder="Artificial Intelligence"
+            />
+          </Item>
+        </Col>
+        <Col xs={24} md={8}>
+          <Item
+            name="experienceYears"
+            label="Experience (Years)"
+            rules={[{ required: true, message: 'Please input experience!' }]}
+          >
+            <InputNumber
+              min={0}
+              max={50}
               className="w-full"
               disabled={isViewMode}
-              disabledDate={(current) =>
-                current && current < form.getFieldValue('enrollmentDate')
-              }
             />
           </Item>
         </Col>
       </Row>
 
       <Title level={4} className="mb-6 mt-6">
-        Financial Information
+        Employment Details
       </Title>
+
+      <Row gutter={16}>
+        <Col xs={24} md={8}>
+          <Item
+            name="academicProgram"
+            label="Academic Program"
+            // rules={[
+            //   { required: true, message: 'Please input academic program!' },
+            // ]}
+          >
+            <InputNumber min={1} className="w-full" disabled={isViewMode} />
+          </Item>
+        </Col>
+        <Col xs={24} md={8}>
+          <Item
+            name="hireDate"
+            label="Hire Date"
+            rules={[{ required: true, message: 'Please select hire date!' }]}
+          >
+            <DatePicker
+              format="YYYY-MM-DD"
+              className="w-full"
+              disabled={isViewMode}
+            />
+          </Item>
+        </Col>
+      </Row>
 
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Item
-            name="dueAmount"
-            label="Due Amount ($)"
-            rules={[{ required: true, message: 'Please input due amount!' }]}
+            name="salary"
+            label="Salary"
+            rules={[{ required: true, message: 'Please input salary!' }]}
           >
             <InputNumber
               className="w-full"
@@ -276,11 +286,7 @@ const StudentForm = ({
           </Item>
         </Col>
         <Col xs={24} md={12}>
-          <Item
-            name="scholarshipStatus"
-            label="Scholarship Status"
-            valuePropName="checked"
-          >
+          <Item name="isTeacher" label="Teaching Staff" valuePropName="checked">
             <Checkbox disabled={isViewMode} />
           </Item>
         </Col>
@@ -291,15 +297,6 @@ const StudentForm = ({
       </Title>
 
       <Row gutter={16}>
-        <Col xs={24} md={8}>
-          <Item
-            name="isCr"
-            label="Class Representative"
-            valuePropName="checked"
-          >
-            <Checkbox disabled={isViewMode} />
-          </Item>
-        </Col>
         <Col xs={24} md={8}>
           <Item name="isActive" label="Active Status" valuePropName="checked">
             <Checkbox disabled={isViewMode || isCreateMode} />
@@ -317,34 +314,6 @@ const StudentForm = ({
             />
           </Item>
         </Col>
-      </Row>
-
-      <Title level={4} className="mb-6 mt-6">
-        Guardian Information
-      </Title>
-
-      <Row gutter={16}>
-        <Col xs={24} md={8}>
-          <Item
-            name="guardianName"
-            label="Guardian Name"
-            rules={[{ required: true, message: 'Please input guardian name!' }]}
-          >
-            <Input disabled={isViewMode} placeholder="Jane Doe" />
-          </Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Item
-            name="guardianContact"
-            label="Guardian Contact"
-            rules={[
-              { required: true, message: 'Please input guardian contact!' },
-              { pattern: phoneRegex, message: 'Invalid phone number format' },
-            ]}
-          >
-            <Input disabled={isViewMode} placeholder="+1987654321" />
-          </Item>
-        </Col>
         <Col xs={24} md={8}>
           <Item
             name="emergencyContact"
@@ -354,7 +323,7 @@ const StudentForm = ({
               { pattern: phoneRegex, message: 'Invalid phone number format' },
             ]}
           >
-            <Input disabled={isViewMode} placeholder="+1122334455" />
+            <Input disabled={isViewMode} placeholder="+9876543210" />
           </Item>
         </Col>
       </Row>
@@ -367,7 +336,7 @@ const StudentForm = ({
             loading={loading}
             className="w-32"
           >
-            {isCreateMode ? 'Create Student' : 'Update Student'}
+            {isCreateMode ? 'Create Record' : 'Update Record'}
           </Button>
         </div>
       )}
@@ -375,4 +344,4 @@ const StudentForm = ({
   );
 };
 
-export default StudentForm;
+export default AdministrationForm;

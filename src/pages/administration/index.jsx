@@ -1,13 +1,13 @@
-// pages/settings/[id]/index.jsx
+// pages/administration/index.jsx
 import { useRouter } from 'next/router';
 import CustomHead from '@/components/customHead/CustomHead';
-import Settings from '@/components/settings/Settings';
+import AdministrationList from '@/components/administration/administrationList';
 
 export default function Page() {
   const router = useRouter();
-  const { administration } = router.query; // Get student from router
+  const { administration } = router.query; // Get administration from router
 
- 
+  // on undefined administration safely
   const currentType = administration || '';
 
   return (
@@ -17,7 +17,8 @@ export default function Page() {
           administration ? `${administration} Profile` : 'All Administration'
         }`}
       />
-      <Settings currentType="administration" />
+      <AdministrationList />
     </>
   );
 }
+

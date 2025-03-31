@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
-import StudentEditForm from '@/components/students/StudentEditForm';
+import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
 
-const EditStudent = () => {
+const ViewStudent = () => {
   const router = useRouter();
   const { id } = router.query;
 
   if (!id) return <p>Loading...</p>;
 
-  return <StudentEditForm params={{ id }} />;
+  return <StudentProfile params={{ id }} />;
 };
 
-export default EditStudent;
+export default ViewStudent;

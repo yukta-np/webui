@@ -4,12 +4,12 @@ import useSWR from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
-export function useStudents(params,id) {
+export function useAdministration(params, id) {
    const queryString = useMemo(() => {
       if (!params || Object.keys(params).length === 0) return '';
       return new URLSearchParams(params).toString();
    }, [params]);
-   const URL = constants.urls.studentUrl;
+   const URL = constants.urls.administrationUrl;
    const AURL = id ? `${URL}/${id}` : URL;
    const fullUrl = queryString ? `${AURL}?${queryString}` : AURL;
 
@@ -26,10 +26,12 @@ export function useStudents(params,id) {
    const revalidate = () => mutate(fullUrl);
 
    return {
-      students: responseData,
+      administration: responseData?.data,
+      administrationById: responseData,
       meta: responseData?.meta,
       isLoading: isValidating,
       isError: error,
       revalidate,
    };
 }
+

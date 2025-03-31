@@ -33,3 +33,8 @@ export async function deleteStudentComment(id, commentId) {
   return axios.delete(`${URL}/${id}/comment/${commentId}`, { headers });
 }
 
+// Add to student.http.js
+export async function getStudentById(id) {
+  return axios.get(`${URL}/${id}`, { headers });
+}
+
