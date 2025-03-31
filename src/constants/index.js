@@ -41,8 +41,7 @@ export const constants = {
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
     organisationsUrl: `${URL}/organisations`,
-    filesUrl: `${URL}/files`,    administrationUrl: `${URL}/administration`,
-
+    filesUrl: `${URL}/files`,
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
