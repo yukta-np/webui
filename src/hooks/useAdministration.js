@@ -26,7 +26,7 @@ export function useAdministration(params, id) {
    const revalidate = () => mutate(fullUrl);
 
    return {
-      administrationData: responseData,
+      administration: responseData?.data,
       meta: responseData?.meta,
       isLoading: isValidating,
       isError: error,

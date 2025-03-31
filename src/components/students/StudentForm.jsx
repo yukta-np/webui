@@ -28,10 +28,6 @@ const StudentForm = ({
 }) => {
   const [form] = Form.useForm();
 
-  // // Validation patterns
-  // const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-  // const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-
   useEffect(() => {
     if (initialValues) {
       form.setFieldsValue({
@@ -203,7 +199,7 @@ const StudentForm = ({
           <Item
             name="faculty"
             label="Faculty"
-            rules={[{ required: true, message: 'Please input faculty!' }]}
+            // rules={[{ required: true, message: 'Please input faculty!' }]}
           >
             <Input disabled={isViewMode} placeholder="Computer Science" />
           </Item>
@@ -212,7 +208,7 @@ const StudentForm = ({
           <Item
             name="program"
             label="Program"
-            rules={[{ required: true, message: 'Please input program!' }]}
+            // rules={[{ required: true, message: 'Please input program!' }]}
           >
             <Input disabled={isViewMode} placeholder="Bachelor's Degree" />
           </Item>

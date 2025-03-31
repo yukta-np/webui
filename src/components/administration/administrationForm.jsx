@@ -246,9 +246,9 @@ const AdministrationForm = ({
           <Item
             name="academicProgram"
             label="Academic Program"
-            rules={[
-              { required: true, message: 'Please input academic program!' },
-            ]}
+            // rules={[
+            //   { required: true, message: 'Please input academic program!' },
+            // ]}
           >
             <InputNumber min={1} className="w-full" disabled={isViewMode} />
           </Item>
