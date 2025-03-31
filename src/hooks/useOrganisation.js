@@ -1,13 +1,12 @@
 import { constants } from '@/constants';
 import useSWR, { mutate } from 'swr';
 import { fetcher } from '../utils';
-const URL = `${constants.urls.organisationsUrl}`;
 
-export function useOrganisation() {
-  const { data: responseData, error, isValidating } = useSWR(URL, fetcher);
-
-  const revalidate = () => mutate(URL);
-
+export function useOrganisation(id) {
+  const URL = `${constants.urls.organisationsUrl}`;
+  const AURL = id ? `${URL}/${id}` : URL;
+  const revalidate = () => mutate(AURL);
+  const { data: responseData, error, isValidating } = useSWR(AURL, fetcher);
   return {
     organisation: responseData,
     isLoading: isValidating,

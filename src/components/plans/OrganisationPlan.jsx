@@ -12,7 +12,7 @@ import {
 } from 'antd';
 import { FilePenLine, X, Save } from 'lucide-react';
 
-const OrganisationPlan = () => {
+const OrganisationPlan = ({ params: { id } }) => {
   const [form] = Form.useForm();
   const [editing, setEditing] = useState(false);
   const [planData, setPlanData] = useState({
