@@ -27,6 +27,8 @@ const { Title, Text } = Typography;
 
 const StudentListPage = () => {
   const router = useRouter();
+//   const currentId = parseInt(router.query.id);
+// console .log('currentId', currentId)
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [filterValues, setFilterValues] = useState({});
@@ -66,11 +68,8 @@ const StudentListPage = () => {
       key: 'actions',
       render: (_, record) => (
         <div className="flex gap-2">
-          <Button
-            type="link"
-            onClick={() => router.push(`/students/${record.id}`)}
-          >
-            View
+          <Button >
+            <Link href={`/students/${record.id}/view`}>View</Link>
           </Button>
           <Button
             type="link"
