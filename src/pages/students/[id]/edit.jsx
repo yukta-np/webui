@@ -1,47 +1,14 @@
-// app/students/[id]/edit/page.jsx
+import { useRouter } from 'next/router';
+import StudentEditForm from '@/components/students/StudentEditForm';
+import React from 'react';
 
-import { Modal, Typography, Breadcrumb, Button } from 'antd';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import StudentForm from '@/components/students/StudentForm';
-// import { initialStudentData } from '@/data/students';
-import { Card } from 'antd';
-
-// const { confirm } = Modal;
-
-const { Title } = Typography;
-
-const EditStudentPage = ({ params }) => {
+const EditStudent = () => {
   const router = useRouter();
-  const student = initialStudentData.find((s) => s.key === params.id);
+  const { id } = router.query;
 
-  const onSubmit = (values) => {
-    // Update logic
-    router.push('/students');
-  };
+  if (!id) return <p>Loading...</p>;
 
-  return (
-    <div className="p-6">
-      <Breadcrumb className="mb-4">
-        <Breadcrumb.Item>
-          <Link href="/">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link href="/students">Students</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Edit {student?.firstName}</Breadcrumb.Item>
-      </Breadcrumb>
-
-      <Card title={`Edit Student - ${student.firstName}`}>
-        <StudentForm initialValues={student} onFinish={onSubmit} />
-        <div className="mt-4">
-          <Button type="primary" htmlType="submit" form="student-form">
-            Save Changes
-          </Button>
-        </div>
-      </Card>
-    </div>
-  );
+  return <StudentEditForm params={{ id }} />;
 };
 
-export default EditStudentPage;
+export default EditStudent;
