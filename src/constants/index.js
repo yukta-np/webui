@@ -39,11 +39,8 @@ export const constants = {
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
-<<<<<<< HEAD
     organisationsUrl: `${URL}/organisations`,
-=======
     filesUrl: `${URL}/files`,
->>>>>>> origin/dev
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
