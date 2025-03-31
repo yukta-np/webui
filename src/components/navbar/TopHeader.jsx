@@ -16,12 +16,19 @@ import {
   Divider,
 } from 'antd';
 import { Bell, Megaphone, Search as SearchIcon } from 'lucide-react';
-import { clearStorageAndRedirect, fetcher } from '@/utils';
+import {
+  clearStorageAndRedirect,
+  fetcher,
+  setSessionStorageData,
+  token,
+} from '@/utils';
 import useSWRImmutable from 'swr/immutable';
-import { constants } from '@/constants';
+import { constants, headers } from '@/constants';
 import Link from 'next/link';
 import useWebSocket from '@/hooks/useWebsocket';
 import { useAnnouncement } from '@/hooks/useAnnouncement';
+import axios from 'axios';
+import { Roles } from '@/utils';
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -72,6 +79,7 @@ const TopHeader = () => {
     token: { colorBgContainer, colorTextSecondary, borderRadiusLG },
   } = theme.useToken();
   const screens = useBreakpoint();
+  const isSysAdmin = loggedInUser?.role === Roles.SYSADMIN;
 
   const onLogout = () => {
     clearStorageAndRedirect();
@@ -91,22 +99,31 @@ const TopHeader = () => {
     setIsImpersonateModalOpen(false);
   };
 
-  const onImpersonateSubmit = () => {
-    setIsImpersonateModalOpen(false);
+  const onImpersonateSubmit = async () => {
+    try {
+      const data = impersonateForm.getFieldsValue();
+
+      const response = await axios.post(constants.urls.impersonateUrl, data, {
+        headers,
+      });
+      if (response.status === 200) {
+        setIsImpersonateModalOpen(false);
+      }
+      const { token } = response.data;
+      setSessionStorageData(token);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Impersonation failed:', error);
+    }
   };
 
   const menuItems = [
     {
-      label: <Link href="/users/profile">Profile</Link>,
-      key: 'profile',
+      label: <Link href="/users/my-profile">Profile</Link>,
+      key: 1,
     },
     {
-      key: '2',
-      label: 'Impersonate',
-      onClick: () => openImpersonateModal(),
-    },
-    {
-      key: '3',
+      key: 3,
       label: <Link href="/users/security">Security</Link>,
       onClick: () => console.log('Settings Clicked'),
     },
@@ -114,12 +131,20 @@ const TopHeader = () => {
       type: 'divider',
     },
     {
-      key: '4',
+      key: 4,
       label: 'Logout',
       danger: true,
       onClick: onLogout,
     },
   ];
+
+  if (isSysAdmin) {
+    menuItems.splice(1, 0, {
+      key: 2,
+      label: 'Impersonate',
+      onClick: () => openImpersonateModal(),
+    });
+  }
 
   const renderPopupContent = (items, type) => (
     <div style={{ width: 300 }}>
@@ -250,6 +275,7 @@ const TopHeader = () => {
         title="Impersonate"
         open={isImpersonateModalOpen}
         onCancel={closeImpersonateModal}
+        onOk={() => impersonateForm.submit()}
       >
         <Divider />
         <Form
