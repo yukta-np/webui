@@ -11,6 +11,7 @@ export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
+    impersonateUrl: `${URL}/auth/impersonate`,
     verifyUrl: `${URL}/auth/verify`,
     forgotPasswordUrl: `${URL}/auth/forgot-password`,
     meUrl: `${URL}/users/me`,
