@@ -1,12 +1,12 @@
 import CustomHead from '@/components/customHead/CustomHead';
-import Documents from '@/components/documents/Documents';
+import Files from '@/components/files/Files';
 import React from 'react';
 
 const index = () => {
   return (
     <>
-      <CustomHead actualTitle="Documents" />
-      <Documents />
+      <CustomHead actualTitle="Files" />
+      <Files />
     </>
   );
 };

@@ -140,10 +140,10 @@ const SecuredLayout = ({ children }) => {
       ],
     },
     {
-      label: 'Documents',
-      key: 'documents',
+      label: 'Files',
+      key: 'files',
       icon: <FileStack size={18} />,
-      href: '/documents',
+      href: '/files',
     },
     {
       label: 'Announcements',

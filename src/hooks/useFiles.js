@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
-export function useDocuments(params) {
+export function useFiles(params) {
   const { disableAutoRefetch, ...otherParams } = params || {};
 
   const queryString = useMemo(() => {
@@ -11,7 +11,7 @@ export function useDocuments(params) {
     return new URLSearchParams(params).toString();
   }, [params]);
 
-  const URL = constants.urls.documentsUrl;
+  const URL = constants.urls.filesUrl;
   const fullUrl = queryString ? `${URL}?${queryString}` : URL;
   const autoRefetchConfig = disableAutoRefetch ? disableRefetchBlock : null;
 
@@ -25,7 +25,7 @@ export function useDocuments(params) {
   const revalidate = () => mutate(fullUrl);
 
   return {
-    documentsList: responseData?.data,
+    filesList: responseData?.data,
     meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,
