@@ -26,11 +26,13 @@ import {
   Tooltip,
   Modal,
   Progress,
+  Carousel,
 } from 'antd';
 import { File } from 'lucide-react';
 import { useFiles } from '@/hooks/useFiles';
 import { createFolder } from '@/services/files.http';
 import CustomUpload from './CustomUpload';
+import Image from 'next/image';
 
 const { Header, Content } = Layout;
 const { Search } = Input;
@@ -39,9 +41,9 @@ const { Title } = Typography;
 export default function FileManager() {
   const [currentPath, setCurrentPath] = useState(['Home']);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [fileInfoVisible, setFileInfoVisible] = useState(false);
   const [myFiles, setMyFiles] = useState([]);
   const [isAddFolderModalOpen, setIsAddFolderModalOpen] = useState(false);
+  const [isCarouselModalOpen, setIsCarouselModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [filesToUpload, setFilesToUpload] = useState([]);
   const { filesList } = useFiles();
@@ -156,7 +158,7 @@ export default function FileManager() {
       setCurrentPath([...file.path, file.name]); // Navigate to the folder
     } else {
       setSelectedFile(file);
-      setFileInfoVisible(true); // Show file info modal
+      setIsCarouselModalOpen(true);
     }
   };
 
@@ -178,6 +180,10 @@ export default function FileManager() {
 
   const handleFolderNameChange = (e) => {
     setNewFolderName(e.target.value);
+  };
+
+  const closeCarouselModal = () => {
+    setIsCarouselModalOpen(false);
   };
 
   const handleAddFolder = async () => {
@@ -220,7 +226,7 @@ export default function FileManager() {
       key: '3',
       label: 'Info',
       icon: <InfoCircleOutlined />,
-      onClick: () => selectedFile && setFileInfoVisible(true),
+      onClick: () => setIsCarouselModalOpen(true),
     },
     {
       type: 'divider',
@@ -341,67 +347,18 @@ export default function FileManager() {
                   <div style={{ marginBottom: '8px' }}>
                     {getFileIcon(file.mimeType, file.isFolder)}
                   </div>
-                  <Tooltip title={file.name}>
-                    <Typography.Text
-                      ellipsis={{ tooltip: file.name }}
-                      style={{ display: 'block' }}
-                    >
-                      {file.name}
-                    </Typography.Text>
-                  </Tooltip>
-                  <Dropdown
-                    menu={{ items: fileActions }}
-                    trigger={['contextMenu']}
+                  <Typography.Text
+                    ellipsis={{ tooltip: file.name }}
+                    style={{ display: 'block' }}
                   >
-                    <div
-                      style={{
-                        cursor: 'context-menu',
-                        height: '100%',
-                        width: '100%',
-                      }}
-                    />
-                  </Dropdown>
+                    {file.name}
+                  </Typography.Text>
                 </Card>
               </List.Item>
             )}
           />
         </Content>
       </Layout>
-
-      <Modal
-        title="File Information"
-        open={fileInfoVisible}
-        onCancel={() => setFileInfoVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setFileInfoVisible(false)}>
-            Close
-          </Button>,
-        ]}
-      >
-        {selectedFile && (
-          <div>
-            <p>
-              <strong>Name:</strong> {selectedFile.name}
-            </p>
-            <p>
-              <strong>Type:</strong> {selectedFile.type.toUpperCase()}
-            </p>
-            {selectedFile.size && (
-              <p>
-                <strong>Size:</strong> {selectedFile.size}
-              </p>
-            )}
-            {selectedFile.modified && (
-              <p>
-                <strong>Last Modified:</strong> {selectedFile.modified}
-              </p>
-            )}
-            <p>
-              <strong>Location:</strong> {selectedFile.path.join('/')}
-            </p>
-          </div>
-        )}
-      </Modal>
 
       <Modal
         title="Create New Folder"
@@ -430,6 +387,34 @@ export default function FileManager() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        title="File Information"
+        open={isCarouselModalOpen}
+        onCancel={closeCarouselModal}
+        footer={null}
+        centered
+        style={{
+          width: '800px',
+          height: 'auto',
+        }}
+      >
+        <Carousel
+          dots={false}
+          infinite={false}
+          slidesToShow={1}
+          slidesToScroll={1}
+        >
+          {selectedFile && (
+            <Image
+              src={selectedFile.cloudinarySecureUrl}
+              alt={selectedFile.name}
+              width={720}
+              height={720}
+            />
+          )}
+        </Carousel>
       </Modal>
     </Layout>
   );
