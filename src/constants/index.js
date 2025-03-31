@@ -39,6 +39,7 @@ export const constants = {
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
+    organisationsUrl: `${URL}/organisations`,
     filesUrl: `${URL}/files`,
 
     // Socket
