@@ -272,15 +272,6 @@ export default function FileManager() {
             setFilesToUpload={setFilesToUpload}
             currentPath={currentPath}
           />
-          <Button
-            onClick={async () => {
-              setMyFiles(filesList);
-
-              setCurrentPath(['Home']);
-            }}
-          >
-            Reset State
-          </Button>
         </Space>
       </Header>
 

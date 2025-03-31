@@ -20,10 +20,6 @@ import {
   X,
   Layers,
   ChartNoAxesGantt,
-  Building2,
-  X,
-  Layers,
-  ChartNoAxesGantt,
 } from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
@@ -153,7 +149,7 @@ const SecuredLayout = ({ children }) => {
         label: 'Documents',
         key: 'documents',
         icon: <FileStack size={18} />,
-        href: '/documents',
+        href: '/files',
       },
       {
         label: 'Announcements',
@@ -241,12 +237,11 @@ const SecuredLayout = ({ children }) => {
     return items.map(({ label, key, icon, href = '', isDefault, children }) => {
       const isAdmin = loggedInUser.role === Roles.ADMIN;
       const isSysAdmin = loggedInUser.role === Roles.SYSADMIN;
-      const isSysAdmin = loggedInUser.role === Roles.SYSADMIN;
       const hasMenuPermission =
         isAdmin ||
         isSysAdmin ||
         studentPermission[key]?.[ResourceActions.menu] === true;
-        isAdmin ||
+      isAdmin ||
         isSysAdmin ||
         studentPermission[key]?.[ResourceActions.menu] === true;
 
@@ -254,7 +249,6 @@ const SecuredLayout = ({ children }) => {
         if (children) {
           // Filter children based on their default status and the parent's permission
           const filteredChildren = children.filter((child) => {
-            if (isAdmin || isSysAdmin) {
             if (isAdmin || isSysAdmin) {
               return true;
             }
