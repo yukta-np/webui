@@ -71,167 +71,132 @@ const SecuredLayout = ({ children }) => {
 
   const toggleDrawer = () => setDrawerVisible(!drawerVisible);
 
-  let menuItems = [];
-
-  if (loggedInUser?.role === Roles.ADMIN) {
-    menuItems = [
-      {
-        label: 'Dashboard',
-        key: 'dashboard',
-        icon: <ChartPie size={18} />,
-        href: '/dashboard',
-      },
-      {
-        label: 'Routine',
-        key: 'routines',
-        icon: <CalendarDays size={18} />,
-        href: '/routine',
-      },
-      {
-        label: 'Tasks',
-        key: 'tasks',
-        icon: <CheckCircle size={18} />,
-        children: [
-          {
-            label: 'My Tasks',
-            key: 'my-task',
-            icon: <CheckCircle size={18} />,
-            href: '/tasks/my-task',
-            parentKey: 'tasks',
-            isDefault: true,
-          },
-          {
-            label: "My Team's Tasks",
-            key: 'my-team',
-            icon: <Users size={18} />,
-            href: '/tasks/my-team',
-          },
-          {
-            label: 'All Tasks',
-            key: 'AllTasks',
-            icon: <List size={18} />,
-            href: '/tasks',
-          },
-        ],
-      },
-      {
-        label: 'Leave Request',
-        key: 'leaveRequest',
-        icon: <CalendarX size={18} />,
-        children: [
-          {
-            label: 'My Request',
-            key: 'my-leave-request',
-            icon: <UserX size={18} />,
-            href: '/leave-request/my-leave',
-            parentKey: 'leaveRequest',
-            isDefault: true,
-          },
-          {
-            label: "Team's Request",
-            key: 'my-team-leave-request',
-            icon: (
-              <>
-                <Users size={18} /> <X size={10} />
-              </>
-            ),
-            href: '/leave-request/team-leave',
-          },
-          {
-            label: 'All Request',
-            key: 'all-leave-request',
-            icon: <CalendarX size={18} />,
-            href: '/leave-request',
-          },
-        ],
-      },
-      {
-        label: 'Documents',
-        key: 'documents',
-        icon: <FileStack size={18} />,
-        href: '/documents',
-      },
-      {
-        label: 'Announcements',
-        key: 'announcements',
-        icon: <Megaphone size={18} />,
-        href: '/announcements',
-      },
-      {
-        label: 'Calendar',
-        key: 'calendar',
-        icon: <Calendar size={18} />,
-        href: '/calendar',
-      },
-      {
-        label: 'Class Room',
-        key: 'classroom',
-        icon: <PanelLeftOpen size={18} />,
-        href: '/class-room',
-      },
-      {
-        label: 'Settings',
-        key: 'settings',
-        icon: <Settings size={18} />,
-        href: '/settings',
-      },
-      {
-        label: 'Permission Groups',
-        key: 'permission-groups',
-        icon: <PanelLeftClose size={18} />,
-        href: '/permission-groups',
-      },
-      {
-        label: 'Feedback',
-        key: 'feedback',
-        icon: <MessageCircle size={18} />,
-        href: '/feedback',
-      },
-      {
-        label: 'Groups',
-        key: 'groups',
-        icon: <Users size={18} />,
-        href: '/groups',
-      },
-
-      {
-        label: 'Inquiries',
-        key: 'inquiries',
-        icon: <UserRoundPlus size={18} />,
-        href: '/inquiries',
-      },
-    ];
-  } else if (loggedInUser?.role === Roles.SYSADMIN) {
-    menuItems = [
-      {
-        label: 'Dashboard',
-        key: 'dashboard',
-        icon: <ChartPie size={18} />,
-        href: '/dashboard',
-      },
-      {
-        label: 'Organisations',
-        key: 'organisations',
-        icon: <Building2 size={18} />,
-        href: '/organisations',
-      },
-      {
-        label: 'Resources',
-        key: 'resources',
-        icon: <Layers size={18} />,
-        children: [
-          {
-            label: 'Plans',
-            key: 'plans',
-            icon: <ChartNoAxesGantt size={18} />,
-            href: '/plans',
-            parentKey: 'resources',
-            isDefault: true,
-          },
-        ],
-      },
-    ];
-  }
+  const menuItems = [
+    {
+      label: 'Dashboard',
+      key: 'dashboard',
+      icon: <ChartPie size={18} />,
+      href: '/dashboard',
+    },
+    {
+      label: 'Routine',
+      key: 'routines',
+      icon: <CalendarDays size={18} />,
+      href: '/routine',
+    },
+    {
+      label: 'Tasks',
+      key: 'tasks',
+      icon: <CheckCircle size={18} />,
+      children: [
+        {
+          label: 'My Tasks',
+          key: 'my-task',
+          icon: <CheckCircle size={18} />,
+          href: '/tasks/my-task',
+          parentKey: 'tasks',
+          isDefault: true,
+        },
+        {
+          label: "My Team's Tasks",
+          key: 'my-team',
+          icon: <Users size={18} />,
+          href: '/tasks/my-team',
+        },
+        {
+          label: 'All Tasks',
+          key: 'AllTasks',
+          icon: <List size={18} />,
+          href: '/tasks',
+        },
+      ],
+    },
+    {
+      label: 'Leave Request',
+      key: 'leaveRequest',
+      icon: <CalendarX size={18} />,
+      children: [
+        {
+          label: 'My Request',
+          key: 'my-leave-request',
+          icon: <UserX size={18} />,
+          href: '/leave-request/my-leave',
+          parentKey: 'leaveRequest',
+          isDefault: true,
+        },
+        {
+          label: "Team's Request",
+          key: 'my-team-leave-request',
+          icon: (
+            <>
+              <Users size={18} /> <CloseOutlined style={{ fontSize: '8px' }} />
+            </>
+          ),
+          href: '/leave-request/team-leave',
+        },
+        {
+          label: 'All Request',
+          key: 'all-leave-request',
+          icon: <CalendarX size={18} />,
+          href: '/leave-request',
+        },
+      ],
+    },
+    {
+      label: 'Files',
+      key: 'files',
+      icon: <FileStack size={18} />,
+      href: '/files',
+    },
+    {
+      label: 'Announcements',
+      key: 'announcements',
+      icon: <Megaphone size={18} />,
+      href: '/announcements',
+    },
+    {
+      label: 'Calendar',
+      key: 'calendar',
+      icon: <Calendar size={18} />,
+      href: '/calendar',
+    },
+    {
+      label: 'Class Room',
+      key: 'classroom',
+      icon: <PanelLeftOpen size={18} />,
+      href: '/class-room',
+    },
+    {
+      label: 'Settings',
+      key: 'settings',
+      icon: <Settings size={18} />,
+      href: '/settings',
+    },
+    {
+      label: 'Permission Groups',
+      key: 'permission-groups',
+      icon: <PanelLeftClose size={18} />,
+      href: '/permission-groups',
+    },
+    {
+      label: 'Feedback',
+      key: 'feedback',
+      icon: <MessageCircle size={18} />,
+      href: '/feedback',
+    },
+    {
+      label: 'Groups',
+      key: 'groups',
+      icon: <Users size={18} />,
+      href: '/groups',
+    },
+    {
+      label: 'Inquiries',
+      key: 'inquiries',
+      icon: <UserRoundPlus size={18} />,
+      href: '/inquiries',
+    },
+  ];
 
   function renderMenu(items) {
     return items.map(({ label, key, icon, href = '', isDefault, children }) => {
