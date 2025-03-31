@@ -32,13 +32,18 @@ export const constants = {
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
+
     administrationUrl: `${URL}/administration`,
     classroomUrl: `${URL}/classroom`,
     settingsUrl: `${URL}/settings`,
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
+<<<<<<< HEAD
     organisationsUrl: `${URL}/organisations`,
+=======
+    filesUrl: `${URL}/files`,
+>>>>>>> origin/dev
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,

@@ -149,7 +149,7 @@ const SecuredLayout = ({ children }) => {
         label: 'Documents',
         key: 'documents',
         icon: <FileStack size={18} />,
-        href: '/documents',
+        href: '/files',
       },
       {
         label: 'Announcements',
@@ -239,6 +239,9 @@ const SecuredLayout = ({ children }) => {
       const isSysAdmin = loggedInUser.role === Roles.SYSADMIN;
       const hasMenuPermission =
         isAdmin ||
+        isSysAdmin ||
+        studentPermission[key]?.[ResourceActions.menu] === true;
+      isAdmin ||
         isSysAdmin ||
         studentPermission[key]?.[ResourceActions.menu] === true;
 
