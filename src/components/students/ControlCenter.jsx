@@ -1,86 +1,86 @@
-import React from 'react';
-import { Menu, Layout, Grid, theme, Breadcrumb } from 'antd';
-import {
-  ChartNoAxesGantt,
-  User,
-  Component,
-  Settings,
-  BookUser,
-} from 'lucide-react';
-import { useRouter } from 'next/router';
+import { Layout, Menu, Breadcrumb } from 'antd';
 import Link from 'next/link';
-import { useStudents } from '@/hooks/useStudents';
+import {
+  User,
+  FileText,
+  Book,
+  FormInput,
+  Target,
+  AlertCircle,
+  Clock,
+} from 'lucide-react';
 
-const { useBreakpoint } = Grid;
-const { Content } = Layout;
+const { Content, Sider } = Layout;
 
-const ControlCenter = ({ children }) => {
-  const screens = useBreakpoint();
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-  const router = useRouter();
-  const currentId = parseInt(router.query.id);
-  const { students } = useStudents();
-
-  const studentName = students?.find((s) => s.id === currentId)?.name || 'Student';
-  const isValidId = !isNaN(currentId);
-
-
+const ControlCenter = ({ children, studentId }) => {
   const menuItems = [
     {
       key: 'details',
-      icon: <BookUser size={18} />,
-      label: isValidId ? <Link href={`/students/${currentId}`}>Details</Link> : null,
+      icon: <User size={16} />,
+      label: <Link href={`/students/${studentId}`}>Details</Link>,
     },
     {
-      key: 'courses',
-      icon: <ChartNoAxesGantt size={18} />,
-      label: <Link href={`/students/${currentId}/courses`}>Courses</Link>,
+      key: 'documents',
+      icon: <FileText size={16} />,
+      label: <Link href={`/students/${studentId}/documents`}>Documents</Link>,
     },
     {
-      key: 'modules',
-      icon: <Component size={18} />,
-      label: <Link href={`/students/${currentId}/modules`}>Modules</Link>,
+      key: 'casenotes',
+      icon: <Book size={16} />,
+      label: <Link href={`/students/${studentId}/casenotes`}>Case Notes</Link>,
     },
     {
-      key: 'settings',
-      icon: <Settings size={18} />,
-      label: <Link href={`/students/${currentId}/settings`}>Settings</Link>,
+      key: 'forms',
+      icon: <FormInput size={16} />,
+      label: <Link href={`/students/${studentId}/forms`}>Forms</Link>,
+    },
+    {
+      key: 'goals',
+      icon: <Target size={16} />,
+      label: <Link href={`/students/${studentId}/goals`}>Goals</Link>,
+    },
+    {
+      key: 'incidents',
+      icon: <AlertCircle size={16} />,
+      label: <Link href={`/students/${studentId}/incidents`}>Incidents</Link>,
+    },
+    {
+      key: 'sessions',
+      icon: <Clock size={16} />,
+      label: <Link href={`/students/${studentId}/sessions`}>Sessions</Link>,
     },
   ];
 
   return (
-    <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
-      <Breadcrumb style={{ margin: '16px 0' }}>
-        <Breadcrumb.Item>
-          <Link href="/dashboard">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link href="/students">Students</Link>
-        </Breadcrumb.Item>
-      </Breadcrumb>
-
-      <div
-        style={{
-          padding: screens.xs ? 16 : 24,
-          minHeight: 360,
-          background: colorBgContainer,
-          borderRadius: borderRadiusLG,
-        }}
+    <Layout hasSider className="min-h-screen">
+      <Sider
+        width={250}
+        theme="light"
+        className="border-r"
+        breakpoint="lg"
+        collapsedWidth="0"
       >
-        <p className="text-xl font-bold mb-4">{isValidId ? studentName : 'Loading student...'}</p>
-        <div className="grid grid-cols-12">
-          <Menu
-            mode="inline"
-            style={{ width: screens.xs ? 180 : 200, height: '60vh' }}
-            items={menuItems}
-            className="col-span-2"
-          />
-          <div className="col-span-10">{children}</div>
-        </div>
-      </div>
-    </Content>
+        <Menu
+          mode="inline"
+          defaultSelectedKeys={['details']}
+          items={menuItems}
+          style={{ height: '100%', borderRight: 0 }}
+        />
+      </Sider>
+
+      <Content className="p-6 bg-white">
+        <Breadcrumb className="mb-6">
+          <Breadcrumb.Item>
+            <Link href="/">Home</Link>
+          </Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <Link href="/students">Students</Link>
+          </Breadcrumb.Item>
+        </Breadcrumb>
+        {children}
+      </Content>
+    </Layout>
   );
 };
+
 export default ControlCenter;
