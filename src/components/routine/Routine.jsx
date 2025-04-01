@@ -4,13 +4,16 @@ import {
   Card,
   Col,
   Divider,
+  Form,
   Grid,
+  Input,
   Layout,
   Modal,
   Row,
   Select,
   Spin,
   Typography,
+  TimePicker,
 } from 'antd';
 import { useRoutines } from '@/hooks/useRoutines';
 import { createRoutines, updateRoutines } from '@/services/routine.http';
@@ -31,6 +34,7 @@ const Routine = () => {
   const [programLevels, setProgramLevels] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentProgramLevel, setCurrentProgramLevel] = useState(null);
+  const [form] = Form.useForm();
 
   // Data hooks
   const {
@@ -52,6 +56,35 @@ const Routine = () => {
 
   const closeModal = () => {
     setIsModalVisible(false);
+  };
+
+  const onSubmit = async () => {
+    try {
+      setIsProcessing(true);
+      const values = await form.validateFields();
+
+      // Format time values
+      const formattedValues = {
+        ...values,
+        startTime: values.timeRange[0].format('HH:mm:ss'),
+        endTime: values.timeRange[1].format('HH:mm:ss'),
+        timeRange: undefined, // Remove the timeRange field
+      };
+
+      // Call API to create routine
+      await createRoutines(formattedValues);
+
+      // Refresh the routines data
+      await mutate();
+
+      message.success('Class added successfully');
+      closeModal();
+    } catch (error) {
+      console.error('Error adding class:', error);
+      message.error('Failed to add class');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Effects
@@ -146,13 +179,12 @@ const Routine = () => {
           className="w-36"
           value={currentProgramLevel}
           loading={isRoutinesLoading}
-        >
-          {programLevels.map((level, index) => (
-            <Select.Option key={index} value={level}>
-              {level}
-            </Select.Option>
-          ))}
-        </Select>
+          options={programLevels.map((level, index) => ({
+            label: level,
+            value: level,
+            key: index,
+          }))}
+        />
         <Divider orientation="left">Schedule</Divider>
 
         <Row gutter={16} style={{ marginTop: 20 }}>
@@ -225,16 +257,83 @@ const Routine = () => {
               key="submit"
               type="primary"
               loading={isProcessing}
-              onClick={() => {
-                /* Handle form submission */
-              }}
+              onClick={onSubmit}
             >
               {action === 'add' ? 'Add' : 'Update'}
             </Button>,
           ]}
         >
-          {/* Add your form fields here */}
-          <p>Class form will go here</p>
+          <Form
+            form={form}
+            layout="vertical"
+            initialValues={{
+              weekDay: Object.keys(WeekDay)[0],
+              programLevel: currentProgramLevel,
+            }}
+          >
+            <Form.Item
+              name="subject"
+              label="Subject"
+              rules={[{ required: true, message: 'Please enter subject name' }]}
+            >
+              <Input placeholder="Enter subject name" />
+            </Form.Item>
+
+            <Form.Item
+              name="weekDay"
+              label="Day of Week"
+              rules={[{ required: true, message: 'Please select a day' }]}
+              options={Object.keys(WeekDay).map((day) => ({
+                label: day,
+                value: day,
+              }))}
+            >
+              <Select />
+            </Form.Item>
+
+            <Form.Item
+              name="timeRange"
+              label="Time"
+              rules={[{ required: true, message: 'Please select time range' }]}
+            >
+              <TimePicker.RangePicker
+                format="HH:mm"
+                minuteStep={15}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="programLevel"
+              label="Program Level"
+              rules={[
+                { required: true, message: 'Please select program level' },
+              ]}
+            >
+              <Select
+                options={programLevels.map((level) => ({
+                  label: level,
+                  value: level,
+                }))}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="room"
+              label="Room"
+              rules={[{ required: true, message: 'Please enter room details' }]}
+            >
+              <Input placeholder="Enter room number/building" />
+            </Form.Item>
+
+            <Form.Item
+              name="teacher"
+              label="Teacher"
+              rules={[{ required: true, message: 'Please enter teacher name' }]}
+            >
+              <Input placeholder="Enter teacher's name" />
+            </Form.Item>
+          </Form>
         </Modal>
       </div>
     </Content>
