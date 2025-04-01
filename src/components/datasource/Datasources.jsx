@@ -39,6 +39,27 @@ const settingsCards = [
     icon: <TeamOutlined className="text-blue-500 text-2xl" />,
     path: '/staffs',
   },
+  {
+    id: 'faculties',
+    title: 'Faculties',
+    description: 'Manage faculties',
+    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    path: '/faculties',
+  },
+  {
+    id: 'academic-programs',
+    title: 'Academic Programs',
+    description: 'Manage academic programs',
+    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    path: '/academic-programs',
+  },
+  {
+    id: 'academic-subjects',
+    title: 'Academic Subjects',
+    description: 'Manage academic subjects',
+    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    path: '/academic-subjects',
+  },
 ];
 
 const Datasources = () => {
@@ -53,7 +74,7 @@ const Datasources = () => {
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">{card.icon}</div>
                     <div>
-                      <Title level={5} style={{ margin: 0, color: '#3182CE' }}>
+                      <Title level={5} style={{ margin: 0, color: '#1677ff' }}>
                         {card.title}
                       </Title>
                       <Text type="secondary">{card.description}</Text>
