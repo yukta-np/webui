@@ -98,6 +98,7 @@ const Routine = () => {
           )}`,
           room: routine.room,
           teacher: routine.user?.fullName,
+          room: `${routine.area?.room} - ${routine.area?.room_no}`,
           color: '#f0f5ff', // You can customize colors based on subject or other criteria
         })) || []
     );
@@ -193,7 +194,7 @@ const Routine = () => {
                           <br />
                           {routine.room && (
                             <>
-                              <Text strong>Room: {routine.room}</Text>
+                              <Text>Room: {routine.room}</Text>
                               <br />
                             </>
                           )}
