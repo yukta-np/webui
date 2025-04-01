@@ -38,7 +38,7 @@ const UniversityList = () => {
   useEffect(() => {
     setDataSource([
       {
-        key: '1',
+        key: 'UNI-1',
         name: 'Harvard University',
         shortName: 'Harvard',
         website: 'https://www.harvard.edu',
@@ -48,7 +48,7 @@ const UniversityList = () => {
         established: '1636-09-08',
       },
       {
-        key: '2',
+        key: 'UNI-2',
         name: 'Stanford University',
         shortName: 'Stanford',
         website: 'https://www.stanford.edu',
@@ -75,13 +75,13 @@ const UniversityList = () => {
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={() => onSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            onClick={() => onSearch(selectedKeys, confirm, dataIndex)}
             icon={<Search size={14} />}
             size="small"
             style={{ width: 90 }}
@@ -89,7 +89,7 @@ const UniversityList = () => {
             Search
           </Button>
           <Button
-            onClick={() => handleReset(clearFilters)}
+            onClick={() => onReset(clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
@@ -116,6 +116,16 @@ const UniversityList = () => {
   });
 
   const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'key',
+      key: 'key',
+      render: (text, record) => (
+        <a className="text-blue-600" onClick={() => onView(record)}>
+          {text}
+        </a>
+      ),
+    },
     {
       title: 'Name',
       dataIndex: 'name',
@@ -192,7 +202,7 @@ const UniversityList = () => {
     setIsModalVisible(true);
   };
 
-  const handleCancel = () => {
+  const onCancel = () => {
     setIsModalVisible(false);
     setEditingUniversity(null);
     form.resetFields();
@@ -223,7 +233,7 @@ const UniversityList = () => {
       setDataSource((prev) => [...prev, newUniversity]);
       message.success('University added successfully');
     }
-    handleCancel();
+    onCancel();
   };
 
   const onEdit = (record) => {
@@ -240,11 +250,11 @@ const UniversityList = () => {
     message.success('University deleted successfully');
   };
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+  const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
   };
 
-  const handleReset = (clearFilters) => {
+  const onReset = (clearFilters) => {
     clearFilters();
   };
 
@@ -274,7 +284,7 @@ const UniversityList = () => {
       <Modal
         title={editingUniversity ? 'Edit University' : 'Add New University'}
         visible={isModalVisible}
-        onCancel={handleCancel}
+        onCancel={onCancel}
         onOk={() => form.submit}
         width={700}
       >
