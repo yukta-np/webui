@@ -56,14 +56,22 @@ const Routine = () => {
 
   // Effects
   useEffect(() => {
-    if (routines?.length > 0) {
-      const levels = Array.from(new Set(routines.map((r) => r.programLevel)));
-      setProgramLevels(levels);
-      if (!currentProgramLevel && levels.length > 0) {
-        setCurrentProgramLevel(levels[0]);
-      }
+    if (!routines || routines.length === 0) {
+      setProgramLevels([]); // Explicitly set to empty array if no routines
+      return;
+    }
+
+    const levels = Array.from(
+      new Set(routines.map((r) => r.group.programLevel))
+    );
+    setProgramLevels(levels);
+
+    if (!currentProgramLevel && levels.length > 0) {
+      setCurrentProgramLevel(levels[0]);
     }
   }, [routines]);
+
+  console.log('programLevels', programLevels);
 
   // Utility functions
   const formatTime = (timeString) =>
@@ -73,7 +81,9 @@ const Routine = () => {
     return (
       routines
         ?.filter(
-          (r) => r.weekDay === weekDay && r.programLevel === currentProgramLevel
+          (r) =>
+            r.weekDay === weekDay &&
+            r.group.programLevel === currentProgramLevel
         )
         ?.sort((a, b) => {
           const [aHours, aMins] = a.startTime.split(':').map(Number);
@@ -125,24 +135,23 @@ const Routine = () => {
             <Title level={2} style={{ margin: 0 }}>
               Weekly Schedule
             </Title>
-            <Select
-              onChange={onProgramLevelChange}
-              className="w-36"
-              value={currentProgramLevel}
-              loading={isRoutinesLoading}
-            >
-              {programLevels.map((level, index) => (
-                <Select.Option key={index} value={level}>
-                  {level}
-                </Select.Option>
-              ))}
-            </Select>
           </div>
           <Button type="primary" onClick={onAddClick}>
             Add Class
           </Button>
         </div>
-
+        <Select
+          onChange={onProgramLevelChange}
+          className="w-36"
+          value={currentProgramLevel}
+          loading={isRoutinesLoading}
+        >
+          {programLevels.map((level, index) => (
+            <Select.Option key={index} value={level}>
+              {level}
+            </Select.Option>
+          ))}
+        </Select>
         <Divider orientation="left">Schedule</Divider>
 
         <Row gutter={16} style={{ marginTop: 20 }}>
