@@ -60,6 +60,13 @@ const settingsCards = [
     icon: <TeamOutlined className="text-blue-500 text-2xl" />,
     path: '/academic-subjects',
   },
+  {
+    id: 'universities',
+    title: 'Universities',
+    description: 'Manage universities',
+    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    path: '/universities',
+  },
 ];
 
 const Datasources = () => {
