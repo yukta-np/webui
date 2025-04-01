@@ -220,7 +220,7 @@ const AcademicPrograms = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <div
         style={{
           marginBottom: '16px',
@@ -228,7 +228,7 @@ const AcademicPrograms = () => {
           justifyContent: 'space-between',
         }}
       >
-        <p className="text-xl font-bold m-0">Faculties</p>
+        <p className="text-xl font-bold m-0">Academic Programs</p>
         <Button type="primary" onClick={showModal}>
           Add New
         </Button>

@@ -238,7 +238,7 @@ const AcademicSubjects = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <div
         style={{
           marginBottom: '16px',
