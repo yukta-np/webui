@@ -1,6 +1,12 @@
 import React from 'react';
 import { Menu, Layout, Grid, theme, Breadcrumb } from 'antd';
-import { ChartNoAxesGantt, User, Component, Settings } from 'lucide-react';
+import {
+  ChartNoAxesGantt,
+  User,
+  Component,
+  Settings,
+  BookUser,
+} from 'lucide-react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useOrganisation } from '@/hooks/useOrganisation';
@@ -21,6 +27,11 @@ const ControlCenter = ({ children }) => {
     organisation?.find((org) => org.id === currentId)?.name || 'Organisation';
 
   const menuItems = [
+    {
+      key: 'details',
+      icon: <BookUser size={18} />,
+      label: <Link href={`/organisations/${currentId}`}>Details</Link>,
+    },
     {
       key: 'plans',
       icon: <ChartNoAxesGantt size={18} />,
