@@ -153,7 +153,7 @@ export default function FileManager() {
     return filtered;
   };
 
-  const handleFileClick = (file) => {
+  const onFileClick = (file) => {
     if (file.isFolder) {
       // Navigate to the folder, append the folder name to the current path
       console.log('Navigating to: ', [...file.path, file.name]);
@@ -164,7 +164,7 @@ export default function FileManager() {
     }
   };
 
-  const handleBreadcrumbClick = (index) => {
+  const onBreadcrumbClick = (index) => {
     console.log('prev. currentPath: ', currentPath);
 
     // Slice the path array to get up to the selected index (inclusive)
@@ -180,7 +180,7 @@ export default function FileManager() {
     setNewFolderName('');
   };
 
-  const handleFolderNameChange = (e) => {
+  const onFolderNameChange = (e) => {
     setNewFolderName(e.target.value);
   };
 
@@ -188,7 +188,7 @@ export default function FileManager() {
     setIsCarouselModalOpen(false);
   };
 
-  const handleAddFolder = async () => {
+  const onAddFolder = async () => {
     console.log('currentPath', currentPath);
     console.log(`Creating folder ${newFolderName} on path ${currentPath}`);
 
@@ -219,7 +219,7 @@ export default function FileManager() {
       label: 'View',
       icon: <Eye size={20} />,
       onClick: (file) => {
-        handleFileClick(file);
+        onFileClick(file);
       },
     },
     {
@@ -334,7 +334,7 @@ export default function FileManager() {
               {currentPath.map((path, index) => (
                 <Breadcrumb.Item
                   key={index}
-                  onClick={() => handleBreadcrumbClick(index)}
+                  onClick={() => onBreadcrumbClick(index)}
                   style={{ cursor: 'pointer' }}
                 >
                   {path}
@@ -353,7 +353,7 @@ export default function FileManager() {
                   className="file-card"
                   hoverable
                   style={{ textAlign: 'center' }}
-                  onClick={() => handleFileClick(file)}
+                  onClick={() => onFileClick(file)}
                 >
                   <div style={{ marginBottom: '8px' }}>
                     {getFileIcon(file.mimeType, file.isFolder)}
@@ -409,7 +409,7 @@ export default function FileManager() {
         <div>
           <Input
             value={newFolderName}
-            onChange={handleFolderNameChange}
+            onChange={onFolderNameChange}
             placeholder="Enter folder name"
             autoFocus
           />
@@ -420,7 +420,7 @@ export default function FileManager() {
             <Button
               disabled={!newFolderName}
               type="primary"
-              onClick={handleAddFolder}
+              onClick={onAddFolder}
             >
               Create Folder
             </Button>

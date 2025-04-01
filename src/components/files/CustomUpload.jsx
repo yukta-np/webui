@@ -26,7 +26,7 @@ export default function CustomUpload({
     setFilesToUpload([]);
   };
 
-  const handleFileChange = ({ fileList: newFilesToUpload }) => {
+  const onFileChange = ({ fileList: newFilesToUpload }) => {
     if (newFilesToUpload.length === 0) {
       return setFilesToUpload(newFilesToUpload);
     }
@@ -51,7 +51,7 @@ export default function CustomUpload({
     setFilesToUpload([...filesToUpload, newFileData]);
   };
 
-  const handleFileUpload = async () => {
+  const onFileUpload = async () => {
     setLoading(true); // Set loading state
     setUploadStatus('uploading');
     const totalFiles = filesToUpload.length;
@@ -122,7 +122,7 @@ export default function CustomUpload({
             <Button
               key="submit"
               type="primary"
-              onClick={handleFileUpload}
+              onClick={onFileUpload}
               className="bg-blue-500 hover:bg-blue-600 text-white"
               loading={loading} // Show loading spinner on upload button
             >
@@ -139,7 +139,7 @@ export default function CustomUpload({
           beforeUpload={() => {
             return false;
           }}
-          onChange={handleFileChange}
+          onChange={onFileChange}
           className="w-full"
         >
           <div className="text-center border-2 border-dashed border-gray-300 p-8 rounded-lg bg-gray-50 hover:bg-gray-100 transition duration-300">
