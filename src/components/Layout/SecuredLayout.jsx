@@ -20,6 +20,7 @@ import {
   X,
   Layers,
   ChartNoAxesGantt,
+  Database,
 } from 'lucide-react';
 import { Layout, Menu, Drawer, Button } from 'antd';
 import Link from 'next/link';
@@ -173,7 +174,14 @@ const SecuredLayout = ({ children }) => {
         label: 'Settings',
         key: 'settings',
         icon: <Settings size={18} />,
-        href: '/settings',
+        children: [
+          {
+            label: 'Data Sources',
+            key: 'data-source',
+            icon: <Database size={18} />,
+            href: '/settings/data-sources',
+          },
+        ],
       },
       {
         label: 'Permission Groups',
