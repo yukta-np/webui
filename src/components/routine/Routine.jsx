@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import {
   Button,
-  Grid,
-  Layout,
   Card,
   Col,
   Divider,
+  Grid,
+  Layout,
+  Modal,
   Row,
   Select,
   Spin,
-  Modal,
+  Typography,
 } from 'antd';
 import { useRoutines } from '@/hooks/useRoutines';
-import { useUsers } from '@/hooks/useUsers'; // Assuming you have or will create this hook
-
-import './styles.css';
-import { WeekDay, Actions } from '@/constants';
 import { createRoutines, updateRoutines } from '@/services/routine.http';
+import { WeekDay, Actions } from '@/constants';
+import './styles.css';
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
+const { Title, Text } = Typography;
 
 const Routine = () => {
   // State management
@@ -38,55 +38,20 @@ const Routine = () => {
     isLoading: isRoutinesLoading,
     error: routinesError,
   } = useRoutines();
-  const { users, isLoading: isUsersLoading, error: usersError } = useUsers();
   const screens = useBreakpoint();
-
-  const getTitle = () => {
-    if (action === 'add') {
-      return 'Add New Details';
-    } else if (action === 'edit') {
-      return 'Edit details';
-    }
-    return '';
-  };
-
-  const openModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const closeModal = () => {
-    form.resetFields();
-    setIsModalVisible(false);
-  };
-
-  const onSubmit = async (values) => {
-    setIsProcessing(true);
-    console.log(values);
-    try {
-      setIsProcessing(true);
-      const res =
-        action === Actions.add
-          ? await createRoutines(values)
-          : await updateRoutines(currentInquiryId, values);
-      openNotification(`Inquiry ${action}ed successfully`);
-      setIsModalVisible(false);
-      revalidate();
-      form.resetFields();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   // Handler functions
   const onAddClick = () => {
     setAction('add');
-    openModal();
+    setIsModalVisible(true);
   };
 
   const onProgramLevelChange = (value) => {
     setCurrentProgramLevel(value);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
   };
 
   // Effects
@@ -117,72 +82,23 @@ const Routine = () => {
         })
         .map((routine) => ({
           ...routine,
-          title: routine.subject,
-          description: `${formatTime(routine.startTime)} to ${formatTime(
+          subject: routine.subject,
+          time: `${formatTime(routine.startTime)} - ${formatTime(
             routine.endTime
           )}`,
-          instructorName:
-            users?.find((users) => users.id === routine.userId)?.fullName ||
-            routine.userId,
+          room: routine.room,
+          teacher: routine.user?.fullName,
+          color: '#f0f5ff', // You can customize colors based on subject or other criteria
         })) || []
     );
   };
 
-  // Components
-  const DayHeader = ({ day }) => <div className="font-bold text-lg">{day}</div>;
-
-  const NoRoutinesMessage = () => (
-    <div className="text-gray-500">No routines scheduled</div>
-  );
-
-  const RoutineCard = ({ routine }) => (
-    <Card size="small" className="w-[200px]" title={routine.title}>
-      <p>Time: {routine.description}</p>
-      {routine.room && <p>Room: {routine.room}</p>}
-      {routine.instructorName && <p>Instructor: {routine.instructorName}</p>}
-    </Card>
-  );
-
-  const RoutineCards = ({ routines }) => {
-    if (!routines?.length) return <NoRoutinesMessage />;
-    return (
-      <div className="flex flex-wrap gap-3">
-        {routines.map((routine) => (
-          <RoutineCard
-            key={`${routine.weekDay}-${routine.startTime}-${routine.userId}`}
-            routine={routine}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  const DayColumn = ({ day, routines }) => (
-    <div className="flex flex-col gap-2">
-      <DayHeader day={day} />
-      <RoutineCards routines={routines} />
-    </div>
-  );
-
-  const TimetableMainView = ({ routines, currentProgramLevel, WeekDay }) => (
-    <div className="flex flex-col gap-4 border-2 border-solid border-blue-500 h-[500px] border-l ml-6 p-4 overflow-y-auto">
-      {Object.keys(WeekDay).map((day) => {
-        const dayRoutines = filterAndSortRoutines(
-          routines,
-          day,
-          currentProgramLevel
-        );
-        return <DayColumn key={day} day={day} routines={dayRoutines} />;
-      })}
-    </div>
-  );
-
   // Error and loading states
-  if (routinesError || usersError) {
+  if (routinesError) {
     return <div>Error loading data</div>;
   }
 
-  if (isRoutinesLoading || isUsersLoading) {
+  if (isRoutinesLoading) {
     return <Spin size="large" />;
   }
 
@@ -193,8 +109,7 @@ const Routine = () => {
           minHeight: 360,
           background: 'white',
           borderRadius: 8,
-          margin: 0,
-          padding: 0,
+          padding: 24,
         }}
       >
         <div
@@ -207,7 +122,9 @@ const Routine = () => {
           }}
         >
           <div className="flex items-center gap-4">
-            <p className="text-xl font-bold">Routine</p>
+            <Title level={2} style={{ margin: 0 }}>
+              Weekly Schedule
+            </Title>
             <Select
               onChange={onProgramLevelChange}
               className="w-36"
@@ -222,57 +139,93 @@ const Routine = () => {
             </Select>
           </div>
           <Button type="primary" onClick={onAddClick}>
-            Add New
+            Add Class
           </Button>
         </div>
 
-        <Divider orientation="left">Routine</Divider>
-        <Row gutter={16}>
-          <Col span={19} className="flex-col gap-2">
-            <TimetableMainView
-              routines={routines}
-              currentProgramLevel={currentProgramLevel}
-              WeekDay={WeekDay}
-            />
-            <div className="border-2 border-solid border-green-500 h-40 border-l ml-6 mt-6"></div>
-          </Col>
-          <Col span={5}>
-            <div className="border-2 border-solid border-red-500 h-[700px] border-l mr-6 overflow-y-auto"></div>
-          </Col>
+        <Divider orientation="left">Schedule</Divider>
+
+        <Row gutter={16} style={{ marginTop: 20 }}>
+          {Object.keys(WeekDay).map((day) => {
+            const dayRoutines = filterAndSortRoutines(
+              routines,
+              day,
+              currentProgramLevel
+            );
+
+            return (
+              <>
+                <Col
+                  key={day}
+                  xs={12}
+                  sm={8}
+                  md={6}
+                  lg={4}
+                  xl={3}
+                  style={{ textAlign: 'center' }}
+                >
+                  <Card
+                    title={<b>{day}</b>}
+                    bordered={false}
+                    style={{ minHeight: 300 }}
+                  >
+                    {dayRoutines.length > 0 ? (
+                      dayRoutines.map((routine, index) => (
+                        <Card
+                          key={index}
+                          style={{
+                            marginBottom: 10,
+                            backgroundColor: routine.color,
+                          }}
+                          bordered={false}
+                        >
+                          <Title level={5}>{routine.subject}</Title>
+                          <Text>{routine.time}</Text>
+                          <br />
+                          {routine.room && (
+                            <>
+                              <Text strong>Room: {routine.room}</Text>
+                              <br />
+                            </>
+                          )}
+                          {routine.teacher && (
+                            <Text type="secondary">{routine.teacher}</Text>
+                          )}
+                        </Card>
+                      ))
+                    ) : (
+                      <Text type="secondary">No classes scheduled</Text>
+                    )}
+                  </Card>
+                </Col>
+              </>
+            );
+          })}
         </Row>
+
         <Modal
-          title={getTitle()}
+          title={action === 'add' ? 'Add New Class' : 'Edit Class'}
           open={isModalVisible}
           onCancel={closeModal}
-          onOk={() => form.submit()}
-          confirmLoading={isProcessing}
-          footer={
-            action === 'add' ? (
-              <>
-                <Divider />
-                <Button className="mr-2" onClick={closeModal}>
-                  Cancel
-                </Button>
-                <Button type="primary" onClick={() => form.submit()}>
-                  Apply
-                </Button>
-              </>
-            ) : action === 'edit' ? (
-              <>
-                <Divider />
-                <Button onClick={closeModal}>Cancel</Button>
-                <Button type="primary" onClick={() => form.submit()}>
-                  Update
-                </Button>
-              </>
-            ) : (
-              <>
-                <Divider />
-                <Button onClick={closeModal}>Cancel</Button>
-              </>
-            )
-          }
-        ></Modal>
+          footer={[
+            <Button key="cancel" onClick={closeModal}>
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="primary"
+              loading={isProcessing}
+              onClick={() => {
+                /* Handle form submission */
+              }}
+            >
+              {action === 'add' ? 'Add' : 'Update'}
+            </Button>,
+          ]}
+        >
+          {/* Add your form fields here */}
+          <p>Class form will go here</p>
+        </Modal>
       </div>
     </Content>
   );
