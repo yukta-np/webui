@@ -6,8 +6,15 @@ import { useUsers } from '@/hooks/useUsers';
 const { Title, Text } = Typography;
 
 const OrganisationDetails = ({ params: { id } }) => {
-  const { organisation } = useOrganisation(id);
-  const { users } = useUsers(id);
+  const { organisationById: organisation } = useOrganisation(id);
+  const activeModules = organisation?.modules || {};
+  const totalModules = Object.keys(activeModules).length;
+
+  let params = {};
+  if (id) {
+    params.organisationId = id;
+  }
+  const { users } = useUsers(params);
   const totalUsers = users ? users?.length : 0;
 
   return (
@@ -111,7 +118,7 @@ const OrganisationDetails = ({ params: { id } }) => {
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" title="Active Modules">
-            <Title level={3}>{organisation?.stats?.modules || 0}</Title>
+            <Title level={3}>{totalModules || 0}</Title>
           </Card>
         </Col>
       </Row>

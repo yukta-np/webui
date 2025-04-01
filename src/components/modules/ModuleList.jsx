@@ -23,7 +23,7 @@ const ModuleList = ({ params: { id } }) => {
     initializeEnabledModules
   );
 
-  const { organisation } = useOrganisation(id);
+  const { organisationById: organisation } = useOrganisation(id);
   useEffect(() => {
     if (organisation) {
       const initialModules = {};
