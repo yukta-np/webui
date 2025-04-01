@@ -7,10 +7,6 @@ import {
   FilePdfOutlined,
   FileExcelOutlined,
   FileWordOutlined,
-  DeleteOutlined,
-  DownloadOutlined,
-  ShareAltOutlined,
-  InfoCircleOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
 import {
@@ -27,10 +23,11 @@ import {
   Modal,
   Progress,
   Carousel,
+  Menu,
 } from 'antd';
-import { File } from 'lucide-react';
+import { Eye, File, Info, Share2, Trash2 } from 'lucide-react';
 import { useFiles } from '@/hooks/useFiles';
-import { createFolder } from '@/services/files.http';
+import { createFolder, deleteFile } from '@/services/files.http';
 import CustomUpload from './CustomUpload';
 import Image from 'next/image';
 
@@ -214,28 +211,34 @@ export default function FileManager() {
   const fileActions = [
     {
       key: '1',
-      label: 'Download',
-      icon: <DownloadOutlined />,
+      label: 'View',
+      icon: <Eye size={20} />,
+      onClick: (file) => {
+        handleFileClick(file);
+      },
     },
     {
       key: '2',
       label: 'Share',
-      icon: <ShareAltOutlined />,
+      icon: <Share2 size={20} />,
     },
     {
       key: '3',
       label: 'Info',
-      icon: <InfoCircleOutlined />,
-      onClick: () => setIsCarouselModalOpen(true),
-    },
-    {
-      type: 'divider',
+      icon: <Info size={20} />,
     },
     {
       key: '4',
       label: 'Delete',
-      icon: <DeleteOutlined />,
-      danger: true,
+      icon: <Trash2 size={20} />,
+      onClick: async (file) => {
+        try {
+          await deleteFile(file.id);
+          setMyFiles(myFiles.filter((f) => f.id !== file.id));
+        } catch (error) {
+          console.log(error);
+        }
+      },
     },
   ];
 
@@ -329,8 +332,9 @@ export default function FileManager() {
             grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 6, xxl: 6 }}
             dataSource={getFilteredFiles()}
             renderItem={(file) => (
-              <List.Item>
+              <List.Item className="relative">
                 <Card
+                  className="file-card"
                   hoverable
                   style={{ textAlign: 'center' }}
                   onClick={() => handleFileClick(file)}
@@ -344,6 +348,33 @@ export default function FileManager() {
                   >
                     {file.name}
                   </Typography.Text>
+
+                  {/* File actions */}
+                  {file.isFolder ? null : (
+                    <Menu className="file-card-actions">
+                      {fileActions.map((action) => (
+                        <Menu.Item
+                          key={action.key}
+                          onClick={() => action.onClick(file)}
+                          style={{
+                            backgroundColor: '#f4f4f4',
+                            maxWidth: 'max-content',
+                            maxHeight: 'max-content',
+                            margin: '0',
+                            padding: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'transform 0.3s ease-in-out',
+                          }}
+                        >
+                          <Tooltip placement="bottom" title={action.label}>
+                            <span>{action.icon}</span>
+                          </Tooltip>
+                        </Menu.Item>
+                      ))}
+                    </Menu>
+                  )}
                 </Card>
               </List.Item>
             )}
