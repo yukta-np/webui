@@ -2,10 +2,13 @@ import React from 'react';
 import { Card, Descriptions, Tag, Divider, Row, Col, Typography } from 'antd';
 import { useOrganisation } from '@/hooks/useOrganisation';
 import moment from 'moment';
+import { useUsers } from '@/hooks/useUsers';
 const { Title, Text } = Typography;
 
 const OrganisationDetails = ({ params: { id } }) => {
   const { organisation } = useOrganisation(id);
+  const { users } = useUsers(id);
+  const totalUsers = users ? users?.length : 0;
 
   return (
     <div className="p-4 ml-4">
@@ -94,7 +97,7 @@ const OrganisationDetails = ({ params: { id } }) => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <Card size="small" title="Users">
-            <Title level={3}>{organisation?.stats?.users || 0}</Title>
+            <Title level={3}>{totalUsers || 0}</Title>
           </Card>
         </Col>
         <Col xs={24} sm={8}>
