@@ -903,11 +903,9 @@
 // !   );
 // ! };
 
-// !  export default Settings; 
-
+// !  export default Settings;
 
 // ! app/settings/page.jsx
-
 
 import React from 'react';
 import { Card, Typography, Row, Col } from 'antd';
@@ -927,28 +925,28 @@ const settingsCards = [
     title: 'Administration',
     description: 'Manage administration staffs',
     icon: <UserOutlined className="text-blue-500 text-2xl" />,
-    path: '/administration'
+    path: '/administration',
   },
   {
     id: 'students',
     title: 'Students',
     description: 'Manage student records',
     icon: <BookOutlined className="text-blue-500 text-2xl" />,
-    path: '/students'
+    path: '/students',
   },
   {
     id: 'teachers',
     title: 'Teachers',
     description: 'Manage teaching staffs',
     icon: <CodeOutlined className="text-blue-500 text-2xl" />,
-    path: '/teachers'
+    path: '/teachers',
   },
   {
     id: 'staffs',
     title: 'staffs',
     description: 'Manage general staffs',
     icon: <TeamOutlined className="text-blue-500 text-2xl" />,
-    path: '/staffs'
+    path: '/staffs',
   },
 ];
 
