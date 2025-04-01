@@ -8,7 +8,9 @@ export function useOrganisation(id) {
   const revalidate = () => mutate(AURL);
   const { data: responseData, error, isValidating } = useSWR(AURL, fetcher);
   return {
-    organisation: responseData,
+    organisation: responseData?.data,
+    organisationById: responseData,
+    meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,
     revalidate,
