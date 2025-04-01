@@ -430,9 +430,9 @@ export default function FileManager() {
 
       <Modal
         title={
-          <Tooltip title={selectedFile.name}>
+          <Tooltip title={selectedFile?.name}>
             <h2 className="mr-auto text-ellipsis overflow-hidden whitespace-nowrap max-w-[25ch]">
-              {selectedFile.name}
+              {selectedFile?.name}
             </h2>
           </Tooltip>
         }
@@ -442,12 +442,12 @@ export default function FileManager() {
           <div className="flex justify-between items-center w-full text-sm text-gray-500 p-4">
             <div className="flex flex-col text-left">
               <span className="font-semibold text-gray-700">MIME Type</span>
-              <span className="text-gray-500">{selectedFile.mimeType}</span>
+              <span className="text-gray-500">{selectedFile?.mimeType}</span>
             </div>
             <div className="flex flex-col">
               <span className="font-semibold text-gray-700">Size</span>
               <span className="text-gray-500">
-                {formatSize(selectedFile.sizeInByte)}
+                {formatSize(selectedFile?.sizeInByte)}
               </span>
             </div>
           </div>
@@ -458,21 +458,35 @@ export default function FileManager() {
           height: 'auto',
         }}
       >
-        <Carousel
-          dots={false}
-          infinite={false}
-          slidesToShow={1}
-          slidesToScroll={1}
-        >
-          {selectedFile && (
-            <Image
-              src={selectedFile.cloudinarySecureUrl}
-              alt={selectedFile.name}
-              width={960}
-              height={960}
-            />
-          )}
-        </Carousel>
+        {selectedFile?.mimeType === 'application/pdf' ? (
+          <object
+            data={selectedFile?.cloudinarySecureUrl}
+            type="application/pdf"
+            width="100%"
+            height="600px"
+          >
+            <p>
+              Your browser does not support PDFs.{' '}
+              <a href={selectedFile?.cloudinarySecureUrl}>Download the PDF</a>
+            </p>
+          </object>
+        ) : (
+          <Carousel
+            dots={false}
+            infinite={false}
+            slidesToShow={1}
+            slidesToScroll={1}
+          >
+            {selectedFile && (
+              <Image
+                src={selectedFile?.cloudinarySecureUrl}
+                alt={selectedFile?.name}
+                width={960}
+                height={960}
+              />
+            )}
+          </Carousel>
+        )}
       </Modal>
     </Layout>
   );
