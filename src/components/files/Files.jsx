@@ -43,7 +43,8 @@ export default function FileManager() {
   const [isCarouselModalOpen, setIsCarouselModalOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [filesToUpload, setFilesToUpload] = useState([]);
-  const { filesList } = useFiles();
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const { filesList, revalidate } = useFiles();
 
   const [storageUsed, setStorageUsed] = useState(70);
   const [totalStorage, setTotalStorage] = useState('5 GB');
@@ -92,8 +93,12 @@ export default function FileManager() {
   }, [filesList]);
 
   useEffect(() => {
-    console.log({ filesToUpload });
-  }, [filesToUpload]);
+    console.log(uploadStatus);
+    if (uploadStatus === 'success') {
+      revalidate();
+      setUploadStatus(null);
+    }
+  }, [uploadStatus]);
 
   const getFileIcon = (type, isFolder) => {
     if (isFolder) {
@@ -261,49 +266,60 @@ export default function FileManager() {
 
           <Search placeholder="Search files..." style={{ width: 300 }} />
         </div>
-        <Space>
-          <Button
-            size="large"
-            onClick={() => setIsAddFolderModalOpen(true)}
-            type="outline"
-            icon={<PlusOutlined />}
-          >
-            New Folder
-          </Button>
-          <CustomUpload
-            filesToUpload={filesToUpload}
-            setFilesToUpload={setFilesToUpload}
-            currentPath={currentPath}
-          />
-        </Space>
       </Header>
 
       <Layout style={{ padding: '16px', background: '#fff' }}>
-        <Card size="small" style={{ width: '30%', height: 96 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Progress
-              type="circle"
-              percent={progressPercentage}
-              size={60}
-              strokeColor="#1890ff"
-              format={() => (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <File stroke="#1890ff" size={18} className="mt-1" />
-                </div>
-              )}
-            />
-            <div style={{ marginLeft: 16 }}>
-              <p className="m-0 text-lg ml-3">Total Storage</p>
-              <p className="m-0">
-                <span className="text-lg font-bold">
-                  {formatSize(usedStorageBytes)}
-                </span>
-                <span className="mx-1">of</span>
-                <span className="text-lg font-bold">{totalStorage}</span>
-              </p>
+        <aside
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Card size="small" style={{ width: '30%', height: 96 }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Progress
+                type="circle"
+                percent={progressPercentage}
+                size={60}
+                strokeColor="#1890ff"
+                format={() => (
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <File stroke="#1890ff" size={18} className="mt-1" />
+                  </div>
+                )}
+              />
+              <div style={{ marginLeft: 16 }}>
+                <p className="m-0 text-lg ml-3">Total Storage</p>
+                <p className="m-0">
+                  <span className="text-lg font-bold">
+                    {formatSize(usedStorageBytes)}
+                  </span>
+                  <span className="mx-1">of</span>
+                  <span className="text-lg font-bold">{totalStorage}</span>
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          <Space>
+            <Button
+              size="large"
+              onClick={() => setIsAddFolderModalOpen(true)}
+              type="outline"
+              icon={<PlusOutlined />}
+            >
+              New Folder
+            </Button>
+            <CustomUpload
+              filesToUpload={filesToUpload}
+              setFilesToUpload={setFilesToUpload}
+              setUploadStatus={setUploadStatus}
+              currentPath={currentPath}
+            />
+          </Space>
+        </aside>
 
         <Content>
           <div
@@ -358,6 +374,7 @@ export default function FileManager() {
                           onClick={() => action.onClick(file)}
                           style={{
                             backgroundColor: '#f4f4f4',
+                            color: '#333333',
                             maxWidth: 'max-content',
                             maxHeight: 'max-content',
                             margin: '0',
@@ -412,13 +429,32 @@ export default function FileManager() {
       </Modal>
 
       <Modal
-        title="File Information"
+        title={
+          <Tooltip title={selectedFile.name}>
+            <h2 className="mr-auto text-ellipsis overflow-hidden whitespace-nowrap max-w-[25ch]">
+              {selectedFile.name}
+            </h2>
+          </Tooltip>
+        }
         open={isCarouselModalOpen}
         onCancel={closeCarouselModal}
-        footer={null}
+        footer={
+          <div className="flex justify-between items-center w-full text-sm text-gray-500 p-4">
+            <div className="flex flex-col text-left">
+              <span className="font-semibold text-gray-700">MIME Type</span>
+              <span className="text-gray-500">{selectedFile.mimeType}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-gray-700">Size</span>
+              <span className="text-gray-500">
+                {formatSize(selectedFile.sizeInByte)}
+              </span>
+            </div>
+          </div>
+        }
         centered
         style={{
-          width: '800px',
+          width: '1024px',
           height: 'auto',
         }}
       >
@@ -432,8 +468,8 @@ export default function FileManager() {
             <Image
               src={selectedFile.cloudinarySecureUrl}
               alt={selectedFile.name}
-              width={720}
-              height={720}
+              width={960}
+              height={960}
             />
           )}
         </Carousel>
