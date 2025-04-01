@@ -7,7 +7,6 @@ import {
   Input,
   Select,
   Space,
-  message,
   Popconfirm,
   Divider,
 } from 'antd';
@@ -43,13 +42,13 @@ const FacultyList = () => {
     { value: 'University of Kelaniya', label: 'University of Kelaniya' },
   ];
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+  const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
 
-  const handleReset = (clearFilters) => {
+  const onReset = (clearFilters) => {
     clearFilters();
     setSearchText('');
   };
@@ -69,13 +68,13 @@ const FacultyList = () => {
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={() => onSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            onClick={() => onSearch(selectedKeys, confirm, dataIndex)}
             icon={<Search size={14} />}
             size="small"
             style={{ width: 90 }}
@@ -83,7 +82,7 @@ const FacultyList = () => {
             Search
           </Button>
           <Button
-            onClick={() => handleReset(clearFilters)}
+            onClick={() => onReset(clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
@@ -201,7 +200,7 @@ const FacultyList = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold m-0">Faculties</h1>
+        <p className="text-xl font-bold m-0">Faculties</p>
         <Button type="primary" onClick={showModal}>
           Add New
         </Button>
