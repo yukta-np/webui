@@ -39,8 +39,13 @@ export const constants = {
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffsUrl: `${URL}/staffs`,
+
+    routinesUrl: `${URL}/routines`,
+
+
     organisationsUrl: `${URL}/organisations`,
     filesUrl: `${URL}/files`,
+
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
@@ -93,3 +98,13 @@ export const ResourceActions = {
   acknowledegedBy: 'acknowledegedBy',
   downloadCsv: 'downloadCsv',
 };
+
+export const WeekDay  = {
+  SUNDAY :'SUNDAY',
+  MONDAY :'MONDAY',
+  TUESDAY :'TUESDAY',
+  WEDNESDAY :'WEDNESDAY',
+  THURSDAY :'THURSDAY',
+  FRIDAY :'FRIDAY',
+  SATURDAY :'SATURDAY',
+}
