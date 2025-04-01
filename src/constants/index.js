@@ -33,7 +33,6 @@ export const constants = {
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
-
     administrationUrl: `${URL}/administration`,
     classroomUrl: `${URL}/classroom`,
     settingsUrl: `${URL}/settings`,

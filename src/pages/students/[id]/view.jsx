@@ -1,14 +1,31 @@
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
+// import StudentProfile from '@/components/students/StudentProfile';
+// import React from 'react';
+
+// const ViewStudent = () => {
+//   const router = useRouter();
+//   const { id } = router.query;
+
+//   if (!id) return <p>Loading...</p>;
+
+//   return <StudentProfile params={{ id }} />;
+// };
+
+// export default ViewStudent;
+
+import ControlCenter from '@/components/students/ControlCenter';
 import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
+import { useRouter } from 'next/router';
 
-const ViewStudent = () => {
+const index = () => {
   const router = useRouter();
-  const { id } = router.query;
-
-  if (!id) return <p>Loading...</p>;
-
-  return <StudentProfile params={{ id }} />;
+  const id = router.query.id;
+  return (
+    <ControlCenter>
+      <StudentProfile params={{ id }} />
+    </ControlCenter>
+  );
 };
 
-export default ViewStudent;
+export default index;

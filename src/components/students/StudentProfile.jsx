@@ -37,6 +37,10 @@ const StudentProfile = ({ params }) => {
   const router = useRouter();
   const { students, isLoading, isError } = useStudents({}, params.id);
 
+    if (!params?.id) {
+      return <div>Loading student ID...</div>;
+    }
+
   if (isLoading)
     return (
       <div className="p-4 max-w-8xl mx-auto">
