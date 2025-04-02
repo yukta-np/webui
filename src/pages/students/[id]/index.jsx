@@ -1,8 +1,7 @@
-import ControlCenter from '@/components/organisations/ControlCenter';
-import OrganisationDetails from '@/components/organisations/OrganisationDetails';
+import ControlCenter from '@/components/students/ControlCenter';
+import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
 import { useRouter } from 'next/router';
-import StudentProfile from '@/components/students/StudentProfile';
 
 const index = () => {
   const router = useRouter();
