@@ -9,7 +9,8 @@ export function useUniversities(id) {
   const { data: responseData, error, isValidating } = useSWR(AURL, fetcher);
 
   return {
-    universities: responseData,
+    universities: responseData?.data,
+    meta: responseData?.meta,
     universityById: responseData,
     isLoading: isValidating,
     isError: error,
