@@ -39,9 +39,7 @@ const UniversityList = () => {
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
-  const { universities, universityById, isLoading, isError, revalidate } =
-    useUniversities();
-  console.log(universityById);
+  const { universities, isLoading, isError, revalidate } = useUniversities();
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
