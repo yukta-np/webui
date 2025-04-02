@@ -20,7 +20,7 @@ import {
   getFacultyById,
   updateFaculty,
 } from '@/services/faculties.http';
-import { cl, openNotification } from '@/utils';
+import { openNotification } from '@/utils';
 
 const FacultyList = () => {
   const [form] = Form.useForm();
@@ -178,7 +178,6 @@ const FacultyList = () => {
     setAction(Actions.add);
     try {
       const { universityId, ...rest } = values;
-      console.log(values);
       const payload = {
         ...rest,
         universitiesId: Number(universityId),
