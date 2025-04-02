@@ -15,6 +15,6 @@ export async function deleteUniversity(id) {
   return axios.delete(`${URL}/${id}`, { headers });
 }
 
-export async function getUniversity(id) {
+export async function getUniversityById(id) {
   return axios.get(`${URL}/${id}`, { headers });
 }

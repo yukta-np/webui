@@ -6,7 +6,6 @@ import {
   Form,
   Input,
   Space,
-  message,
   Popconfirm,
   Row,
   Col,
@@ -25,7 +24,7 @@ import { useUniversities } from '@/hooks/useUniversities';
 import {
   createUniversity,
   deleteUniversity,
-  getUniversity,
+  getUniversityById,
   updateUniversity,
 } from '@/services/universities.http';
 import { Actions } from '@/constants';
@@ -108,7 +107,7 @@ const UniversityList = () => {
       title: 'ID',
       dataIndex: 'id',
       key: 'id',
-      sorter: (a, b) => a.id - b.id,
+      sorter: true,
       width: 80,
       render: (text, record) => (
         <a className="text-blue-600" onClick={() => onView(record.id)}>
@@ -121,7 +120,7 @@ const UniversityList = () => {
       dataIndex: 'name',
       key: 'name',
       ...getColumnSearchProps('name'),
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: true,
     },
     {
       title: 'Short Name',
@@ -179,7 +178,7 @@ const UniversityList = () => {
             onClick={() => onEdit(record.id)}
           />
           <Popconfirm
-            title="Delete this university?"
+            title="Are you sure you want to delete this university?"
             onConfirm={() => onDelete(record.id)}
           >
             <Button type="link" danger icon={<Trash2Icon size={18} />} />
@@ -223,14 +222,13 @@ const UniversityList = () => {
   const onEdit = async (id) => {
     setId(id);
     setAction(Actions.edit);
-    const { data } = await getUniversity(id);
+    const { data } = await getUniversityBYId(id);
     populateFrom(data);
     showModal();
   };
 
   const onFinish = async (values) => {
     setIsProcessing(true);
-    console.log(values);
     setAction(Actions.add);
     try {
       const payload = {
