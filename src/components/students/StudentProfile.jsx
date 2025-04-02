@@ -30,7 +30,9 @@ const { Title, Text } = Typography;
 
 const StudentProfile = ({ params }) => {
   const router = useRouter();
-  const { students, isLoading, isError } = useStudents({}, params.id);
+   const id = params?.id;
+  const { students, isLoading, isError } = useStudents();
+  const student = students?.find((s) => String(s.id) === String(id));
 
   if (!params?.id) return <div>Loading student ID...</div>;
 
@@ -97,21 +99,21 @@ const StudentProfile = ({ params }) => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center gap-6">
             <Avatar
-              src={students.avatar}
+              src={student.avatar}
               size={100}
               className="border-2 border-gray-200"
             />
             <div>
               <Title level={2} className="mb-1 text-gray-800">
-                {students?.firstName} {students?.middleName}{' '}
-                {students?.lastName}
+                {student?.firstName} {student?.middleName}{' '}
+                {student?.lastName}
               </Title>
               <Text
                 type="secondary"
                 className="text-gray-500 text-lg flex items-center gap-2"
               >
                 <School size={18} />
-                {students.faculty} • {students.program}
+                {student.faculty} • {student.program}
               </Text>
             </div>
           </div>
@@ -135,17 +137,17 @@ const StudentProfile = ({ params }) => {
               </Title>
               <Descriptions column={1}>
                 <Descriptions.Item label="Student ID">
-                  {students.id}
+                  {student.id}
                 </Descriptions.Item>
                 <Descriptions.Item label="Date of Birth">
-                  {students.dateOfBirth}
+                  {student.dateOfBirth}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
                   <Tag
-                    color={students.isActive ? 'green' : 'red'}
+                    color={student.isActive ? 'green' : 'red'}
                     className="rounded-full"
                   >
-                    {students.isActive ? 'Active' : 'Inactive'}
+                    {student.isActive ? 'Active' : 'Inactive'}
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
@@ -162,22 +164,22 @@ const StudentProfile = ({ params }) => {
                 <Descriptions.Item label="Tuition Balance">
                   <Text
                     className={`text-lg ${
-                      students.dueAmount > 0 ? 'text-red-600' : 'text-green-600'
+                      student.dueAmount > 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    ${students.dueAmount}
+                    ${student.dueAmount}
                   </Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="Scholarship">
                   <Tag
-                    color={students.scholarshipStatus ? 'green' : 'volcano'}
+                    color={student.scholarshipStatus ? 'green' : 'volcano'}
                     className="rounded-full"
                   >
-                    {students.scholarshipStatus ? 'Awarded' : 'Not Applicable'}
+                    {student.scholarshipStatus ? 'Awarded' : 'Not Applicable'}
                   </Tag>
                 </Descriptions.Item>
                 <Descriptions.Item label="Last Payment">
-                  {students.lastPaymentDate}
+                  {student.astPaymentDate}
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -191,13 +193,13 @@ const StudentProfile = ({ params }) => {
               </Title>
               <Descriptions column={1}>
                 <Descriptions.Item label="Email">
-                  {students.email}
+                  {student.email}
                 </Descriptions.Item>
                 <Descriptions.Item label="Phone">
-                  {students.phoneNumber}
+                  {student.phoneNumber}
                 </Descriptions.Item>
                 <Descriptions.Item label="Address">
-                  {students.address}
+                  {student.address}
                 </Descriptions.Item>
               </Descriptions>
             </Card>
@@ -215,27 +217,27 @@ const StudentProfile = ({ params }) => {
             <Col xs={24} md={12}>
               <Descriptions column={1}>
                 <Descriptions.Item label="Faculty">
-                  {students.faculty}
+                  {student.faculty}
                 </Descriptions.Item>
                 <Descriptions.Item label="Program">
-                  {students.program}
+                  {student.program}
                 </Descriptions.Item>
                 <Descriptions.Item label="Enrollment Date">
-                  {students.enrollmentDate}
+                  {student.enrollmentDate}
                 </Descriptions.Item>
               </Descriptions>
             </Col>
             <Col xs={24} md={12}>
               <Descriptions column={1}>
                 <Descriptions.Item label="Batch Number">
-                  {students.batchNumber}
+                  {student.batchNumber}
                 </Descriptions.Item>
                 <Descriptions.Item label="Faculty ID">
-                  {students.facultyId}
+                  {student.facultyId}
                 </Descriptions.Item>
                 <Descriptions.Item label="Academic Standing">
                   <Tag color="blue" className="rounded-full">
-                    {students.academicStanding}
+                    {student.academicStanding}
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
