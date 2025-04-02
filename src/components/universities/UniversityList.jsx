@@ -209,7 +209,6 @@ const UniversityList = () => {
   };
 
   const populateFrom = (data) => {
-    console.log(data);
     const myData = {
       ...data,
       established: data?.established ? moment(data.established) : null,

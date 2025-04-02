@@ -18,8 +18,9 @@ import {
   createFaculty,
   deleteFaculty,
   getFacultyById,
+  updateFaculty,
 } from '@/services/faculties.http';
-import { openNotification } from '@/utils';
+import { cl, openNotification } from '@/utils';
 
 const FacultyList = () => {
   const [form] = Form.useForm();
@@ -177,11 +178,12 @@ const FacultyList = () => {
     setAction(Actions.add);
     try {
       const { universityId, ...rest } = values;
+      console.log(values);
       const payload = {
         ...rest,
-        universitiesId: parseInt(values.universityId),
-        organisationId: 1,
+        universitiesId: Number(universityId),
       };
+
       action === Actions.add
         ? await createFaculty(payload)
         : await updateFaculty(id, payload);
@@ -203,18 +205,26 @@ const FacultyList = () => {
     showModal();
   };
 
+  const populateForm = async (data) => {
+    const myData = {
+      ...data,
+      universityId: data?.university?.id,
+    };
+    form.setFieldsValue(myData);
+  };
+
   const onEdit = async (id) => {
     setId(id);
     setAction(Actions.edit);
     const { data } = await getFacultyById(id);
-    form.setFieldsValue(data);
+    populateForm(data);
     showModal();
   };
 
   const onView = async (id) => {
     setAction(Actions.view);
     const { data } = await getFacultyById(id);
-    form.setFieldsValue(data);
+    populateForm(data);
     showModal();
   };
 
