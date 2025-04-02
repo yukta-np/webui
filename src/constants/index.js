@@ -23,6 +23,7 @@ export const constants = {
     roleUrl: `${URL}/role`,
     // studentUrl: `${URL}/student`,
     universitiesUrl: `${URL}/universities`,
+    facultiesUrl: `${URL}/faculties`,
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-category`,
     taskPriorityUrl: `${URL}/task-priority`,
@@ -42,10 +43,8 @@ export const constants = {
 
     routinesUrl: `${URL}/routines`,
 
-
     organisationsUrl: `${URL}/organisations`,
     filesUrl: `${URL}/files`,
-
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
@@ -99,12 +98,12 @@ export const ResourceActions = {
   downloadCsv: 'downloadCsv',
 };
 
-export const WeekDay  = {
-  SUNDAY :'SUNDAY',
-  MONDAY :'MONDAY',
-  TUESDAY :'TUESDAY',
-  WEDNESDAY :'WEDNESDAY',
-  THURSDAY :'THURSDAY',
-  FRIDAY :'FRIDAY',
-  SATURDAY :'SATURDAY',
-}
+export const WeekDay = {
+  SUNDAY: 'SUNDAY',
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
+};
