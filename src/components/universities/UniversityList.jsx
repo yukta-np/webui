@@ -203,7 +203,7 @@ const UniversityList = () => {
 
   const onView = async (id) => {
     setAction(Actions.view);
-    const { data } = await getUniversity(id);
+    const { data } = await getUniversityById(id);
     populateFrom(data);
     showModal();
   };
@@ -220,7 +220,7 @@ const UniversityList = () => {
   const onEdit = async (id) => {
     setId(id);
     setAction(Actions.edit);
-    const { data } = await getUniversityBYId(id);
+    const { data } = await getUniversityById(id);
     populateFrom(data);
     showModal();
   };
