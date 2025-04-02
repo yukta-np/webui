@@ -108,7 +108,7 @@ const UniversityList = () => {
       sorter: true,
       width: 80,
       render: (_, universities) => (
-        <a className="text-blue-600" onClick={() => onView(universities.id)}>
+        <a className="text-blue-600" onClick={() => onView(universities?.id)}>
           {universities?.displayId}
         </a>
       ),
@@ -176,7 +176,7 @@ const UniversityList = () => {
             onClick={() => onEdit(record.id)}
           />
           <Popconfirm
-            title="Are you sure you want to delete this university?"
+            title="Are you sure to delete this university?"
             onConfirm={() => onDelete(record.id)}
           >
             <Button type="link" danger icon={<Trash2Icon size={18} />} />
