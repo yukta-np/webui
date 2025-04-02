@@ -22,7 +22,6 @@ const {
 
    return {
       areas: responseData,
-      meta: responseData?.meta,
       isLoading: isValidating,
       isError: error,
       revalidate,

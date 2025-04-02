@@ -41,6 +41,7 @@ export const constants = {
     staffsUrl: `${URL}/staffs`,
 
     routinesUrl: `${URL}/routines`,
+    areasUrl: `${URL}/areas`,
 
 
     organisationsUrl: `${URL}/organisations`,
