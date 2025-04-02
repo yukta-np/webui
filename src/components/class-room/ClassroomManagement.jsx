@@ -10,6 +10,7 @@ import {
   Select,
   Space,
   Avatar,
+  Skeleton,
 } from 'antd';
 import { useAreas } from '@/hooks/useAreas';
 import { UserOutlined } from '@ant-design/icons';
@@ -19,215 +20,258 @@ const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
 
 const Bench = ({ capacity, columnIndex, benchIndex }) => {
-  // Generate student cards with empty seats
   const renderSeats = () => {
-    const seats = [];
+    return Array.from({ length: capacity }).map((_, i) => {
+      const isOccupied = Math.random() < 0.7;
 
-    for (let i = 0; i < capacity; i++) {
-      const isOccupied = []; // 70% chance of being occupied
-
-      seats.push(
-        <Card
+      return (
+        <div
           key={`seat-${columnIndex}-${benchIndex}-${i}`}
-          size="small"
           style={{
-            width: 80,
-            marginBottom: 4,
-            borderLeft: `4px solid ${isOccupied ? '#52c41a' : '#d9d9d9'}`,
-            backgroundColor: isOccupied ? '#f6ffed' : '#fafafa',
+            position: 'relative',
+            width: 40,
+            height: 48,
+            backgroundColor: isOccupied ? '#f0f5ff' : '#fafafa',
+            border: '1px solid #f0f0f0',
+            borderLeft: i === 0 ? '1px solid #f0f0f0' : 'none',
+            borderRight: '1px solid #f0f0f0',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
-          bodyStyle={{ padding: '4px 8px' }}
         >
-          <Space size="small" direction="vertical" align="center">
-            {isOccupied ? (
-              <>
-                <Avatar size="small" icon={<UserOutlined />} />
-                <Text ellipsis style={{ fontSize: 12 }}>
-                  Student {i + 1}
-                </Text>
-              </>
-            ) : (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Empty
-              </Text>
-            )}
-          </Space>
-        </Card>
-      );
-    }
+          {/* Seat Number */}
+          <Text
+            type="secondary"
+            style={{
+              fontSize: 10,
+              position: 'absolute',
+              top: 2,
+              left: 2,
+              color: '#bfbfbf',
+            }}
+          >
+            {i + 1}
+          </Text>
 
-    return seats;
+          {/* Occupant */}
+          {isOccupied ? (
+            <Avatar
+              size={24}
+              icon={<UserOutlined />}
+              style={{
+                backgroundColor: '#1890ff',
+                marginBottom: 4,
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 16,
+                height: 16,
+                borderRadius: 2,
+                backgroundColor: '#f0f0f0',
+                marginBottom: 4,
+              }}
+            />
+          )}
+
+          {/* Bench Leg */}
+          {/* <div
+            style={{
+              position: 'absolute',
+              bottom: -12,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 12,
+              height: 12,
+              backgroundColor: '#d9d9d9',
+              borderRadius: 2,
+            }}
+          /> */}
+        </div>
+      );
+    });
   };
 
   return (
-    <Card
-      title={`Bench ${benchIndex + 1}`}
+    <div
       style={{
-        width: 300,
-        marginBottom: 16,
-        backgroundColor: '#f0f5ff',
+        position: 'relative',
+        marginBottom: 32,
+        paddingBottom: 12,
       }}
-      headStyle={{
-        padding: '0 8px',
-        minHeight: 'auto',
-        borderBottom: '1px solid #1890ff',
-      }}
-      bodyStyle={{ padding: '8px' }}
     >
-      <div style={{ minHeight: 40 }}>
+      {/* Bench Backrest */}
+      <div
+        style={{
+          height: 24,
+          backgroundColor: '#f0f0f0',
+          border: '1px solid #d9d9d9',
+          borderBottom: 'none',
+          borderTopLeftRadius: 4,
+          borderTopRightRadius: 4,
+          marginBottom: -1,
+        }}
+      >
+        <Text
+          strong
+          style={{
+            fontSize: 12,
+            paddingLeft: 8,
+            lineHeight: '24px',
+            color: '#595959',
+          }}
+        >
+          Bench {benchIndex + 1}
+        </Text>
+      </div>
+
+      {/* Seating Area */}
+      <div
+        style={{
+          display: 'flex',
+          position: 'relative',
+          backgroundColor: '#fff',
+          border: '1px solid #d9d9d9',
+          borderRadius: 4,
+        }}
+      >
         {capacity > 0 ? (
-          <div style={{ display: 'flex', gap: 16, flexDirection: 'row' }}>
-            {renderSeats()}
-          </div>
+          <div style={{ display: 'flex' }}>{renderSeats()}</div>
         ) : (
-          <Text type="secondary" italic style={{ textAlign: 'center' }}>
-            No seats
-          </Text>
+          <div
+            style={{
+              width: 120,
+              height: 48,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 8,
+            }}
+          >
+            <Text type="secondary" italic style={{ fontSize: 12 }}>
+              No seats
+            </Text>
+          </div>
         )}
       </div>
+
+      {/* Bench Info */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           marginTop: 8,
+          padding: '0 8px',
         }}
       >
         <Text type="secondary" style={{ fontSize: 10 }}>
-          Col {columnIndex + 1}
+          Column {columnIndex + 1}
         </Text>
         <Text type="secondary" style={{ fontSize: 10 }}>
           {capacity} seat{capacity !== 1 ? 's' : ''}
         </Text>
       </div>
-    </Card>
+    </div>
   );
 };
 
 const ClassroomManagement = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [classrooms, setClassrooms] = useState([]);
-
   const [currentClassroom, setCurrentClassroom] = useState(null);
-
-  const { areas, isLoading: isAreasLoading, error: areasError } = useAreas();
+  const { areas, isLoading: isAreasLoading } = useAreas();
   const screens = useBreakpoint();
 
-  // Safely extract areas data from response
-  const areasData = areas?.data || [];
-  console.log(areasData);
-
-  // Extract structure from the current classroom
-  // Filter only classrooms (in case response includes other categories)
-  const classroomAreas = (areas || []).filter(
-    (area) => area.category === 'classroom'
-  );
-
-  // Extract structure from the current classroom
-  const getCurrentStructure = () => {
-    if (!currentClassroom || classroomAreas.length === 0) return [];
-
-    const currentArea = classroomAreas.find(
-      (area) => area.name === currentClassroom
-    );
-    return currentArea?.structure || [];
-  };
-
-  const structure = getCurrentStructure();
-
-  const onAddClick = () => {
-    setAction('add');
-    setIsModalVisible(true);
-  };
-
-  const onClassroomChange = (value) => {
-    setCurrentClassroom(value);
-  };
+  const classroomAreas =
+    areas?.filter((area) => area.category === 'classroom') || [];
+  const classrooms = Array.from(new Set(classroomAreas.map((a) => a.name)));
+  const structure =
+    classroomAreas.find((a) => a.name === currentClassroom)?.structure || [];
 
   useEffect(() => {
-    // Filter areas to only include those with category 'classroom'
-    const classroomAreas = areas
-      ? areas.filter((area) => area.category === 'classroom')
-      : [];
-
-    if (classroomAreas.length === 0) {
-      setClassrooms([]); // Explicitly set to empty array if no classroom areas
-      return;
-    }
-
-    const classrooms = Array.from(new Set(classroomAreas.map((a) => a.name)));
-    setClassrooms(classrooms);
-
-    if (!currentClassroom && classrooms.length > 0) {
+    if (classrooms.length > 0 && !currentClassroom) {
       setCurrentClassroom(classrooms[0]);
     }
-  }, [areas]);
-
-  console.log('areas', areas);
+  }, [classrooms]);
 
   return (
-    <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
+    <Content
+      style={{
+        margin: screens.xs ? 16 : 24,
+        padding: screens.xs ? 16 : 24,
+        background: '#ffffff',
+        borderRadius: 12,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+      }}
+    >
       <div
         style={{
-          minHeight: 360,
-          background: 'white',
-          borderRadius: 8,
-          padding: 24,
+          display: 'flex',
+          flexDirection: screens.xs ? 'column' : 'row',
+          gap: 16,
+          justifyContent: 'space-between',
+          marginBottom: 24,
+          paddingBottom: 24,
+          borderBottom: '1px solid #f0f0f0',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: screens.xs ? 'column' : 'row',
-            gap: 16,
-            justifyContent: 'space-between',
-            marginBottom: 16,
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <Title level={2} style={{ margin: 0 }}>
-              Classroom
-            </Title>
-          </div>
-          <Button type="primary" onClick={onAddClick}>
-            Add Class
-          </Button>
-        </div>
-        <Select
-          onChange={onClassroomChange}
-          className="w-36"
-          value={currentClassroom}
-          loading={isAreasLoading}
-          options={classrooms.map((level, index) => ({
-            label: level,
-            value: level,
-            key: index,
-          }))}
-        />
-        <div style={{ padding: '24px' }}>
-          <Row gutter={[16, 16]} justify="center">
-            {structure.map((column, columnIndex) => (
-              <Col key={`column-${columnIndex}`}>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                  }}
-                >
-                  {column.map((capacity, benchIndex) => (
-                    <Bench
-                      key={`bench-${columnIndex}-${benchIndex}`}
-                      capacity={capacity}
-                      columnIndex={columnIndex}
-                      benchIndex={benchIndex}
-                    />
-                  ))}
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </div>
+        <Title level={4} style={{ margin: 0 }}>
+          Classroom Layout
+        </Title>
+        <Space>
+          <Select
+            onChange={setCurrentClassroom}
+            value={currentClassroom}
+            loading={isAreasLoading}
+            style={{ width: 200 }}
+            options={classrooms.map((name, index) => ({
+              label: name,
+              value: name,
+              key: index,
+            }))}
+          />
+          <Button type="primary">Add Classroom</Button>
+        </Space>
       </div>
+
+      {isAreasLoading ? (
+        <Skeleton active paragraph={{ rows: 6 }} />
+      ) : (
+        <Row gutter={[32, 32]} justify="center" style={{ padding: 16 }}>
+          {structure.map((column, columnIndex) => (
+            <Col key={`column-${columnIndex}`}>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: 24 }}
+              >
+                {column.map((capacity, benchIndex) => (
+                  <Bench
+                    key={`bench-${columnIndex}-${benchIndex}`}
+                    capacity={capacity}
+                    columnIndex={columnIndex}
+                    benchIndex={benchIndex}
+                  />
+                ))}
+              </div>
+            </Col>
+          ))}
+          {structure.length === 0 && (
+            <Col span={24}>
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: 48,
+                  background: '#fafafa',
+                  borderRadius: 8,
+                }}
+              >
+                <Text type="secondary">No classroom layout configured</Text>
+              </div>
+            </Col>
+          )}
+        </Row>
+      )}
     </Content>
   );
 };
