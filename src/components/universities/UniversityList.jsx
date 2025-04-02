@@ -107,9 +107,9 @@ const UniversityList = () => {
       key: 'id',
       sorter: true,
       width: 80,
-      render: (text, record) => (
-        <a className="text-blue-600" onClick={() => onView(record.id)}>
-          UNI-{text}
+      render: (_, universities) => (
+        <a className="text-blue-600" onClick={() => onView(universities.id)}>
+          {universities?.displayId}
         </a>
       ),
     },
