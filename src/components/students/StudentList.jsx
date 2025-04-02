@@ -96,13 +96,6 @@ const StudentListPage = () => {
 
   return (
     <div className="p-6">
-      <Breadcrumb className="mb-6">
-        <Breadcrumb.Item>
-          <Link href="/">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Students</Breadcrumb.Item>
-      </Breadcrumb>
-
       <Card className="shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div>

@@ -77,7 +77,7 @@ const StudentProfile = ({ params }) => {
 
   return (
     <div className="p-6 gap-4">
-      <Breadcrumb className="mb-6 text-sm">
+      {/* <Breadcrumb className="mb-6 text-sm">
         <Breadcrumb.Item>
           <Link href="/" className="text-gray-500 hover:text-gray-700">
             Dashboard
@@ -91,7 +91,7 @@ const StudentProfile = ({ params }) => {
         <Breadcrumb.Item className="text-gray-700 font-medium">
           {students.firstName} {students.lastName}
         </Breadcrumb.Item>
-      </Breadcrumb>
+      </Breadcrumb> */}
 
       <Card className="shadow-sm border-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
