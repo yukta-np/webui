@@ -57,6 +57,15 @@ const OrganisationUsers = ({ params: { id } }) => {
     form.setFieldsValue(data);
   };
 
+  const openModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    form.resetFields();
+    setIsModalVisible(false);
+  };
+
   const onActiveChange = async (checked, users) => {
     console.log(users.id);
     try {
@@ -254,10 +263,10 @@ const OrganisationUsers = ({ params: { id } }) => {
 
       <Modal
         title="Edit User"
-        visible={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        open={isModalVisible}
+        onCancel={closeModal}
         footer={[
-          <Button key="back" onClick={() => setIsModalVisible(false)}>
+          <Button key="back" onClick={closeModal}>
             Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={() => form.submit()}>
