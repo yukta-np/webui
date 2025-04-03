@@ -179,7 +179,7 @@ const SecuredLayout = ({ children }) => {
             label: 'Data Sources',
             key: 'data-source',
             icon: <Database size={18} />,
-            href: '/settings/data-sources',
+            href: '/data-sources',
           },
         ],
       },

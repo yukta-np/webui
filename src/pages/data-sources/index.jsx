@@ -8,7 +8,7 @@ const index = () => {
     <>
       <Breadcrumb style={{ margin: '16px ' }}>
         <Breadcrumb.Item>
-          <Link href="/">Home</Link>
+          <Link href="/">Dashboard</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Data Sources</Breadcrumb.Item>
       </Breadcrumb>

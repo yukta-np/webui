@@ -76,11 +76,6 @@ const StudentForm = ({
       layout="vertical"
       onFinish={onFinish || onSubmit}
       id="student-form"
-      initialValues={{
-        isActive: true,
-        scholarshipStatus: false,
-        ...initialValues,
-      }}
     >
       {error && (
         <Alert
@@ -282,6 +277,10 @@ const StudentForm = ({
             name="scholarshipStatus"
             label="Scholarship Status"
             valuePropName="checked"
+            initialValues={{
+              scholarshipStatus: false,
+              ...initialValues,
+            }}
           >
             <Checkbox disabled={isViewMode} />
           </Item>
@@ -303,8 +302,16 @@ const StudentForm = ({
           </Item>
         </Col>
         <Col xs={24} md={8}>
-          <Item name="isActive" label="Active Status" valuePropName="checked">
-            <Checkbox disabled={isViewMode || isCreateMode} />
+          <Item
+            name="isActive"
+            label="Active Status"
+            valuePropName="checked"
+            initialValues={{
+              isActive: false,
+              ...initialValues,
+            }}
+          >
+            <Checkbox disabled={isViewMode } />
           </Item>
         </Col>
         <Col xs={24} md={8}>

@@ -129,7 +129,7 @@ const StudentProfile = ({ params }) => {
               <Descriptions column={1}>
                 <Descriptions.Item label="Tuition Balance">
                   <Text
-                    className={`text-lg ${
+                    className={` ${
                       student.dueAmount > 0 ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
