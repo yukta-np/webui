@@ -95,8 +95,7 @@ const StudentListPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <Card className="shadow-sm">
+    <div >
         <div className="flex justify-between items-center mb-6">
           <div>
             <Title level={3} className="mb-1">
@@ -127,7 +126,6 @@ const StudentListPage = () => {
           pagination={{ pageSize: 10 }}
           bordered
         />
-      </Card>
 
       <Drawer
         title="Filter Students"

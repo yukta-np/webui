@@ -72,7 +72,6 @@ const settingsCards = [
 const Datasources = () => {
   return (
     <div className="p-6">
-      <Card className="p-4 rounded-lg shadow-sm">
         <Row gutter={[24, 24]}>
           {settingsCards.map((card) => (
             <Col xs={24} sm={12} md={8} lg={6} key={card.id}>
@@ -92,7 +91,6 @@ const Datasources = () => {
             </Col>
           ))}
         </Row>
-      </Card>
     </div>
   );
 };
