@@ -52,7 +52,7 @@ const StudentEditForm = () => {
     if (id) loadStudentData();
   }, [id]);
 
-  const handleSubmit = async (values) => {
+  const onSubmit = async (values) => {
     try {
       setSubmitting(true);
       const payload = {
@@ -84,7 +84,7 @@ const StudentEditForm = () => {
       <StudentForm
         mode="edit"
         initialValues={initialValues}
-        onFinish={handleSubmit}
+        onFinish={onSubmit}
         loading={submitting}
         error={error}
       />

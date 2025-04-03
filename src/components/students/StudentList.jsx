@@ -27,8 +27,6 @@ const { Title, Text } = Typography;
 
 const StudentListPage = () => {
   const router = useRouter();
-//   const currentId = parseInt(router.query.id);
-// console .log('currentId', currentId)
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [filterValues, setFilterValues] = useState({});

@@ -51,7 +51,6 @@ const StudentForm = ({
   }, [initialValues, form]);
 
   const onSubmit = async (values) => {
-    console.log('Form values:', values);
     const processedValues = {
       ...values,
       isCR,
