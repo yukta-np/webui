@@ -39,7 +39,7 @@ const Index = () => {
         </Breadcrumb.Item>
         <Breadcrumb.Item>
           {student
-            ? `${student.firstName} ${student.lastName}`
+            ? `${student.firstName} ${student.middleName} ${student.lastName}`
             : 'Student Profile'}
         </Breadcrumb.Item>
       </Breadcrumb>

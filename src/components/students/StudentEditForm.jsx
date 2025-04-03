@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation'; // If using Next.js app router
 import StudentForm from '@/components/students/StudentForm';
 import { getStudentById, updateStudent } from '@/services/students.http';
 import { openNotification } from '@/utils';
-import { Alert } from 'antd';
+import { Alert, Card, Typography } from 'antd';
 import moment from 'moment';
 
-const StudentEditForm = ({ params }) => {
-  const { id } = params;
+const { Title, Text } = Typography; // Fixed missing import
+
+const StudentEditForm = () => {
+  const { id } = useParams(); // Use `useParams()` to get `id`
   const [initialValues, setInitialValues] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,19 +18,28 @@ const StudentEditForm = ({ params }) => {
   useEffect(() => {
     const loadStudentData = async () => {
       try {
-        const { data } = await getStudentById(id);
+        const studentData = await getStudentById(id);
+
+        if (!studentData) {
+          setError('Student not found');
+          return;
+        }
+
         setInitialValues({
-          ...data,
-          dateOfBirth: data.dateOfBirth ? moment(data.dateOfBirth) : null,
-          enrollmentDate: data.enrollmentDate
-            ? moment(data.enrollmentDate)
+          ...studentData,
+          dateOfBirth: studentData.dateOfBirth
+            ? moment(studentData.dateOfBirth)
             : null,
-          graduationDate: data.graduationDate
-            ? moment(data.graduationDate)
+          enrollmentDate: studentData.enrollmentDate
+            ? moment(studentData.enrollmentDate)
+            : null,
+          graduationDate: studentData.graduationDate
+            ? moment(studentData.graduationDate)
             : null,
         });
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load student data');
+        openNotification('Error loading student data', 'error');
       } finally {
         setLoading(false);
       }
@@ -36,7 +48,7 @@ const StudentEditForm = ({ params }) => {
     if (id) loadStudentData();
   }, [id]);
 
-  const onSubmit = async (values) => {
+  const handleSubmit = async (values) => {
     try {
       setSubmitting(true);
       const payload = {
@@ -48,6 +60,7 @@ const StudentEditForm = ({ params }) => {
 
       await updateStudent(id, payload);
       openNotification('Student updated successfully!');
+      setError(null); // Clear previous errors on success
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || 'Error updating student';
@@ -63,13 +76,17 @@ const StudentEditForm = ({ params }) => {
     return <Alert message="Error" description={error} type="error" showIcon />;
 
   return (
-    <StudentForm
-      mode="edit"
-      initialValues={initialValues}
-      onFinish={onSubmit}
-      loading={submitting}
-      error={error}
-    />
+    <div className='mb-4 '>
+      <Card className="shadow-sm">
+        <StudentForm
+          mode="edit"
+          initialValues={initialValues}
+          onFinish={handleSubmit}
+          loading={submitting}
+          error={error}
+        />
+      </Card>
+    </div>
   );
 };
 
