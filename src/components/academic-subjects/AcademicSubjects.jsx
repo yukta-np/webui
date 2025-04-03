@@ -141,18 +141,22 @@ const AcademicSubjects = () => {
     },
     {
       title: 'Academic Program',
-      dataIndex: ['academicProgram', 'name'],
+      dataIndex: 'academicProgram',
       key: 'academicProgram',
-      render: (_, program) => (
+      render: (_, subjects) => (
         <span>
-          {program?.name} ({program?.shortName})
+          {subjects?.academicProgram?.name} (
+          {subjects?.academicProgram?.shortName})
         </span>
       ),
       filters: programs?.map((program) => ({
         text: `${program.name} (${program.shortName})`,
         value: program.id,
       })),
-      // onFilter: (value, record) => record.AcademicProgramId === value,
+      onFilter: (value, record) => {
+        return record.academicProgram?.id?.toString() === value.toString();
+      },
+      filteredValue: filteredInfo.academicProgram || null,
     },
     {
       title: 'Actions',
@@ -267,6 +271,9 @@ const AcademicSubjects = () => {
         dataSource={subjects}
         bordered
         pagination={{ pageSize: 5 }}
+        onChange={(pagination, filters, sorter) => {
+          setFilteredInfo(filters);
+        }}
       />
 
       <Modal
