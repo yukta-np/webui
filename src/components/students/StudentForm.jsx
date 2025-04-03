@@ -68,7 +68,6 @@ const StudentForm = ({
       console.error('Error creating student:', error);
       const errorMessage = error.response?.data?.message;
       openNotification(errorMessage || 'Error creating student', 'error');
-      // Handle error (e.g., show a message to the user)
     }
   };
 
