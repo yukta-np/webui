@@ -14,44 +14,40 @@ import {
   Divider,
 } from 'antd';
 import { FilePenLine, Trash2Icon, Search } from 'lucide-react';
+import { useAcademicPrograms } from '@/hooks/useAcademicPrograms';
+import { useAcademicSubjects } from '@/hooks/useAcademicSubjects';
+import { Actions } from '@/constants';
+import {
+  deleteAcademicSubject,
+  getAcademicSubjectById,
+  updateAcademicSubject,
+  createAcademicSubject,
+} from '@/services/academicSubjects.http';
+import { openNotification } from '@/utils';
 
 const AcademicSubjects = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingRecord, setEditingRecord] = useState(null);
-  const [dataSource, setDataSource] = useState([]);
-  const [academicPrograms, setAcademicPrograms] = useState([]);
+  const [action, setAction] = useState(Actions.add);
+  const [id, setId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
+  const [filteredInfo, setFilteredInfo] = useState({});
 
-  // Mock data - replace with your API calls
-  useEffect(() => {
-    // Fetch academic programs for the dropdown
-    setAcademicPrograms([
-      { id: 1, name: 'Computer Science', code: 'CS' },
-      { id: 2, name: 'Electrical Engineering', code: 'EE' },
-      { id: 3, name: 'Business Administration', code: 'BA' },
-    ]);
+  const { programs } = useAcademicPrograms();
+  const { subjects, revalidate } = useAcademicSubjects();
+  console.log(programs);
 
-    // Fetch initial data
-    setDataSource([
-      {
-        key: 'SUB-1',
-        name: 'Software Engineering Track',
-        code: 'SE-TRACK',
-        shortName: 'SET',
-        AcademicProgramId: 1,
-        academicProgram: { id: 1, name: 'Computer Science', code: 'CS' },
-      },
-      {
-        key: 'SUB-2',
-        name: 'Power Systems Specialization',
-        code: 'PS-SPEC',
-        shortName: 'PSS',
-        AcademicProgramId: 2,
-        academicProgram: { id: 2, name: 'Electrical Engineering', code: 'EE' },
-      },
-    ]);
-  }, []);
+  const onSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+  };
+
+  const onReset = (dataIndex) => {
+    setFilteredInfo((prev) => ({
+      ...prev,
+      [dataIndex]: null,
+    }));
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -82,7 +78,10 @@ const AcademicSubjects = () => {
             Search
           </Button>
           <Button
-            onClick={() => onReset(clearFilters)}
+            onClick={() => {
+              clearFilters();
+              onReset(dataIndex);
+            }}
             size="small"
             style={{ width: 90 }}
           >
@@ -106,6 +105,7 @@ const AcademicSubjects = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
+    filteredValue: filteredInfo[dataIndex] || null,
   });
 
   const columns = [
@@ -113,9 +113,10 @@ const AcademicSubjects = () => {
       title: 'ID',
       dataIndex: 'key',
       key: 'key',
-      render: (text, record) => (
-        <a className="text-blue-600" onClick={() => onView(record)}>
-          {text}
+      sorter: true,
+      render: (text, subjects) => (
+        <a className="text-blue-600" onClick={() => onView(subjects?.id)}>
+          {subjects?.displayId}
         </a>
       ),
     },
@@ -124,6 +125,7 @@ const AcademicSubjects = () => {
       dataIndex: 'name',
       key: 'name',
       ...getColumnSearchProps('name'),
+      sorter: true,
     },
     {
       title: 'Code',
@@ -141,16 +143,16 @@ const AcademicSubjects = () => {
       title: 'Academic Program',
       dataIndex: ['academicProgram', 'name'],
       key: 'academicProgram',
-      render: (_, record) => (
+      render: (_, program) => (
         <span>
-          {record.academicProgram?.name} ({record.academicProgram?.code})
+          {program?.name} ({program?.shortName})
         </span>
       ),
-      filters: academicPrograms.map((program) => ({
-        text: `${program.name} (${program.code})`,
+      filters: programs?.map((program) => ({
+        text: `${program.name} (${program.shortName})`,
         value: program.id,
       })),
-      onFilter: (value, record) => record.AcademicProgramId === value,
+      // onFilter: (value, record) => record.AcademicProgramId === value,
     },
     {
       title: 'Actions',
@@ -160,11 +162,11 @@ const AcademicSubjects = () => {
           <Button
             type="link"
             icon={<FilePenLine size={18} />}
-            onClick={() => onEdit(record)}
+            onClick={() => onEdit(record.id)}
           />
           <Popconfirm
-            title="Are you sure to delete this record?"
-            onConfirm={() => onDelete(record)}
+            title="Are you sure to delete this subject?"
+            onConfirm={() => onDelete(record.id)}
           >
             <Button type="link" danger icon={<Trash2Icon size={18} />} />
           </Popconfirm>
@@ -177,64 +179,70 @@ const AcademicSubjects = () => {
     setIsModalVisible(true);
   };
 
-  const onCancel = () => {
+  const closeModal = () => {
     setIsModalVisible(false);
-    setEditingRecord(null);
     form.resetFields();
   };
 
-  const onFinish = (values) => {
-    const academicProgram = academicPrograms.find(
-      (p) => p.id === values.AcademicProgramId
-    );
-
-    if (editingRecord) {
-      // Update existing record
-      setDataSource((prev) =>
-        prev.map((item) =>
-          item.key === editingRecord.key
-            ? {
-                ...item,
-                ...values,
-                academicProgram,
-              }
-            : item
-        )
-      );
-      message.success('Record updated successfully');
-    } else {
-      // Add new record
-      const newRecord = {
-        key: Date.now().toString(),
+  const onFinish = async (values) => {
+    setIsProcessing(true);
+    setAction(Actions.add);
+    console.log(values);
+    try {
+      const payload = {
         ...values,
-        academicProgram,
+        academicProgramId: Number(values.academicProgramId),
       };
-      setDataSource((prev) => [...prev, newRecord]);
-      message.success('Record added successfully');
+      console.log(payload);
+
+      action === Actions.add
+        ? await createAcademicSubject(payload)
+        : await updateAcademicSubject(id, payload);
+      openNotification(`Subject ${action}ed successfully`);
+      revalidate();
+      setIsModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      openNotification(`Failed to ${action} subject`, true);
+      console.error('Validation failed:', error);
+    } finally {
+      setIsProcessing(false);
     }
-    onCancel();
   };
 
-  const onEdit = (record) => {
-    form.setFieldsValue({
-      ...record,
-      AcademicProgramId: record.AcademicProgramId,
-    });
-    setEditingRecord(record);
-    setIsModalVisible(true);
+  const onAdd = () => {
+    setAction(Actions.add);
+    form.resetFields();
+    showModal();
   };
 
-  const onDelete = (record) => {
-    setDataSource((prev) => prev.filter((item) => item.key !== record.key));
-    message.success('Record deleted successfully');
+  const populateForm = async (data) => {
+    const myData = {
+      ...data,
+      academicProgramId: data?.academicProgram?.id,
+    };
+    form.setFieldsValue(myData);
   };
 
-  const onSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
+  const onEdit = async (id) => {
+    setId(id);
+    setAction(Actions.edit);
+    const { data } = await getAcademicSubjectById(id);
+    populateForm(data);
+    showModal();
   };
 
-  const onReset = (clearFilters) => {
-    clearFilters();
+  const onView = async (id) => {
+    setAction(Actions.view);
+    const { data } = await getAcademicSubjectById(id);
+    populateForm(data);
+    showModal();
+  };
+
+  const onDelete = async (id) => {
+    await deleteAcademicSubject(id);
+    openNotification('Academic Subject deleted successfully');
+    revalidate();
   };
 
   return (
@@ -249,23 +257,45 @@ const AcademicSubjects = () => {
       >
         <p className="text-xl font-bold m-0">Academic Subjects</p>
 
-        <Button type="primary" onClick={showModal}>
+        <Button type="primary" onClick={onAdd}>
           Add New
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={dataSource}
+        dataSource={subjects}
         bordered
         pagination={{ pageSize: 5 }}
       />
 
       <Modal
-        title={editingRecord ? 'Edit Record' : 'Add New Record'}
-        visible={isModalVisible}
-        onCancel={onCancel}
-        onOk={() => form.submit}
+        title={
+          action === Actions.view
+            ? 'Academic Subject Details'
+            : action === Actions.add
+            ? 'Add Academic Subject'
+            : 'Edit Academic Subject'
+        }
+        open={isModalVisible}
+        onCancel={closeModal}
+        footer={
+          action === Actions.view ? (
+            <Button key="back" onClick={closeModal}>
+              Cancel
+            </Button>
+          ) : (
+            [
+              <Button key="back" onClick={closeModal}>
+                Cancel
+              </Button>,
+
+              <Button key="submit" type="primary" onClick={() => form.submit()}>
+                {action === Actions.add ? 'Add' : 'Save'}
+              </Button>,
+            ]
+          )
+        }
       >
         <Divider />
         <Form
@@ -273,6 +303,7 @@ const AcademicSubjects = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          disabled={action === Actions.view}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -288,18 +319,7 @@ const AcademicSubjects = () => {
               <Form.Item
                 name="code"
                 label="Code"
-                rules={[
-                  { required: true, message: 'Please input the code!' },
-                  {
-                    validator: (_, value) => {
-                      if (editingRecord) return Promise.resolve();
-                      if (dataSource.some((item) => item.code === value)) {
-                        return Promise.reject('This code already exists!');
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
+                rules={[{ required: true, message: 'Please input the code!' }]}
               >
                 <Input placeholder="Enter unique code" />
               </Form.Item>
@@ -320,7 +340,7 @@ const AcademicSubjects = () => {
             </Col>
             <Col span={12}>
               <Form.Item
-                name="AcademicProgramId"
+                name="academicProgramId"
                 label="Academic Program"
                 rules={[
                   {
@@ -331,18 +351,18 @@ const AcademicSubjects = () => {
               >
                 <Select
                   showSearch
+                  allowClear
                   placeholder="Select academic program"
-                  optionFilterProp="children"
                   filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
+                    (option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
                   }
-                >
-                  {academicPrograms.map((program) => (
-                    <Select.Option key={program.id} value={program.id}>
-                      {program.name} ({program.code})
-                    </Select.Option>
-                  ))}
-                </Select>
+                  options={programs?.map((p) => ({
+                    label: p?.name,
+                    value: p?.id,
+                  }))}
+                />
               </Form.Item>
             </Col>
           </Row>

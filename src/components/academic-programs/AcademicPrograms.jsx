@@ -349,6 +349,7 @@ const AcademicPrograms = () => {
               >
                 <Select
                   showSearch
+                  allowClear
                   placeholder="Select faculty"
                   filterOption={(input, option) =>
                     (option?.label ?? '')

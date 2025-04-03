@@ -24,6 +24,7 @@ export const constants = {
     universitiesUrl: `${URL}/universities`,
     facultiesUrl: `${URL}/faculties`,
     academicProgramsUrl: `${URL}/academic-programs`,
+    academicSubjectsUrl: `${URL}/academic-subjects`,
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-category`,
     taskPriorityUrl: `${URL}/task-priority`,
