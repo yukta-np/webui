@@ -28,18 +28,29 @@ import {
   updateUniversity,
 } from '@/services/universities.http';
 import { Actions } from '@/constants';
-import { openNotification } from '@/utils';
+import { openNotification, objectHasValue } from '@/utils';
 
 const UniversityList = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [action, setAction] = useState(Actions.add);
   const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
-  const { universities, isLoading, isError, revalidate } = useUniversities();
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
+
+  const { universities, meta, isLoading, isError, revalidate } =
+    useUniversities(params);
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -99,6 +110,17 @@ const UniversityList = () => {
     },
     filteredValue: filteredInfo[dataIndex] || null,
   });
+
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
 
   const columns = [
     {
@@ -288,10 +310,14 @@ const UniversityList = () => {
         columns={columns}
         dataSource={universities}
         bordered
-        pagination={{ pageSize: 5 }}
-        onChange={(pagination, filters, sorter) => {
-          setFilteredInfo(filters);
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
         }}
+        onChange={onTableChange}
       />
 
       <Modal
