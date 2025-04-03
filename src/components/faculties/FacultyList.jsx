@@ -28,7 +28,6 @@ const FacultyList = () => {
   const [action, setAction] = useState(Actions.add);
   const [id, setId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [searchText, setSearchText] = useState('');
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
@@ -180,8 +179,9 @@ const FacultyList = () => {
       const { universityId, ...rest } = values;
       const payload = {
         ...rest,
-        universitiesId: Number(universityId),
+        universityId: Number(universityId),
       };
+      console.log(payload);
 
       action === Actions.add
         ? await createFaculty(payload)
@@ -314,9 +314,10 @@ const FacultyList = () => {
             <Select
               showSearch
               placeholder="Select university"
-              optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().includes(input.toLowerCase())
+                (option?.label ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
               options={universities?.map((university) => ({
                 value: university.id,
