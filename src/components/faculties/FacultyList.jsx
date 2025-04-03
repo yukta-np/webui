@@ -20,19 +20,30 @@ import {
   getFacultyById,
   updateFaculty,
 } from '@/services/faculties.http';
-import { openNotification } from '@/utils';
+import { openNotification, objectHasValue } from '@/utils';
 
 const FacultyList = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [action, setAction] = useState(Actions.add);
   const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
+
   const { universities } = useUniversities();
-  const { faculties, isLoading, isError, revalidate } = useFaculties();
+  const { faculties, meta, isLoading, isError, revalidate } =
+    useFaculties(params);
 
   const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -104,11 +115,22 @@ const FacultyList = () => {
     filteredValue: filteredInfo[dataIndex] || null,
   });
 
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
+
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: 'id',
+      key: 'id',
       sorter: true,
       render: (_, faculties) => (
         <a className="text-blue-600" onClick={() => onView(faculties?.id)}>
@@ -130,10 +152,12 @@ const FacultyList = () => {
     },
     {
       title: 'University',
-      dataIndex: 'university',
+      dataIndex: ['university'],
       key: 'university',
       render: (_, faculties) => faculties?.university?.name,
       ...getColumnSearchProps('university'),
+      onFilter: (value, record) =>
+        record.university?.name?.toLowerCase().includes(value.toLowerCase()),
     },
     {
       title: 'Actions',
@@ -246,10 +270,14 @@ const FacultyList = () => {
         columns={columns}
         dataSource={faculties}
         bordered
-        pagination={{ pageSize: 5 }}
-        onChange={(pagination, filters, sorter) => {
-          setFilteredInfo(filters);
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
         }}
+        onChange={onTableChange}
       />
       <Modal
         title={

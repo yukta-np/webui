@@ -2,11 +2,15 @@ import React from 'react';
 import { Card, Typography, Row, Col } from 'antd';
 import Link from 'next/link';
 import {
-  BookOutlined,
-  TeamOutlined,
-  UserOutlined,
-  CodeOutlined,
-} from '@ant-design/icons';
+  GraduationCap,
+  BookOpenText,
+  BookText,
+  Landmark,
+  ShieldUser,
+  UserPen,
+  Users,
+  CircleUserRound,
+} from 'lucide-react';
 
 const { Title, Text } = Typography;
 
@@ -15,56 +19,56 @@ const settingsCards = [
     id: 'administration',
     title: 'Administration',
     description: 'Manage administration staffs',
-    icon: <UserOutlined className="text-blue-500 text-2xl" />,
+    icon: <ShieldUser size={32} className="text-blue-500 text-2xl" />,
     path: '/administration',
   },
   {
     id: 'students',
     title: 'Students',
     description: 'Manage student records',
-    icon: <BookOutlined className="text-blue-500 text-2xl" />,
+    icon: <CircleUserRound size={32} className="text-blue-500 text-2xl" />,
     path: '/students',
   },
   {
     id: 'teachers',
     title: 'Teachers',
     description: 'Manage teaching staffs',
-    icon: <CodeOutlined className="text-blue-500 text-2xl" />,
+    icon: <UserPen size={32} className="text-blue-500 text-2xl" />,
     path: '/teachers',
   },
   {
     id: 'staffs',
     title: 'Staffs',
     description: 'Manage general staffs',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <Users size={32} className="text-blue-500 text-2xl" />,
     path: '/staffs',
   },
   {
     id: 'faculties',
     title: 'Faculties',
     description: 'Manage faculties',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <GraduationCap size={32} className="text-blue-500 text-2xl" />,
     path: '/faculties',
   },
   {
     id: 'academic-programs',
     title: 'Academic Programs',
     description: 'Manage academic programs',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <BookOpenText size={32} className="text-blue-500 text-2xl" />,
     path: '/academic-programs',
   },
   {
     id: 'academic-subjects',
     title: 'Academic Subjects',
     description: 'Manage academic subjects',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <BookText size={32} className="text-blue-500 text-2xl" />,
     path: '/academic-subjects',
   },
   {
     id: 'universities',
     title: 'Universities',
     description: 'Manage universities',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <Landmark size={32} className="text-blue-500 text-2xl" />,
     path: '/universities',
   },
 ];

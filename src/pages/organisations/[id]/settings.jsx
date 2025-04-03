@@ -1,8 +1,14 @@
-import ControlCenter from '@/components/organisations/ControlCenter';
+import CustomHead from '@/components/customHead/CustomHead';
+import OrganisationLayout from '@/components/organisations/OrganisationLayout';
 import React from 'react';
 
 const settings = () => {
-  return <ControlCenter>Settings</ControlCenter>;
+  return (
+    <>
+      <CustomHead actualTitle="Organisation Settings" />
+      <OrganisationLayout>Settings</OrganisationLayout>;
+    </>
+  );
 };
 
 export default settings;
