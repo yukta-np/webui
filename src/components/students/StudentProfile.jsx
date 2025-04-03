@@ -1,9 +1,7 @@
 'use client';
 // StudentProfile.js
 import {
-  Card,
   Typography,
-  Breadcrumb,
   Button,
   Row,
   Col,
@@ -62,7 +60,6 @@ const StudentProfile = ({ params }) => {
 
   return (
     <div className="p-6 gap-4">
-      <Card className="shadow-sm border-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center gap-6">
             <Avatar
@@ -72,7 +69,7 @@ const StudentProfile = ({ params }) => {
             />
             <div>
               <Title level={2} className="mb-1 text-gray-800">
-                {student?.firstName} {student?.middleName} {student?.lastName}
+                {student?.fullName}
               </Title>
               <Text
                 type="secondary"
@@ -97,7 +94,7 @@ const StudentProfile = ({ params }) => {
         <Row gutter={[24, 24]} className="mb-8">
           {/* Personal Details Card */}
           <Col xs={24} md={8}>
-            <Card className="border-0 shadow-none">
+
               <Title level={4} className="mb-4 text-gray-800 flex items-center">
                 <User size={20} className="mr-2" /> Personal Details
               </Title>
@@ -117,12 +114,12 @@ const StudentProfile = ({ params }) => {
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
-            </Card>
+
           </Col>
 
           {/* Financial Information Card */}
           <Col xs={24} md={8}>
-            <Card className="border-0 shadow-none">
+
               <Title level={4} className="mb-4 text-gray-800 flex items-center">
                 <Wallet size={20} className="mr-2" /> Financial Information
               </Title>
@@ -148,12 +145,12 @@ const StudentProfile = ({ params }) => {
                   {student.astPaymentDate}
                 </Descriptions.Item>
               </Descriptions>
-            </Card>
+
           </Col>
 
           {/* Contact Information Card */}
           <Col xs={24} md={8}>
-            <Card className="border-0 shadow-none">
+
               <Title level={4} className="mb-4 text-gray-800 flex items-center">
                 <Contact size={20} className="mr-2" /> Contact Information
               </Title>
@@ -168,14 +165,12 @@ const StudentProfile = ({ params }) => {
                   {student.address}
                 </Descriptions.Item>
               </Descriptions>
-            </Card>
           </Col>
         </Row>
 
         <Divider className="my-6" />
 
         {/* Academic Profile Section */}
-        <Card className="border-0 shadow-none">
           <Title level={4} className="mb-4 text-gray-800 flex items-center">
             <Fingerprint size={20} className="mr-2" /> Academic Profile
           </Title>
@@ -209,8 +204,6 @@ const StudentProfile = ({ params }) => {
               </Descriptions>
             </Col>
           </Row>
-        </Card>
-      </Card>
     </div>
   );
 };

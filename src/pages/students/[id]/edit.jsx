@@ -51,7 +51,7 @@ const EditStudent =() => {
           <Breadcrumb.Item>
             Edit -
             {student
-              ? `${student.firstName} ${student.middleName} ${student.lastName}`
+              ? `${student.fullName}`
               : 'Student Profile'}
           </Breadcrumb.Item>
         </Breadcrumb>
