@@ -24,77 +24,44 @@ import {
   CalendarDays,
   ShieldAlert,
 } from 'lucide-react';
-import { useStudents } from '@/hooks/useStudents';
-
+import { getStudentById } from '@/services/students.http';
+import { useEffect, useState } from 'react';
 const { Title, Text } = Typography;
 
 const StudentProfile = ({ params }) => {
   const router = useRouter();
-   const id = params?.id;
-  const { students, isLoading, isError } = useStudents();
-  const student = students?.find((s) => String(s.id) === String(id));
+  const id = params?.id;
 
-  if (!params?.id) return <div>Loading student ID...</div>;
+  const [student, setStudent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  if (isLoading)
-    return (
-      <div className="p-4 max-w-8xl mx-auto">
-        <Skeleton active paragraph={{ rows: 8 }} />
-      </div>
-    );
+  useEffect(() => {
+    if (!id) return;
 
-  if (isError)
-    return (
-      <div className="p-4 gap-4">
-        <Card className="text-center">
-          <Title level={3} className="mb-4 text-red-600">
-            Loading Error
-          </Title>
-          <Text className="mb-4 block text-gray-600">
-            Failed to load student data. Please try again later.
-          </Text>
-          <Button type="primary" onClick={() => router.push('/students')}>
-            Return to Student List
-          </Button>
-        </Card>
-      </div>
-    );
+    const fetchStudent = async () => {
+      try {
+        const response = await getStudentById(id);
+        setStudent(response);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+        setIsError(true);
+        setIsLoading(false);
+      }
+    };
 
-  if (!students)
-    return (
-      <div className="p-4 gap-4">
-        <Card className="text-center">
-          <Title level={3} className="mb-4 text-gray-800">
-            Student Not Found
-          </Title>
-          <Text className="mb-4 block text-gray-600">
-            The requested student record does not exist in our system.
-          </Text>
-          <Button type="primary" onClick={() => router.push('/students')}>
-            Return to Student Directory
-          </Button>
-        </Card>
-      </div>
-    );
+    fetchStudent();
+  }, [id]);
+
+  if (!id) return <div>Loading student ID...</div>;
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (isError || !student) return <div>Failed to load student data.</div>;
 
   return (
     <div className="p-6 gap-4">
-      {/* <Breadcrumb className="mb-6 text-sm">
-        <Breadcrumb.Item>
-          <Link href="/" className="text-gray-500 hover:text-gray-700">
-            Dashboard
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link href="/students" className="text-gray-500 hover:text-gray-700">
-            Students
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item className="text-gray-700 font-medium">
-          {students.firstName} {students.lastName}
-        </Breadcrumb.Item>
-      </Breadcrumb> */}
-
       <Card className="shadow-sm border-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center gap-6">
@@ -105,8 +72,7 @@ const StudentProfile = ({ params }) => {
             />
             <div>
               <Title level={2} className="mb-1 text-gray-800">
-                {student?.firstName} {student?.middleName}{' '}
-                {student?.lastName}
+                {student?.firstName} {student?.middleName} {student?.lastName}
               </Title>
               <Text
                 type="secondary"
