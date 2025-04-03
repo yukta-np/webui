@@ -18,7 +18,6 @@ import {
 import { useRoutines } from '@/hooks/useRoutines';
 import { createRoutines, updateRoutines } from '@/services/routine.http';
 import { WeekDay, Actions } from '@/constants';
-import './styles.css';
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
