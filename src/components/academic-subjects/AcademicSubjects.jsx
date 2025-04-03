@@ -23,20 +23,30 @@ import {
   updateAcademicSubject,
   createAcademicSubject,
 } from '@/services/academicSubjects.http';
-import { openNotification } from '@/utils';
+import { openNotification, objectHasValue } from '@/utils';
 
 const AcademicSubjects = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [action, setAction] = useState(Actions.add);
   const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
+
   const { programs } = useAcademicPrograms();
-  const { subjects, revalidate } = useAcademicSubjects();
-  console.log(programs);
+  const { subjects, meta, isLoading, isError, revalidate } =
+    useAcademicSubjects(params);
 
   const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -108,13 +118,24 @@ const AcademicSubjects = () => {
     filteredValue: filteredInfo[dataIndex] || null,
   });
 
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
+
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: 'id',
+      key: 'id',
       sorter: true,
-      render: (text, subjects) => (
+      render: (_, subjects) => (
         <a className="text-blue-600" onClick={() => onView(subjects?.id)}>
           {subjects?.displayId}
         </a>
@@ -270,10 +291,14 @@ const AcademicSubjects = () => {
         columns={columns}
         dataSource={subjects}
         bordered
-        pagination={{ pageSize: 5 }}
-        onChange={(pagination, filters, sorter) => {
-          setFilteredInfo(filters);
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
         }}
+        onChange={onTableChange}
       />
 
       <Modal
