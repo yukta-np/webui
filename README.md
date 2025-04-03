@@ -1,40 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# SAAS - College Management System (Frontend)  [![Netlify Status](https://api.netlify.com/api/v1/badges/49e7ced8-26c0-4fa1-9eeb-d7e5843471d0/deploy-status)](https://app.netlify.com/sites/yuktamaa/deploys)
 
-## Getting Started
 
-First, run the development server:
+## Overview  
+SAAS (Software as a Service) College Management System is designed to streamline academic, administrative, and faculty-related operations for educational institutions. This repository contains the **front-end** of the application, built using **Next.js** with the `pages` directory approach (without utilizing its full-stack capabilities).  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Project Structure  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The front-end pages are organized under `src/pages/`, each serving a specific function. Below is a brief overview:  
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+### Pages and Their Purpose  
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- **AcademicPrograms/** – Manage academic programs, including course structures and details.  
+- **AcademicSubjects/** – Handle subjects offered in different academic programs.  
+- **Administration/** – Admin panel for user management, roles, and configurations.  
+- **AnnouncementLists/** – Display past and upcoming announcements.  
+- **Announcements/** – Manage creation and distribution of announcements.  
+- **Auth/** – Authentication system for login, registration, and password recovery.  
+- **Calendar/** – View and manage academic and event calendars.  
+- **Classroom/** – Virtual classroom management, including schedules and discussions.  
+- **Dashboard/** – Main user dashboard for accessing key features.  
+- **Faculties/** – Manage faculty profiles and academic responsibilities.  
+- **Feedback/** – Collect and analyze feedback from students and staff.  
+- **Files/** – File storage and document management system.  
+- **Groups/** – Manage student and faculty groups for collaboration.  
+- **HOD/** – Specialized panel for Heads of Departments.  
+- **Inquiries/** – Handle student and external inquiries.  
+- **LeaveRequests/** – Manage staff and student leave requests.  
+- **Organizations/** – Manage affiliated colleges and institutions.  
+- **FormationGroups/** – Organize formation groups for activities and discussions.  
+- **Plans/** – Academic and institutional planning module.  
+- **RequestDemo/** – Page for institutions to request a demo of SAAS.  
+- **Routine/** – Manage academic schedules and routines.  
+- **Settings/** – User and application settings.  
+- **Staff/** – Manage non-teaching staff profiles and tasks.  
+- **Students/** – Student enrollment, profiles, and performance tracking.  
+- **Tasks/** – Task management for students, faculty, and admins.  
+- **Teachers/** – Manage teacher profiles and course allocations.  
+- **Universities/** – Manage and display affiliated universities.  
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## GitHub Repository  
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Find the project structure and source code here:  
+[GitHub: `src/pages/`](https://github.com/yukta-nb/webui/tree/main/src/pages)

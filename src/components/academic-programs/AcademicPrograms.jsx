@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Table,
   Button,
@@ -7,56 +7,58 @@ import {
   Input,
   Select,
   Space,
-  message,
   Popconfirm,
   Divider,
   Row,
   Col,
-  Checkbox,
   Tag,
   Radio,
 } from 'antd';
 import { FilePenLine, Trash2Icon, Search } from 'lucide-react';
+import { useFaculties } from '@/hooks/useFaculties';
+import { Actions } from '@/constants';
+import {
+  createAcademicProgram,
+  deleteAcademicProgram,
+  getAcademicProgramById,
+  updateAcademicProgram,
+} from '@/services/academicPrograms.http';
+import { openNotification, objectHasValue } from '@/utils';
+import { useAcademicPrograms } from '@/hooks/useAcademicPrograms';
 
 const AcademicPrograms = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingProgram, setEditingProgram] = useState(null);
-  const [faculties, setFaculties] = useState([]);
-  const [dataSource, setDataSource] = useState([]);
+  const [action, setAction] = useState(Actions.add);
+  const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
+  const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
+  const [filteredInfo, setFilteredInfo] = useState({});
 
-  // Mock data - replace with your API calls
-  useEffect(() => {
-    // Fetch faculties
-    setFaculties([
-      { id: 1, name: 'Faculty of Engineering' },
-      { id: 2, name: 'Faculty of Medicine' },
-      { id: 3, name: 'Faculty of Science' },
-    ]);
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
 
-    // Fetch academic programs
-    setDataSource([
-      {
-        key: 'PRG-1',
-        name: 'Computer Science',
-        shortName: 'CS',
-        isYearly: true,
-        isSemester: false,
-        facultyId: 1,
-        facultyName: 'Faculty of Engineering',
-      },
-      {
-        key: 'PRG-2',
-        name: 'Medicine',
-        shortName: 'MED',
-        isYearly: false,
-        isSemester: true,
-        facultyId: 2,
-        facultyName: 'Faculty of Medicine',
-      },
-    ]);
-  }, []);
+  const { faculties } = useFaculties();
+  const { programs, meta, isLoading, isError, revalidate } =
+    useAcademicPrograms(params);
+
+  const onSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+  };
+
+  const onReset = (dataIndex) => {
+    setFilteredInfo((prev) => ({
+      ...prev,
+      [dataIndex]: null,
+    }));
+  };
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -87,7 +89,10 @@ const AcademicPrograms = () => {
             Search
           </Button>
           <Button
-            onClick={() => onReset(clearFilters)}
+            onClick={() => {
+              clearFilters();
+              onReset(dataIndex);
+            }}
             size="small"
             style={{ width: 90 }}
           >
@@ -111,16 +116,29 @@ const AcademicPrograms = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
+    filteredValue: filteredInfo[dataIndex] || null,
   });
+
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
 
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
-      key: 'key',
-      render: (text, record) => (
-        <a className="text-blue-600" onClick={() => onView(record)}>
-          {text}
+      dataIndex: 'id',
+      key: 'id',
+      sorter: true,
+      render: (text, faculties) => (
+        <a className="text-blue-600" onClick={() => onView(faculties?.id)}>
+          {faculties?.displayId}
         </a>
       ),
     },
@@ -129,6 +147,7 @@ const AcademicPrograms = () => {
       dataIndex: 'name',
       key: 'name',
       ...getColumnSearchProps('name'),
+      sorter: true,
     },
     {
       title: 'Short Name',
@@ -139,39 +158,46 @@ const AcademicPrograms = () => {
     {
       title: 'Type',
       key: 'type',
-      render: (_, record) => (
+      render: (_, programs) => (
         <>
-          {record.isYearly && <Tag color="blue">Yearly</Tag>}
-          {record.isSemester && <Tag color="green">Semester</Tag>}
+          {programs.isYearly && <Tag color="blue">Yearly</Tag>}
+          {programs.isSemester && <Tag color="green">Semester</Tag>}
         </>
       ),
       filters: [
         { text: 'Yearly', value: 'yearly' },
         { text: 'Semester', value: 'semester' },
       ],
-      onFilter: (value, record) =>
-        value === 'yearly' ? record.isYearly : record.isSemester,
+      onFilter: (value, record) => {
+        if (value === 'yearly') return record.isYearly;
+        if (value === 'semester') return record.isSemester;
+        return true;
+      },
+      filteredValue: filteredInfo.type || null,
     },
     {
       title: 'Faculty',
       dataIndex: 'facultyName',
       key: 'facultyName',
+      render: (_, programs) => programs?.faculty?.name,
       ...getColumnSearchProps('facultyName'),
     },
     {
       title: 'Actions',
       key: 'actions',
-      width: '15%',
+      width: '10%',
       render: (_, record) => (
         <Space size="middle">
           <Button
             type="link"
             icon={<FilePenLine size={18} />}
-            onClick={() => onEdit(record)}
+            onClick={() => onEdit(record.id)}
           />
           <Popconfirm
-            title="Delete this program?"
-            onConfirm={() => onDelete(record)}
+            title="Are you sure to delete this program?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => onDelete(record.id)}
           >
             <Button type="link" danger icon={<Trash2Icon size={18} />} />
           </Popconfirm>
@@ -184,39 +210,73 @@ const AcademicPrograms = () => {
     setIsModalVisible(true);
   };
 
-  const onCancel = () => {
+  const closeModal = () => {
     setIsModalVisible(false);
-    setEditingProgram(null);
     form.resetFields();
   };
 
-  const onFinish = (values) => {
-    console.log(values);
-    setIsModalVisible(false);
-    setEditingProgram(null);
+  const onFinish = async (values) => {
+    setIsProcessing(true);
+    setAction(Actions.add);
+    try {
+      const { programType, ...rest } = values;
+      const payload = {
+        ...rest,
+        facultyId: Number(values.facultyId),
+        isYearly: programType === 'yearly',
+        isSemester: programType === 'semester',
+      };
+      console.log(payload);
+
+      action === Actions.add
+        ? await createAcademicProgram(payload)
+        : await updateAcademicProgram(id, payload);
+      openNotification(`Program ${action}ed successfully`);
+      revalidate();
+      setIsModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      openNotification(`Failed to ${action} program`, true);
+      console.error('Validation failed:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onAdd = () => {
+    setAction(Actions.add);
     form.resetFields();
+    showModal();
   };
 
-  const onEdit = (record) => {
-    form.setFieldsValue({
-      ...record,
-      facultyId: record.facultyId,
-    });
-    setEditingProgram(record);
-    setIsModalVisible(true);
+  const populateForm = async (data) => {
+    const myData = {
+      ...data,
+      facultyId: data?.faculty?.id,
+      programType: data?.isYearly ? 'yearly' : 'semester',
+    };
+    form.setFieldsValue(myData);
   };
 
-  const onDelete = (record) => {
-    setDataSource((prev) => prev.filter((item) => item.key !== record.key));
-    message.success('Program deleted successfully');
+  const onEdit = async (id) => {
+    setId(id);
+    setAction(Actions.edit);
+    const { data } = await getAcademicProgramById(id);
+    populateForm(data);
+    showModal();
   };
 
-  const onSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
+  const onView = async (id) => {
+    setAction(Actions.view);
+    const { data } = await getAcademicProgramById(id);
+    populateForm(data);
+    showModal();
   };
 
-  const onReset = (clearFilters) => {
-    clearFilters();
+  const onDelete = async (id) => {
+    await deleteAcademicProgram(id);
+    openNotification('Academic Program deleted successfully');
+    revalidate();
   };
 
   return (
@@ -229,25 +289,52 @@ const AcademicPrograms = () => {
         }}
       >
         <p className="text-xl font-bold m-0">Academic Programs</p>
-        <Button type="primary" onClick={showModal}>
+        <Button type="primary" onClick={onAdd}>
           Add New
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={dataSource}
+        dataSource={programs}
         bordered
-        pagination={{ pageSize: 5 }}
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
+        }}
+        onChange={onTableChange}
       />
 
       <Modal
         title={
-          editingProgram ? 'Edit Academic Program' : 'Add Academic Program'
+          action === Actions.view
+            ? 'Academic Program Details'
+            : action === Actions.add
+            ? 'Add Academic Program'
+            : 'Edit Academic Program'
         }
-        visible={isModalVisible}
-        onCancel={onCancel}
-        onOk={() => form.submit}
+        open={isModalVisible}
+        onCancel={closeModal}
+        footer={
+          action === Actions.view ? (
+            <Button key="back" onClick={closeModal}>
+              Cancel
+            </Button>
+          ) : (
+            [
+              <Button key="back" onClick={closeModal}>
+                Cancel
+              </Button>,
+
+              <Button key="submit" type="primary" onClick={() => form.submit()}>
+                {action === Actions.add ? 'Add' : 'Save'}
+              </Button>,
+            ]
+          )
+        }
       >
         <Divider />
         <Form
@@ -255,6 +342,7 @@ const AcademicPrograms = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          disabled={action === Actions.view}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -290,18 +378,18 @@ const AcademicPrograms = () => {
               >
                 <Select
                   showSearch
+                  allowClear
                   placeholder="Select faculty"
-                  optionFilterProp="children"
                   filterOption={(input, option) =>
-                    option.children.toLowerCase().includes(input.toLowerCase())
+                    (option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
                   }
-                >
-                  {faculties.map((faculty) => (
-                    <Select.Option key={faculty.id} value={faculty.id}>
-                      {faculty.name}
-                    </Select.Option>
-                  ))}
-                </Select>
+                  options={faculties?.map((faculty) => ({
+                    label: faculty.name,
+                    value: faculty.id,
+                  }))}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -314,7 +402,9 @@ const AcademicPrograms = () => {
                   { required: true, message: 'Please select program type!' },
                 ]}
               >
-                <Radio.Group>
+                <Radio.Group
+                  className={action === Actions.view ? 'view-mode-radio' : ''}
+                >
                   <Radio value="yearly">Yearly </Radio>
                   <Radio value="semester">Semester </Radio>
                 </Radio.Group>

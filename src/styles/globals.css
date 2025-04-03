@@ -175,3 +175,13 @@ input[disabled],
 .file-card-actions li:hover svg {
   transform: scale(1.1);
 }
+
+/* .view-mode-radio .ant-radio-disabled .ant-radio-inner {
+  background-color: #fff;
+  border-color: #1890ff !important;
+} */
+
+.view-mode-radio .ant-radio-disabled.ant-radio-checked .ant-radio-inner {
+  background-color: #1890ff;
+  border-color: #1890ff !important;
+}

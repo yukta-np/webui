@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Table,
   Button,
@@ -6,19 +6,13 @@ import {
   Form,
   Input,
   Space,
-  message,
   Popconfirm,
   Row,
   Col,
   DatePicker,
-  Tag,
   Divider,
 } from 'antd';
 import {
-  SearchOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  PlusOutlined,
   GlobalOutlined,
   EnvironmentOutlined,
   ContactsOutlined,
@@ -26,39 +20,37 @@ import {
 } from '@ant-design/icons';
 import moment from 'moment';
 import { FilePenLine, Trash2Icon, Search } from 'lucide-react';
+import { useUniversities } from '@/hooks/useUniversities';
+import {
+  createUniversity,
+  deleteUniversity,
+  getUniversityById,
+  updateUniversity,
+} from '@/services/universities.http';
+import { Actions } from '@/constants';
+import { openNotification, objectHasValue } from '@/utils';
 
 const UniversityList = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingUniversity, setEditingUniversity] = useState(null);
-  const [dataSource, setDataSource] = useState([]);
+  const [action, setAction] = useState(Actions.add);
+  const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
+  const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
+  const [filteredInfo, setFilteredInfo] = useState({});
 
-  // Mock data - replace with API calls
-  useEffect(() => {
-    setDataSource([
-      {
-        key: 'UNI-1',
-        name: 'Harvard University',
-        shortName: 'Harvard',
-        website: 'https://www.harvard.edu',
-        address: 'Cambridge, MA 02138, USA',
-        contact: '+1 617-495-1000',
-        email: 'contact@harvard.edu',
-        established: '1636-09-08',
-      },
-      {
-        key: 'UNI-2',
-        name: 'Stanford University',
-        shortName: 'Stanford',
-        website: 'https://www.stanford.edu',
-        address: 'Stanford, CA 94305, USA',
-        contact: '+1 650-723-2300',
-        email: 'admission@stanford.edu',
-        established: '1891-10-01',
-      },
-    ]);
-  }, []);
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
+
+  const { universities, meta, isLoading, isError, revalidate } =
+    useUniversities(params);
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -89,7 +81,10 @@ const UniversityList = () => {
             Search
           </Button>
           <Button
-            onClick={() => onReset(clearFilters)}
+            onClick={() => {
+              clearFilters();
+              onReset(dataIndex);
+            }}
             size="small"
             style={{ width: 90 }}
           >
@@ -113,16 +108,30 @@ const UniversityList = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
+    filteredValue: filteredInfo[dataIndex] || null,
   });
+
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
 
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
-      key: 'key',
-      render: (text, record) => (
-        <a className="text-blue-600" onClick={() => onView(record)}>
-          {text}
+      dataIndex: 'id',
+      key: 'id',
+      sorter: true,
+      width: 80,
+      render: (_, universities) => (
+        <a className="text-blue-600" onClick={() => onView(universities?.id)}>
+          {universities?.displayId}
         </a>
       ),
     },
@@ -131,17 +140,18 @@ const UniversityList = () => {
       dataIndex: 'name',
       key: 'name',
       ...getColumnSearchProps('name'),
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: true,
     },
     {
       title: 'Short Name',
       dataIndex: 'shortName',
       key: 'shortName',
+
       ...getColumnSearchProps('shortName'),
     },
     {
-      title: 'Contact Info',
-      key: 'contactInfo',
+      title: 'Contact',
+      key: 'contact',
       render: (_, record) => (
         <Space direction="vertical" size={0}>
           <div>
@@ -154,8 +164,8 @@ const UniversityList = () => {
       ),
     },
     {
-      title: 'Location',
-      key: 'location',
+      title: 'Address',
+      key: 'address',
       render: (_, record) => (
         <Space direction="vertical" size={0}>
           <div>
@@ -185,11 +195,11 @@ const UniversityList = () => {
           <Button
             type="link"
             icon={<FilePenLine size={18} />}
-            onClick={() => onEdit(record)}
+            onClick={() => onEdit(record.id)}
           />
           <Popconfirm
             title="Are you sure to delete this university?"
-            onConfirm={() => onDelete(record)}
+            onConfirm={() => onDelete(record.id)}
           >
             <Button type="link" danger icon={<Trash2Icon size={18} />} />
           </Popconfirm>
@@ -202,60 +212,82 @@ const UniversityList = () => {
     setIsModalVisible(true);
   };
 
-  const onCancel = () => {
+  const closeModal = () => {
     setIsModalVisible(false);
-    setEditingUniversity(null);
     form.resetFields();
   };
 
-  const onFinish = (values) => {
-    const formattedValues = {
-      ...values,
-      established: values.established.format('YYYY-MM-DD'),
+  const onAdd = () => {
+    setAction(Actions.add);
+    form.resetFields();
+    showModal();
+  };
+
+  const onView = async (id) => {
+    setAction(Actions.view);
+    const { data } = await getUniversityById(id);
+    populateFrom(data);
+    showModal();
+  };
+
+  const populateFrom = (data) => {
+    const myData = {
+      ...data,
+      established: data?.established ? moment(data.established) : null,
     };
+    form.setFieldsValue(myData);
+  };
 
-    if (editingUniversity) {
-      // Update existing university
-      setDataSource((prev) =>
-        prev.map((item) =>
-          item.key === editingUniversity.key
-            ? { ...item, ...formattedValues }
-            : item
-        )
-      );
-      message.success('University updated successfully');
-    } else {
-      // Add new university
-      const newUniversity = {
-        key: Date.now().toString(),
-        ...formattedValues,
+  const onEdit = async (id) => {
+    setId(id);
+    setAction(Actions.edit);
+    const { data } = await getUniversityById(id);
+    populateFrom(data);
+    showModal();
+  };
+
+  const onFinish = async (values) => {
+    setIsProcessing(true);
+    setAction(Actions.add);
+    try {
+      const payload = {
+        ...values,
+        established: values.established
+          ? values.established.format('YYYY-MM-DD')
+          : null,
       };
-      setDataSource((prev) => [...prev, newUniversity]);
-      message.success('University added successfully');
+      action === Actions.add
+        ? await createUniversity(payload)
+        : await updateUniversity(id, payload);
+      openNotification(`University ${action}ed successfully`);
+      revalidate();
+      setIsModalVisible(false);
+      form.resetFields();
+    } catch (error) {
+      openNotification('Failed to add university', true);
+      console.error('Validation failed:', error);
+    } finally {
+      setIsProcessing(false);
     }
-    onCancel();
+
+    return;
   };
 
-  const onEdit = (record) => {
-    form.setFieldsValue({
-      ...record,
-      established: moment(record.established),
-    });
-    setEditingUniversity(record);
-    setIsModalVisible(true);
-  };
-
-  const onDelete = (record) => {
-    setDataSource((prev) => prev.filter((item) => item.key !== record.key));
-    message.success('University deleted successfully');
+  const onDelete = async (id) => {
+    await deleteUniversity(id);
+    openNotification('University deleted successfully');
+    revalidate();
   };
 
   const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
   };
 
-  const onReset = (clearFilters) => {
-    clearFilters();
+  const onReset = (dataIndex) => {
+    setFilteredInfo((prev) => ({
+      ...prev,
+      [dataIndex]: null,
+    }));
   };
 
   return (
@@ -269,24 +301,53 @@ const UniversityList = () => {
         }}
       >
         <p className="text-xl font-bold m-0">Universities</p>
-        <Button type="primary" onClick={showModal}>
+        <Button type="primary" onClick={onAdd}>
           Add New
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={dataSource}
+        dataSource={universities}
         bordered
-        pagination={{ pageSize: 5 }}
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
+        }}
+        onChange={onTableChange}
       />
 
       <Modal
-        title={editingUniversity ? 'Edit University' : 'Add New University'}
-        visible={isModalVisible}
-        onCancel={onCancel}
-        onOk={() => form.submit}
+        title={
+          action === Actions.view
+            ? 'University Details'
+            : action === Actions.add
+            ? 'Add University'
+            : 'Edit University'
+        }
+        open={isModalVisible}
+        onCancel={closeModal}
         width={700}
+        footer={
+          action === Actions.view ? (
+            <Button key="back" onClick={closeModal}>
+              Cancel
+            </Button>
+          ) : (
+            [
+              <Button key="back" onClick={closeModal}>
+                Cancel
+              </Button>,
+
+              <Button key="submit" type="primary" onClick={() => form.submit()}>
+                {action === Actions.add ? 'Add' : 'Save'}
+              </Button>,
+            ]
+          )
+        }
       >
         <Divider />
         <Form
@@ -294,6 +355,7 @@ const UniversityList = () => {
           layout="vertical"
           onFinish={onFinish}
           autoComplete="off"
+          disabled={action === Actions.view}
         >
           <Row gutter={16}>
             <Col span={12}>
@@ -301,7 +363,10 @@ const UniversityList = () => {
                 name="name"
                 label="University Name"
                 rules={[
-                  { required: true, message: 'Please input university name!' },
+                  {
+                    required: true,
+                    message: 'Please input university name!',
+                  },
                 ]}
               >
                 <Input placeholder="Enter university name" />
@@ -328,17 +393,6 @@ const UniversityList = () => {
                 rules={[
                   { required: true, message: 'Please input email!' },
                   { type: 'email', message: 'Please enter a valid email!' },
-                  {
-                    validator: (_, value) => {
-                      if (editingUniversity) return Promise.resolve();
-                      if (dataSource.some((item) => item.email === value)) {
-                        return Promise.reject(
-                          'This email is already registered!'
-                        );
-                      }
-                      return Promise.resolve();
-                    },
-                  },
                 ]}
               >
                 <Input

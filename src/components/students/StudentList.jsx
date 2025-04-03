@@ -27,8 +27,6 @@ const { Title, Text } = Typography;
 
 const StudentListPage = () => {
   const router = useRouter();
-//   const currentId = parseInt(router.query.id);
-// console .log('currentId', currentId)
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
   const [filterValues, setFilterValues] = useState({});
@@ -95,15 +93,7 @@ const StudentListPage = () => {
   };
 
   return (
-    <div className="p-6">
-      <Breadcrumb className="mb-6">
-        <Breadcrumb.Item>
-          <Link href="/">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Students</Breadcrumb.Item>
-      </Breadcrumb>
-
-      <Card className="shadow-sm">
+    <div >
         <div className="flex justify-between items-center mb-6">
           <div>
             <Title level={3} className="mb-1">
@@ -134,7 +124,6 @@ const StudentListPage = () => {
           pagination={{ pageSize: 10 }}
           bordered
         />
-      </Card>
 
       <Drawer
         title="Filter Students"

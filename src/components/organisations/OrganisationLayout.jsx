@@ -14,7 +14,7 @@ import { useOrganisation } from '@/hooks/useOrganisation';
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 
-const ControlCenter = ({ children }) => {
+const OrganisationLayout = ({ children }) => {
   const screens = useBreakpoint();
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -90,4 +90,4 @@ const ControlCenter = ({ children }) => {
   );
 };
 
-export default ControlCenter;
+export default OrganisationLayout;
