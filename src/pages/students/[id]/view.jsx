@@ -13,7 +13,7 @@
 
 // export default ViewStudent;
 
-import ControlCenter from '@/components/students/ControlCenter';
+import OrganisationLayout from '@/components/students/OrganisationLayout';
 import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
 import { useRouter } from 'next/router';
@@ -22,9 +22,9 @@ const index = () => {
   const router = useRouter();
   const id = router.query.id;
   return (
-    <ControlCenter>
+    <OrganisationLayout>
       <StudentProfile params={{ id }} />
-    </ControlCenter>
+    </OrganisationLayout>
   );
 };
 

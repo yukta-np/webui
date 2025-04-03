@@ -2,6 +2,7 @@ import FacultyList from '@/components/faculties/FacultyList';
 import React from 'react';
 import { Layout, Grid, theme, Breadcrumb } from 'antd';
 import Link from 'next/link';
+import CustomHead from '@/components/customHead/CustomHead';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 
@@ -12,6 +13,7 @@ const index = () => {
   } = theme.useToken();
   return (
     <>
+      <CustomHead actualTitle="Faculties" />
       <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
         <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item>

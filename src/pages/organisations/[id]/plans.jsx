@@ -1,6 +1,6 @@
 import React from 'react';
 
-import ControlCenter from '@/components/organisations/ControlCenter';
+import OrganisationLayout from '@/components/organisations/OrganisationLayout';
 import OrganisationPlan from '@/components/plans/OrganisationPlan';
 import { useRouter } from 'next/router';
 
@@ -9,9 +9,10 @@ const plans = () => {
   const id = router.query.id;
   return (
     <>
-      <ControlCenter>
+      <CustomHead title="Plans" />
+      <OrganisationLayout>
         <OrganisationPlan params={{ id }} />
-      </ControlCenter>
+      </OrganisationLayout>
     </>
   );
 };

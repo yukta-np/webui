@@ -14,7 +14,7 @@ import {
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 
-const ControlCenter = ({ children, studentId }) => {
+const OrganisationLayout = ({ children, studentId }) => {
   const screens = useBreakpoint();
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -92,4 +92,4 @@ const ControlCenter = ({ children, studentId }) => {
   );
 };
 
-export default ControlCenter;
+export default OrganisationLayout;
