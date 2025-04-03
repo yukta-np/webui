@@ -3,13 +3,13 @@ import useSWR, { mutate } from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
-export function useUniversities(params) {
+export function useFaculties(params) {
   const queryString = useMemo(() => {
     if (!params || Object.keys(params).length === 0) return '';
     return new URLSearchParams(params).toString();
   }, [params]);
 
-  const URL = constants.urls.universitiesUrl;
+  const URL = constants.urls.facultiesUrl;
   const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
   const { disableAutoRefetch } = params || {};
@@ -24,7 +24,7 @@ export function useUniversities(params) {
   const revalidate = () => mutate(fullUrl);
 
   return {
-    universities: responseData?.data,
+    faculties: responseData?.data,
     meta: responseData?.meta,
     isLoading: isValidating,
     isError: error,

@@ -1,5 +1,7 @@
+
 import ControlCenter from '@/components/students/ControlCenter';
 import StudentProfile from '@/components/students/StudentProfile';
+
 import React from 'react';
 import { useRouter } from 'next/router';
 

@@ -226,11 +226,13 @@ export default function FileManager() {
       key: '2',
       label: 'Share',
       icon: <Share2 size={20} />,
+      onClick: () => console.log(`shall handle click on Share`),
     },
     {
       key: '3',
       label: 'Info',
       icon: <Info size={20} />,
+      onClick: () => console.log(`shall handle click on Info`),
     },
     {
       key: '4',
@@ -371,7 +373,11 @@ export default function FileManager() {
                       {fileActions.map((action) => (
                         <Menu.Item
                           key={action.key}
-                          onClick={() => action.onClick(file)}
+                          onClick={(e) => {
+                            // return console.log(e);
+                            e.domEvent.stopPropagation();
+                            action.onClick(file);
+                          }}
                           style={{
                             backgroundColor: '#f4f4f4',
                             color: '#333333',

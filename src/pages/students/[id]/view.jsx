@@ -1,3 +1,4 @@
+
 import ControlCenter from '@/components/students/ControlCenter';
 import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
@@ -17,6 +18,7 @@ const Index = () => {
   const student = students?.find((s) => String(s.id) === String(id));
 
   return (
+
     <>
       <Breadcrumb style={{ margin: '16px' }}>
         <Breadcrumb.Item>

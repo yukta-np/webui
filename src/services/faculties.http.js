@@ -1,20 +1,20 @@
 import axios from 'axios';
 import { constants, headers } from '@/constants';
 
-const URL = constants.urls.usersUrl;
+const URL = constants.urls.facultiesUrl;
 
-export async function createUser(data) {
+export async function createFaculty(data) {
   return axios.post(URL, data, { headers });
 }
 
-export async function updateUser(id, data) {
+export async function updateFaculty(id, data) {
   return axios.patch(`${URL}/${id}`, data, { headers });
 }
 
-export async function deleteUser(id) {
+export async function deleteFaculty(id) {
   return axios.delete(`${URL}/${id}`, { headers });
 }
 
-export async function getUser(id) {
+export async function getFacultyById(id) {
   return axios.get(`${URL}/${id}`, { headers });
 }
