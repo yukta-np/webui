@@ -1,5 +1,5 @@
 
-import ControlCenter from '@/components/students/ControlCenter';
+import StudentLayout from '@/components/students/StudentLayout';
 import StudentProfile from '@/components/students/StudentProfile';
 
 import React from 'react';
@@ -9,9 +9,9 @@ const index = () => {
   const router = useRouter();
   const id = router.query.id;
   return (
-    <ControlCenter>
+    <StudentLayout>
       <StudentProfile params={{ id }} />
-    </ControlCenter>
+    </StudentLayout>
   );
 };
 

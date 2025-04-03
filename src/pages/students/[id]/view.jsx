@@ -1,5 +1,5 @@
 
-import ControlCenter from '@/components/students/ControlCenter';
+import StudentLayout from '@/components/students/StudentLayout';
 import StudentProfile from '@/components/students/StudentProfile';
 import React from 'react';
 import { useRouter } from 'next/router';
@@ -45,9 +45,9 @@ const Index = () => {
             : 'Student Profile'}
         </Breadcrumb.Item>
       </Breadcrumb>
-      <ControlCenter>
+      <StudentLayout>
         <StudentProfile params={{ id }} />
-      </ControlCenter>
+      </StudentLayout>
     </>
   );
 };
