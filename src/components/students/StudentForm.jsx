@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
@@ -29,6 +29,9 @@ const StudentForm = ({
   onFinish,
 }) => {
   const [form] = Form.useForm();
+  const [isCR, setIsCR] = useState(false);
+  const [scholarshipStatus, setScholarshipStatus] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (initialValues) {
@@ -51,6 +54,9 @@ const StudentForm = ({
     console.log('Form values:', values);
     const processedValues = {
       ...values,
+      isCR,
+      isActive,
+      scholarshipStatus,
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
       enrollmentDate: values.enrollmentDate?.format('YYYY-MM-DD'),
       graduationDate: values.graduationDate?.format('YYYY-MM-DD'),
@@ -261,6 +267,7 @@ const StudentForm = ({
             name="dueAmount"
             label="Due Amount (NRs)"
             rules={[{ required: true, message: 'Please input due amount!' }]}
+            initialValue={initialValues?.dueAmount || 0}
           >
             <InputNumber
               className="w-full"
@@ -269,6 +276,7 @@ const StudentForm = ({
               formatter={(value) =>
                 `NRs ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
+              parser={(value) => value.replace(/NRs\s?|(,*)/g, '')}
             />
           </Item>
         </Col>
@@ -276,13 +284,12 @@ const StudentForm = ({
           <Item
             name="scholarshipStatus"
             label="Scholarship Status"
-            valuePropName="checked"
-            initialValues={{
-              scholarshipStatus: false,
-              ...initialValues,
-            }}
+            value={scholarshipStatus}
           >
-            <Checkbox disabled={isViewMode} />
+            <Checkbox
+              disabled={isViewMode}
+              onChange={(e) => setScholarshipStatus(e.target.checked)}
+            />
           </Item>
         </Col>
       </Row>
@@ -293,25 +300,19 @@ const StudentForm = ({
 
       <Row gutter={16}>
         <Col xs={24} md={8}>
-          <Item
-            name="isCr"
-            label="Class Representative"
-            valuePropName="checked"
-          >
-            <Checkbox disabled={isViewMode} />
+          <Item name="isCr" label="Class Representative" value={isCR}>
+            <Checkbox
+              disabled={isViewMode}
+              onChange={(e) => setIsCR(e.target.checked)}
+            />
           </Item>
         </Col>
         <Col xs={24} md={8}>
-          <Item
-            name="isActive"
-            label="Active Status"
-            valuePropName="checked"
-            initialValues={{
-              isActive: false,
-              ...initialValues,
-            }}
-          >
-            <Checkbox disabled={isViewMode } />
+          <Item name="isActive" label="Active Status" value={isActive}>
+            <Checkbox
+              disabled={isViewMode}
+              onChange={(e) => setIsActive(e.target.checked)}
+            />
           </Item>
         </Col>
         <Col xs={24} md={8}>
