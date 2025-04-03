@@ -9,7 +9,7 @@ const index = () => {
   const id = router.query.id;
   return (
     <>
-      <CustomHead title="Organisation" />
+      <CustomHead actualTitle="Organisation Details" />
       <OrganisationLayout>
         <OrganisationDetails params={{ id }} />
       </OrganisationLayout>

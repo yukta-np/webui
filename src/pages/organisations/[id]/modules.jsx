@@ -9,7 +9,7 @@ const modules = () => {
   const id = router.query.id;
   return (
     <>
-      <CustomHead title="Modules" />
+      <CustomHead actualTitle="Organisation Modules" />
       <OrganisationLayout>
         <ModuleList params={{ id }} />
       </OrganisationLayout>

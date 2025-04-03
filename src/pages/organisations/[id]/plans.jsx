@@ -10,7 +10,7 @@ const plans = () => {
   const id = router.query.id;
   return (
     <>
-      <CustomHead title="Plans" />
+      <CustomHead actualTitle="Organisation Plan" />
       <OrganisationLayout>
         <OrganisationPlan params={{ id }} />
       </OrganisationLayout>
