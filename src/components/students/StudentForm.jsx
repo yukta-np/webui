@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
@@ -10,11 +10,13 @@ import {
   Typography,
   Alert,
   Button,
+  Upload,
 } from 'antd';
 import moment from 'moment';
 import { createStudent } from '@/services/students.http';
 import { openNotification } from '@/utils';
 import { emailRegex, phoneRegex } from '@/utils';
+import { UploadOutlined } from '@ant-design/icons';
 
 const { Item } = Form;
 const { Title } = Typography;
@@ -27,6 +29,9 @@ const StudentForm = ({
   onFinish,
 }) => {
   const [form] = Form.useForm();
+  const [isCR, setIsCR] = useState(false);
+  const [scholarshipStatus, setScholarshipStatus] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (initialValues) {
@@ -46,9 +51,11 @@ const StudentForm = ({
   }, [initialValues, form]);
 
   const onSubmit = async (values) => {
-    console.log('Form values:', values);
     const processedValues = {
       ...values,
+      isCR,
+      isActive,
+      scholarshipStatus,
       dateOfBirth: values.dateOfBirth?.format('YYYY-MM-DD'),
       enrollmentDate: values.enrollmentDate?.format('YYYY-MM-DD'),
       graduationDate: values.graduationDate?.format('YYYY-MM-DD'),
@@ -61,7 +68,6 @@ const StudentForm = ({
       console.error('Error creating student:', error);
       const errorMessage = error.response?.data?.message;
       openNotification(errorMessage || 'Error creating student', 'error');
-      // Handle error (e.g., show a message to the user)
     }
   };
 
@@ -74,11 +80,6 @@ const StudentForm = ({
       layout="vertical"
       onFinish={onFinish || onSubmit}
       id="student-form"
-      initialValues={{
-        isActive: true,
-        scholarshipStatus: false,
-        ...initialValues,
-      }}
     >
       {error && (
         <Alert
@@ -101,12 +102,12 @@ const StudentForm = ({
             label="First Name"
             rules={[{ required: true, message: 'Please input first name!' }]}
           >
-            <Input disabled={isViewMode} placeholder="John" />
+            <Input disabled={isViewMode} placeholder="Dip" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
           <Item name="middleName" label="Middle Name">
-            <Input disabled={isViewMode} placeholder="Michael" />
+            <Input disabled={isViewMode} placeholder="Chandra" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -115,7 +116,7 @@ const StudentForm = ({
             label="Last Name"
             rules={[{ required: true, message: 'Please input last name!' }]}
           >
-            <Input disabled={isViewMode} placeholder="Doe" />
+            <Input disabled={isViewMode} placeholder="Ojha" />
           </Item>
         </Col>
       </Row>
@@ -133,7 +134,7 @@ const StudentForm = ({
             <Input
               disabled={isViewMode}
               type="email"
-              placeholder="john.doe@example.com"
+              placeholder="dip.ojha@example.com"
             />
           </Item>
         </Col>
@@ -146,7 +147,7 @@ const StudentForm = ({
               { pattern: phoneRegex, message: 'Invalid phone number format' },
             ]}
           >
-            <Input disabled={isViewMode} placeholder="+1234567890" />
+            <Input disabled={isViewMode} placeholder="+977 123456789" />
           </Item>
         </Col>
       </Row>
@@ -176,7 +177,7 @@ const StudentForm = ({
             label="Nationality"
             rules={[{ required: true, message: 'Please input nationality!' }]}
           >
-            <Input disabled={isViewMode} placeholder="American" />
+            <Input disabled={isViewMode} placeholder="Nepali" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -185,7 +186,7 @@ const StudentForm = ({
             label="Address"
             rules={[{ required: true, message: 'Please input address!' }]}
           >
-            <Input disabled={isViewMode} placeholder="123 Main Street" />
+            <Input disabled={isViewMode} placeholder="Koshi, Morang" />
           </Item>
         </Col>
       </Row>
@@ -262,16 +263,18 @@ const StudentForm = ({
         <Col xs={24} md={12}>
           <Item
             name="dueAmount"
-            label="Due Amount ($)"
+            label="Due Amount (NRs)"
             rules={[{ required: true, message: 'Please input due amount!' }]}
+            initialValue={initialValues?.dueAmount || 0}
           >
             <InputNumber
               className="w-full"
               disabled={isViewMode}
               min={0}
               formatter={(value) =>
-                `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                `NRs ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
               }
+              parser={(value) => value.replace(/NRs\s?|(,*)/g, '')}
             />
           </Item>
         </Col>
@@ -279,9 +282,12 @@ const StudentForm = ({
           <Item
             name="scholarshipStatus"
             label="Scholarship Status"
-            valuePropName="checked"
+            value={scholarshipStatus}
           >
-            <Checkbox disabled={isViewMode} />
+            <Checkbox
+              disabled={isViewMode}
+              onChange={(e) => setScholarshipStatus(e.target.checked)}
+            />
           </Item>
         </Col>
       </Row>
@@ -292,29 +298,28 @@ const StudentForm = ({
 
       <Row gutter={16}>
         <Col xs={24} md={8}>
-          <Item
-            name="isCr"
-            label="Class Representative"
-            valuePropName="checked"
-          >
-            <Checkbox disabled={isViewMode} />
-          </Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Item name="isActive" label="Active Status" valuePropName="checked">
-            <Checkbox disabled={isViewMode || isCreateMode} />
-          </Item>
-        </Col>
-        <Col xs={24} md={8}>
-          <Item
-            name="avatar"
-            label="Avatar URL"
-            rules={[{ type: 'url', message: 'Please enter valid URL' }]}
-          >
-            <Input
+          <Item name="isCr" label="Class Representative" value={isCR}>
+            <Checkbox
               disabled={isViewMode}
-              placeholder="https://example.com/avatar.jpg"
+              onChange={(e) => setIsCR(e.target.checked)}
             />
+          </Item>
+        </Col>
+        <Col xs={24} md={8}>
+          <Item name="isActive" label="Active Status" value={isActive}>
+            <Checkbox
+              disabled={isViewMode}
+              onChange={(e) => setIsActive(e.target.checked)}
+            />
+          </Item>
+        </Col>
+        <Col xs={24} md={8}>
+          <Item name="avatar" label="Avatar URL">
+            <Upload>
+              <Button icon={<UploadOutlined />} style={{ margin: 0 }}>
+                Upload
+              </Button>
+            </Upload>
           </Item>
         </Col>
       </Row>
@@ -330,7 +335,7 @@ const StudentForm = ({
             label="Guardian Name"
             rules={[{ required: true, message: 'Please input guardian name!' }]}
           >
-            <Input disabled={isViewMode} placeholder="Jane Doe" />
+            <Input disabled={isViewMode} placeholder="Chandra Prasad Ojha" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -342,7 +347,7 @@ const StudentForm = ({
               { pattern: phoneRegex, message: 'Invalid phone number format' },
             ]}
           >
-            <Input disabled={isViewMode} placeholder="+1987654321" />
+            <Input disabled={isViewMode} placeholder="+977 9876543210" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -354,7 +359,7 @@ const StudentForm = ({
               { pattern: phoneRegex, message: 'Invalid phone number format' },
             ]}
           >
-            <Input disabled={isViewMode} placeholder="+1122334455" />
+            <Input disabled={isViewMode} placeholder="+977 9876543210" />
           </Item>
         </Col>
       </Row>

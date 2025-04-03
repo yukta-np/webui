@@ -33,8 +33,13 @@ export async function deleteStudentComment(id, commentId) {
   return axios.delete(`${URL}/${id}/comment/${commentId}`, { headers });
 }
 
-// Add to student.http.js
 export async function getStudentById(id) {
-  return axios.get(`${URL}/${id}`, { headers });
+  try {
+    const response = await axios.get(`${URL}/${id}`, { headers });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching student data:', error.response?.data || error.message);
+    return null; // Ensure the caller handles this properly
+  }
 }
 

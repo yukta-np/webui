@@ -60,15 +60,6 @@ const OrganisationLayout = ({ children, studentId }) => {
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
-      <Breadcrumb style={{ margin: '16px 0' }}>
-        <Breadcrumb.Item>
-          <Link href="/">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link href="/students">Students</Link>
-        </Breadcrumb.Item>
-      </Breadcrumb>
-
       <div
         style={{
           padding: screens.xs ? 16 : 24,

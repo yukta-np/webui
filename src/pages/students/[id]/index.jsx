@@ -1,16 +1,17 @@
-import OrganisationLayout from '@/components/organisations/OrganisationLayout';
-import OrganisationDetails from '@/components/organisations/OrganisationDetails';
+
+import ControlCenter from '@/components/students/ControlCenter';
+import StudentProfile from '@/components/students/StudentProfile';
+
 import React from 'react';
 import { useRouter } from 'next/router';
-import StudentProfile from '@/components/students/StudentProfile';
 
 const index = () => {
   const router = useRouter();
   const id = router.query.id;
   return (
-    <OrganisationLayout>
+    <ControlCenter>
       <StudentProfile params={{ id }} />
-    </OrganisationLayout>
+    </ControlCenter>
   );
 };
 
