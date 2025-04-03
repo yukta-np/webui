@@ -5,15 +5,19 @@ import { getStudentById, updateStudent } from '@/services/students.http';
 import { openNotification } from '@/utils';
 import { Alert, Card, Typography } from 'antd';
 import moment from 'moment';
+import { useRouter } from 'next/router';
 
 const { Title, Text } = Typography; // Fixed missing import
 
 const StudentEditForm = () => {
-  const { id } = useParams(); // Use `useParams()` to get `id`
+  const router = useRouter(); 
+  const { query } = router;
+  const { id } = query; 
   const [initialValues, setInitialValues] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+ 
 
   useEffect(() => {
     const loadStudentData = async () => {
@@ -76,17 +80,15 @@ const StudentEditForm = () => {
     return <Alert message="Error" description={error} type="error" showIcon />;
 
   return (
-    <div className='mb-4 '>
-      <Card className="shadow-sm">
-        <StudentForm
-          mode="edit"
-          initialValues={initialValues}
-          onFinish={handleSubmit}
-          loading={submitting}
-          error={error}
-        />
-      </Card>
-    </div>
+
+      <StudentForm
+        mode="edit"
+        initialValues={initialValues}
+        onFinish={handleSubmit}
+        loading={submitting}
+        error={error}
+      />
+
   );
 };
 
