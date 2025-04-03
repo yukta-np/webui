@@ -185,6 +185,14 @@ const ClassroomManagement = () => {
     }
   }, [classrooms]);
 
+  useEffect(() => {
+    console.log(seatAllocations);
+
+    if (seatAllocations && seatAllocations.length > 0) {
+      console.log(seatAllocations[0]);
+    }
+  }, [seatAllocations || []]);
+
   return (
     <Content
       style={{

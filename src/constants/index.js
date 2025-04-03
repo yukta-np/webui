@@ -35,6 +35,7 @@ export const constants = {
     inquiryUrl: `${URL}/inquiries`,
     administrationUrl: `${URL}/administration`,
     classroomUrl: `${URL}/classroom`,
+    seatAllocationsUrl: `${URL}/seat-allocations`,
     settingsUrl: `${URL}/settings`,
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
