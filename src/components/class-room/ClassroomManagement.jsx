@@ -13,6 +13,7 @@ import {
   Skeleton,
 } from 'antd';
 import { useAreas } from '@/hooks/useAreas';
+import { useSeatAllocations } from '@/hooks/useSeatAllocations';
 import { UserOutlined } from '@ant-design/icons';
 
 const { Content } = Layout;
@@ -77,20 +78,6 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
               }}
             />
           )}
-
-          {/* Bench Leg */}
-          {/* <div
-            style={{
-              position: 'absolute',
-              bottom: -12,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 12,
-              height: 12,
-              backgroundColor: '#d9d9d9',
-              borderRadius: 2,
-            }}
-          /> */}
         </div>
       );
     });
@@ -182,6 +169,8 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
 const ClassroomManagement = () => {
   const [currentClassroom, setCurrentClassroom] = useState(null);
   const { areas, isLoading: isAreasLoading } = useAreas();
+  const { seatAllocations, isLoading: isSeatLoading } = useSeatAllocations();
+
   const screens = useBreakpoint();
 
   const classroomAreas =
