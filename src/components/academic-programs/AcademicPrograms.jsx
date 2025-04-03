@@ -23,7 +23,7 @@ import {
   getAcademicProgramById,
   updateAcademicProgram,
 } from '@/services/academicPrograms.http';
-import { openNotification } from '@/utils';
+import { openNotification, objectHasValue } from '@/utils';
 import { useAcademicPrograms } from '@/hooks/useAcademicPrograms';
 
 const AcademicPrograms = () => {
@@ -31,13 +31,23 @@ const AcademicPrograms = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [action, setAction] = useState(Actions.add);
   const [id, setId] = useState(null);
+  const [tablePage, setTablePage] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
   const searchInput = useRef(null);
   const [filteredInfo, setFilteredInfo] = useState({});
 
+  let params = {};
+  if (objectHasValue(tablePage)) {
+    params.limit = tablePage.limit;
+    params.offset = tablePage.offset;
+    if (tablePage.sort) {
+      params.sort = tablePage.sort;
+    }
+  }
+
   const { faculties } = useFaculties();
-  const { programs, isLoading, isError, revalidate } = useAcademicPrograms();
-  console.log(faculties);
+  const { programs, meta, isLoading, isError, revalidate } =
+    useAcademicPrograms(params);
 
   const onSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -109,11 +119,22 @@ const AcademicPrograms = () => {
     filteredValue: filteredInfo[dataIndex] || null,
   });
 
+  const onTableChange = (pagination, filters, sorter) => {
+    const options = {
+      limit: pagination.pageSize,
+      offset: (pagination.current - 1) * pagination.pageSize,
+      sort: sorter.order === 'descend' ? `-${sorter.field}` : sorter.field,
+      ...filters,
+    };
+    setTablePage(options);
+    setFilteredInfo(filters);
+  };
+
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: 'id',
+      key: 'id',
       sorter: true,
       render: (text, faculties) => (
         <a className="text-blue-600" onClick={() => onView(faculties?.id)}>
@@ -137,18 +158,22 @@ const AcademicPrograms = () => {
     {
       title: 'Type',
       key: 'type',
-      render: (_, record) => (
+      render: (_, programs) => (
         <>
-          {record.isYearly && <Tag color="blue">Yearly</Tag>}
-          {record.isSemester && <Tag color="green">Semester</Tag>}
+          {programs.isYearly && <Tag color="blue">Yearly</Tag>}
+          {programs.isSemester && <Tag color="green">Semester</Tag>}
         </>
       ),
       filters: [
         { text: 'Yearly', value: 'yearly' },
         { text: 'Semester', value: 'semester' },
       ],
-      onFilter: (value, record) =>
-        value === 'yearly' ? record.isYearly : record.isSemester,
+      onFilter: (value, record) => {
+        if (value === 'yearly') return record.isYearly;
+        if (value === 'semester') return record.isSemester;
+        return true;
+      },
+      filteredValue: filteredInfo.type || null,
     },
     {
       title: 'Faculty',
@@ -273,10 +298,14 @@ const AcademicPrograms = () => {
         columns={columns}
         dataSource={programs}
         bordered
-        pagination={{ pageSize: 5 }}
-        onChange={(pagination, filters, sorter) => {
-          setFilteredInfo(filters);
+        pagination={{
+          total: meta?.totalRows,
+          pageSize: meta?.pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          responsive: true,
         }}
+        onChange={onTableChange}
       />
 
       <Modal
