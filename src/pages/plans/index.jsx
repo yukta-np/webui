@@ -5,7 +5,7 @@ import React from 'react';
 const plans = () => {
   return (
     <div>
-      <CustomHead title="Plans" />
+      <CustomHead actualTitle="Plans" />
       <Plans />
     </div>
   );
