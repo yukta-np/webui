@@ -152,10 +152,12 @@ const FacultyList = () => {
     },
     {
       title: 'University',
-      dataIndex: 'university',
+      dataIndex: ['university'],
       key: 'university',
       render: (_, faculties) => faculties?.university?.name,
       ...getColumnSearchProps('university'),
+      onFilter: (value, record) =>
+        record.university?.name?.toLowerCase().includes(value.toLowerCase()),
     },
     {
       title: 'Actions',
