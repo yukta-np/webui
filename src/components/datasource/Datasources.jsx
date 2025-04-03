@@ -7,6 +7,7 @@ import {
   UserOutlined,
   CodeOutlined,
 } from '@ant-design/icons';
+import { GraduationCap, BookOpenText, BookText, Landmark } from 'lucide-react';
 
 const { Title, Text } = Typography;
 
@@ -43,28 +44,28 @@ const settingsCards = [
     id: 'faculties',
     title: 'Faculties',
     description: 'Manage faculties',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <GraduationCap className="text-blue-500 text-2xl" />,
     path: '/faculties',
   },
   {
     id: 'academic-programs',
     title: 'Academic Programs',
     description: 'Manage academic programs',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <BookOpenText className="text-blue-500 text-2xl" />,
     path: '/academic-programs',
   },
   {
     id: 'academic-subjects',
     title: 'Academic Subjects',
     description: 'Manage academic subjects',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <BookText className="text-blue-500 text-2xl" />,
     path: '/academic-subjects',
   },
   {
     id: 'universities',
     title: 'Universities',
     description: 'Manage universities',
-    icon: <TeamOutlined className="text-blue-500 text-2xl" />,
+    icon: <Landmark className="text-blue-500 text-2xl" />,
     path: '/universities',
   },
 ];
