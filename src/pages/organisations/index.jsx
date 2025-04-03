@@ -5,7 +5,7 @@ import OrganisationList from '@/components/organisations/OrganisationList';
 const index = () => {
   return (
     <>
-      <CustomHead actualTitle="Organisations" />
+      <CustomHead actualTitle="Organisation List" />
       <OrganisationList />
     </>
   );
