@@ -1,5 +1,5 @@
 import { constants } from '@/constants';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
@@ -19,7 +19,6 @@ export function useAcademicPrograms(params) {
     data: responseData,
     error,
     isValidating,
-    mutate,
   } = useSWR(fullUrl, fetcher, autoRefetchConfig);
 
   const revalidate = () => mutate(fullUrl);

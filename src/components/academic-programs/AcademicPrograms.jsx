@@ -190,7 +190,7 @@ const AcademicPrograms = () => {
     form.resetFields();
   };
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setIsProcessing(true);
     setAction(Actions.add);
     try {
@@ -204,8 +204,8 @@ const AcademicPrograms = () => {
       console.log(payload);
 
       action === Actions.add
-        ? createAcademicProgram(payload)
-        : updateAcademicProgram(id, payload);
+        ? await createAcademicProgram(payload)
+        : await updateAcademicProgram(id, payload);
       openNotification(`Program ${action}ed successfully`);
       revalidate();
       setIsModalVisible(false);
@@ -228,6 +228,7 @@ const AcademicPrograms = () => {
     const myData = {
       ...data,
       facultyId: data?.faculty?.id,
+      programType: data?.isYearly ? 'yearly' : 'semester',
     };
     form.setFieldsValue(myData);
   };
@@ -371,7 +372,9 @@ const AcademicPrograms = () => {
                   { required: true, message: 'Please select program type!' },
                 ]}
               >
-                <Radio.Group>
+                <Radio.Group
+                  className={action === Actions.view ? 'view-mode-radio' : ''}
+                >
                   <Radio value="yearly">Yearly </Radio>
                   <Radio value="semester">Semester </Radio>
                 </Radio.Group>
