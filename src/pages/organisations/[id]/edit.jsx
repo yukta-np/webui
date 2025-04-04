@@ -1,28 +1,30 @@
-import OrganisationLayout from '@/components/organisations/OrganisationLayout';
-import OrganisationDetails from '@/components/organisations/OrganisationDetails';
-import React from 'react';
-import { useRouter } from 'next/router';
+import { useAppContext } from '@/app-context';
 import CustomHead from '@/components/customHead/CustomHead';
+import OrganisationForm from '@/components/organisations/OrganisationForm';
+import OrganisationLayout from '@/components/organisations/OrganisationLayout';
+import React from 'react';
 import { Breadcrumb, Layout, Grid, theme } from 'antd';
 import Link from 'next/link';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
 
-const index = () => {
+const edit = () => {
+  const { loggedInUser } = useAppContext();
+  const orgId = loggedInUser?.orgId;
   const screens = useBreakpoint();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const router = useRouter();
-  const id = router.query.id;
+
   return (
     <>
       <Breadcrumb style={{ margin: '16px ' }}>
         <Breadcrumb.Item>
           <Link href="/dashboard">Home</Link>
         </Breadcrumb.Item>
-        <Breadcrumb.Item>Organisation Detail</Breadcrumb.Item>
+        <Breadcrumb.Item>Organisations</Breadcrumb.Item>
+        <Breadcrumb.Item>Edit Organisation</Breadcrumb.Item>
       </Breadcrumb>
       <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
         <div
@@ -33,9 +35,9 @@ const index = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          <CustomHead actualTitle="Organisation Details" />
+          <CustomHead actualTitle="Edit Organisation" />
           <OrganisationLayout>
-            <OrganisationDetails params={{ id }} />
+            <OrganisationForm orgId={orgId} />
           </OrganisationLayout>
         </div>
       </Content>
@@ -43,4 +45,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default edit;
