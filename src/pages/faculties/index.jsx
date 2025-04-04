@@ -20,7 +20,7 @@ const index = () => {
             <a href="/">Home</a>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link href="/settings/data-sources">Data Sources</Link>
+            <Link href="/data-sources">Data Sources</Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>Faculties</Breadcrumb.Item>
         </Breadcrumb>
