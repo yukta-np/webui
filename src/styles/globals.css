@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* table css start */
+
+/* Table header - clean and clear */
+.ant-table-thead>tr>th {
+  background-color: #e2e8f0;
+  /* neutral-light blue-gray */
+  color: #1f2937;
+  /* gray-800 */
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+/* Row striping - light but visible */
+.ant-table-tbody>tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.ant-table-tbody>tr:nth-child(even) {
+  background-color: #f1f5f9;
+  /* subtle light blue-gray */
+}
+
+/* Row hover - gentle highlight */
+.ant-table-tbody>tr:hover {
+  background-color: #dbeafe;
+  /* light sky-blue highlight */
+  transition: background-color 0.25s ease;
+  cursor: pointer;
+}
+
+/* Slightly soften borders */
+.ant-table-container table {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* subtle shadow */
+}
+
+/* table css end */
+
 * {
   box-sizing: border-box;
   margin: 0;
