@@ -81,27 +81,18 @@ const OrganisationLayout = ({ children }) => {
   }
 
   return (
-    <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
-      <div
-        style={{
-          padding: screens.xs ? 16 : 24,
-          minHeight: 360,
-          background: colorBgContainer,
-          borderRadius: borderRadiusLG,
-        }}
-      >
-        <p className="text-xl font-bold mb-4">{organisation?.name}</p>
-        <div className="grid grid-cols-12">
-          <Menu
-            mode="inline"
-            style={{ width: screens.xs ? 180 : 200, height: '60vh' }}
-            items={menuItems}
-            className="col-span-2"
-          />
-          <div className="col-span-10"> {children}</div>
-        </div>
+    <>
+      <p className="text-xl font-bold mb-4">{organisation?.name}</p>
+      <div className="grid grid-cols-12">
+        <Menu
+          mode="inline"
+          style={{ width: screens.xs ? 180 : 200, height: '60vh' }}
+          items={menuItems}
+          className="col-span-2"
+        />
+        <div className="col-span-10"> {children}</div>
       </div>
-    </Content>
+    </>
   );
 };
 

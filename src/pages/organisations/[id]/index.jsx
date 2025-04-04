@@ -22,7 +22,7 @@ const index = () => {
         <Breadcrumb.Item>
           <Link href="/dashboard">Home</Link>
         </Breadcrumb.Item>
-        <Breadcrumb.Item>Organisations</Breadcrumb.Item>
+        <Breadcrumb.Item>Organisation Detail</Breadcrumb.Item>
       </Breadcrumb>
       <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
         <div
