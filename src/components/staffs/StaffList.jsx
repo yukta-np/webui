@@ -17,8 +17,8 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Trash2Icon, PlusCircle } from 'lucide-react';
-import { useStaff } from '@/hooks/useStaff';
-import { deleteStaff } from '@/services/staff.http';
+import { useStaffs } from '@/hooks/useStaffs';
+import { deleteStaff } from '@/services/staffs.http';
 import { openNotification } from '@/utils';
 import moment from 'moment';
 
@@ -31,7 +31,7 @@ const StaffListPage = () => {
   const [filterValues, setFilterValues] = useState({});
   const [filterForm] = Form.useForm();
 
-  const { staff, meta, loading } = useStaff();
+  const { staff, meta, loading } = useStaffs();
 
   const onDelete = async (id) => {
     try {
@@ -132,7 +132,7 @@ const StaffListPage = () => {
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setFilterDrawerVisible(true)}>Filter</Button>
-          <Button type="primary" onClick={() => router.push('/staff/new')}>
+          <Button type="primary" onClick={() => router.push('/staffs/new')}>
             Add Staff
           </Button>
         </div>

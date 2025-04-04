@@ -22,7 +22,7 @@ import {
   ShieldAlert,
   GraduationCap,
 } from 'lucide-react';
-import { getStaffById } from '@/services/staff.http';
+import { getStaffById } from '@/services/staffs.http';
 import { useEffect, useState } from 'react';
 const { Title, Text } = Typography;
 

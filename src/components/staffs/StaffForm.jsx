@@ -13,7 +13,7 @@ import {
   Upload,
 } from 'antd';
 import moment from 'moment';
-import { createStaff } from '@/services/staff.http'; // Update service import
+import { createStaff } from '@/services/staffs.http'; // Update service import
 import { openNotification } from '@/utils';
 import { emailRegex, phoneRegex } from '@/utils';
 import { UploadOutlined } from '@ant-design/icons';
@@ -102,7 +102,7 @@ const StaffForm = ({
         </Col>
         <Col xs={24} md={8}>
           <Item name="middleName" label="Middle Name">
-            <Input disabled={isViewMode} placeholder="Raj" />
+            <Input disabled={isViewMode} placeholder="Chandra" />
           </Item>
         </Col>
         <Col xs={24} md={8}>
@@ -111,7 +111,7 @@ const StaffForm = ({
             label="Last Name"
             rules={[{ required: true, message: 'Please input last name!' }]}
           >
-            <Input disabled={isViewMode} placeholder="Katwal" />
+            <Input disabled={isViewMode} placeholder="Ojha" />
           </Item>
         </Col>
       </Row>
@@ -129,7 +129,7 @@ const StaffForm = ({
             <Input
               disabled={isViewMode}
               type="email"
-              placeholder="dip.katwal@example.com"
+              placeholder="dip.ojha@example.com"
             />
           </Item>
         </Col>
