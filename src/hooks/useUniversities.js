@@ -1,17 +1,33 @@
 import { constants } from '@/constants';
 import useSWR, { mutate } from 'swr';
-import { fetcher } from '../utils';
+import { fetcher, disableRefetchBlock } from '../utils';
+import { useMemo } from 'react';
 
-export function useUniversities() {
-   const { data: responseData, error, isValidating } = useSWR(constants.urls.universitiesUrl, fetcher);
+export function useUniversities(params) {
+  const queryString = useMemo(() => {
+    if (!params || Object.keys(params).length === 0) return '';
+    return new URLSearchParams(params).toString();
+  }, [params]);
 
-   const revalidate = () => mutate(constants.urls.universitiesUrl);
+  const URL = constants.urls.universitiesUrl;
+  const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
-   return {
-      universities: responseData,
-      isLoading: isValidating,
-      isError: error,
-      revalidate,
-   };
+  const { disableAutoRefetch } = params || {};
+  const autoRefetchConfig = disableAutoRefetch ? disableRefetchBlock : null;
+
+  const {
+    data: responseData,
+    error,
+    isValidating,
+  } = useSWR(fullUrl, fetcher, autoRefetchConfig);
+
+  const revalidate = () => mutate(fullUrl);
+
+  return {
+    universities: responseData?.data,
+    meta: responseData?.meta,
+    isLoading: isValidating,
+    isError: error,
+    revalidate,
+  };
 }
-

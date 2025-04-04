@@ -11,6 +11,7 @@ export const constants = {
   urls: {
     loginUrl: `${URL}/auth/login`,
     registerUrl: `${URL}/auth/register`,
+    impersonateUrl: `${URL}/auth/impersonate`,
     verifyUrl: `${URL}/auth/verify`,
     forgotPasswordUrl: `${URL}/auth/forgot-password`,
     meUrl: `${URL}/users/me`,
@@ -20,8 +21,10 @@ export const constants = {
     taskStatusUrl: `${URL}/task-status`,
     taskChangeHistoriesUrl: `${URL}/task-change-histories`,
     roleUrl: `${URL}/role`,
-    studentUrl: `${URL}/student`,
     universitiesUrl: `${URL}/universities`,
+    facultiesUrl: `${URL}/faculties`,
+    academicProgramsUrl: `${URL}/academic-programs`,
+    academicSubjectsUrl: `${URL}/academic-subjects`,
     organisationsUrl: `${URL}/organisations`,
     taskCategoryUrl: `${URL}/task-category`,
     taskPriorityUrl: `${URL}/task-priority`,
@@ -32,7 +35,19 @@ export const constants = {
     announcementUrl: `${URL}/announcements`,
     permissionGroupUrl: `${URL}/permission-groups`,
     inquiryUrl: `${URL}/inquiries`,
+    administrationUrl: `${URL}/administration`,
+    classroomUrl: `${URL}/classroom`,
+    seatAllocationsUrl: `${URL}/seat-allocations`,
+    settingsUrl: `${URL}/settings`,
+    studentUrl: `${URL}/students`,
+    teachersUrl: `${URL}/teachers`,
+    staffsUrl: `${URL}/staffs`,
 
+    routinesUrl: `${URL}/routines`,
+    areasUrl: `${URL}/areas`,
+
+    organisationsUrl: `${URL}/organisations`,
+    filesUrl: `${URL}/files`,
 
     // Socket
     notificationGateway: `${API_URL}/notifications`,
@@ -49,6 +64,7 @@ export const Actions = {
   add: 'add',
   edit: 'edit',
   read: 'read',
+  view: 'view',
   clone: 'clon',
 };
 
@@ -82,4 +98,15 @@ export const ResourceActions = {
   archive: 'archive',
   restore: 'restore',
   acknowledegedBy: 'acknowledegedBy',
+  downloadCsv: 'downloadCsv',
+};
+
+export const WeekDay = {
+  SUNDAY: 'SUNDAY',
+  MONDAY: 'MONDAY',
+  TUESDAY: 'TUESDAY',
+  WEDNESDAY: 'WEDNESDAY',
+  THURSDAY: 'THURSDAY',
+  FRIDAY: 'FRIDAY',
+  SATURDAY: 'SATURDAY',
 };

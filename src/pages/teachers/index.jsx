@@ -1,10 +1,21 @@
-import TeacherProfile from '@/components/userprofile/TeacherProfile'
-import React from 'react'
+// pages/settings/[id]/index.jsx
+import { useRouter } from 'next/router';
+import CustomHead from '@/components/customHead/CustomHead';
 
-const index = () => {
+export default function Page() {
+  const router = useRouter();
+  const { teachers } = router.query; // Get student from router
+
+  const currentType = teachers || '';
+
   return (
-  <TeacherProfile />
-  )
+    <>
+      <CustomHead
+        actualTitle={`Teachers - ${
+          teachers ? `${teachers} Profile` : 'All Teachers'
+        }`}
+      />
+      <Settings currentType="teachers" />
+    </>
+  );
 }
-
-export default index

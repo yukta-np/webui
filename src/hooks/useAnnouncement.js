@@ -3,13 +3,14 @@ import useSWR from 'swr';
 import { fetcher, disableRefetchBlock } from '../utils';
 import { useMemo } from 'react';
 
-export function useAnnouncement(params) {
+export function useAnnouncement(params, shared = false) {
    const queryString = useMemo(() => {
       if (!params || Object.keys(params).length === 0) return '';
       return new URLSearchParams(params).toString();
    }, [params]);
 
-   const URL = constants.urls.announcementUrl;
+   const URL = shared ? `${constants.urls.announcementUrl}/shared` : constants.urls.announcementUrl;
+
    const fullUrl = queryString ? `${URL}?${queryString}` : URL;
 
    const { disableAutoRefetch } = params || {};

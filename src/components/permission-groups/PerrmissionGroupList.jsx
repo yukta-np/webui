@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { SearchOutlined } from '@ant-design/icons';
 import { Roles, fetcher, openNotification } from '../../utils';
 import { useAppContext } from '../../app-context';
-import { AbilityContext } from '@/utils/can';
 
 const PermissionGroupList = () => {
   const { loggedInUser } = useAppContext();
@@ -37,8 +36,6 @@ const PermissionGroupList = () => {
   const hideModal = () => setIsModalVisible(false);
 
   const [selectedUsers, setSelectedUsers] = useState([]);
-
-  const ability = useContext(AbilityContext);
 
   let searchInput = null;
 

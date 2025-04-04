@@ -1,9 +1,18 @@
-import React from 'react'
+
+import StudentLayout from '@/components/students/StudentLayout';
+import StudentProfile from '@/components/students/StudentProfile';
+
+import React from 'react';
+import { useRouter } from 'next/router';
 
 const index = () => {
+  const router = useRouter();
+  const id = router.query.id;
   return (
-    <div>index</div>
-  )
-}
+    <StudentLayout>
+      <StudentProfile params={{ id }} />
+    </StudentLayout>
+  );
+};
 
-export default index
+export default index;
