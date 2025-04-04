@@ -7,12 +7,12 @@ import {
 } from '@/services/organisations.http';
 import { openNotification } from '@/utils';
 import { useUniversities } from '@/hooks/useUniversities';
-import { populate } from 'dotenv';
 
 const OrganisationForm = ({ orgId }) => {
   const [form] = Form.useForm();
   const [previewImage, setPreviewImage] = useState(null);
   const [organisationData, setOrganisationData] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { universities } = useUniversities();
 
@@ -27,7 +27,7 @@ const OrganisationForm = ({ orgId }) => {
   }, [form]);
 
   const onFinish = async (values) => {
-    console.log(values);
+    setIsProcessing(true);
     const myValues = {
       ...values,
     };
@@ -38,8 +38,9 @@ const OrganisationForm = ({ orgId }) => {
     } catch (error) {
       console.error('Error updating organisation', error);
       openNotification('Failed to update organisation', true);
+    } finally {
+      setIsProcessing(false);
     }
-    // Handle form submission here
   };
 
   const handleUpload = (file) => {
@@ -97,9 +98,7 @@ const OrganisationForm = ({ orgId }) => {
                 }}
               />
             ) : (
-              <span style={{ fontSize: 32, color: '#fff' }}>
-                {() => getInitialLetter()}
-              </span>
+              <span>{() => getInitialLetter()}</span>
             )}
           </div>
           <div className="ml-3 mt-8">
