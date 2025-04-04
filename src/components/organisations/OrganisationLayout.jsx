@@ -10,6 +10,8 @@ import {
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useOrganisation } from '@/hooks/useOrganisation';
+import { useAppContext } from '@/app-context';
+import { Roles } from '@/utils';
 
 const { useBreakpoint } = Grid;
 const { Content } = Layout;
@@ -21,52 +23,65 @@ const OrganisationLayout = ({ children }) => {
   } = theme.useToken();
   const router = useRouter();
   const currentId = parseInt(router.query.id);
-  const { organisation } = useOrganisation();
+  const { organisationById: organisation } = useOrganisation(currentId);
+  const { loggedInUser } = useAppContext();
 
-  const orgName =
-    organisation?.find((org) => org.id === currentId)?.name || 'Organisation';
+  let menuItems = [];
 
-  const menuItems = [
-    {
-      key: 'details',
-      icon: <BookUser size={18} />,
-      label: <Link href={`/organisations/${currentId}`}>Details</Link>,
-    },
-    {
-      key: 'plans',
-      icon: <ChartNoAxesGantt size={18} />,
-      label: <Link href={`/organisations/${currentId}/plans`}>Plans</Link>,
-    },
-    {
-      key: 'users',
-      icon: <User size={18} />,
-      label: <Link href={`/organisations/${currentId}/users`}>Users</Link>,
-    },
-    {
-      key: 'modules',
-      icon: <Component size={18} />,
-      label: <Link href={`/organisations/${currentId}/modules`}>Modules</Link>,
-    },
-    {
-      key: 'settings',
-      icon: <Settings size={18} />,
-      label: (
-        <Link href={`/organisations/${currentId}/settings`}>Settings</Link>
-      ),
-    },
-  ];
+  if (loggedInUser?.role === Roles.SYSADMIN) {
+    menuItems = [
+      {
+        key: 'details',
+        icon: <BookUser size={18} />,
+        label: <Link href={`/organisations/${currentId}`}>Details</Link>,
+      },
+      {
+        key: 'plans',
+        icon: <ChartNoAxesGantt size={18} />,
+        label: <Link href={`/organisations/${currentId}/plans`}>Plans</Link>,
+      },
+      {
+        key: 'users',
+        icon: <User size={18} />,
+        label: <Link href={`/organisations/${currentId}/users`}>Users</Link>,
+      },
+      {
+        key: 'modules',
+        icon: <Component size={18} />,
+        label: (
+          <Link href={`/organisations/${currentId}/modules`}>Modules</Link>
+        ),
+      },
+      {
+        key: 'settings',
+        icon: <Settings size={18} />,
+        label: (
+          <Link href={`/organisations/${currentId}/settings`}>Settings</Link>
+        ),
+      },
+    ];
+  } else if (loggedInUser?.role === Roles.ADMIN) {
+    menuItems = [
+      {
+        key: 'details',
+        icon: <BookUser size={18} />,
+        label: <Link href={`/organisations/${currentId}`}>Details</Link>,
+      },
+      {
+        key: 'settings',
+        icon: <Settings size={18} />,
+        label: <Link href={`/organisations/1/edit`}>Settings</Link>,
+      },
+      {
+        key: 'notice-template',
+        icon: <Settings size={18} />,
+        label: <Link href="#">Notice Template</Link>,
+      },
+    ];
+  }
 
   return (
     <Content style={{ margin: screens.xs ? '0 8px' : '0 16px' }}>
-      <Breadcrumb style={{ margin: '16px 0' }}>
-        <Breadcrumb.Item>
-          <Link href="/dashboard">Home</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link href="/organisations">Organisations</Link>
-        </Breadcrumb.Item>
-      </Breadcrumb>
-
       <div
         style={{
           padding: screens.xs ? 16 : 24,
@@ -75,7 +90,7 @@ const OrganisationLayout = ({ children }) => {
           borderRadius: borderRadiusLG,
         }}
       >
-        <p className="text-xl font-bold mb-4">{orgName}</p>
+        <p className="text-xl font-bold mb-4">{organisation?.name}</p>
         <div className="grid grid-cols-12">
           <Menu
             mode="inline"

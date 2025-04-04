@@ -48,6 +48,7 @@ const SecuredLayout = ({ children }) => {
 
   // TODO: remove this once the permissions backend is fixed to send only the ones associated with a user
   const [studentPermission, setStudentPermission] = useState({});
+  const id = loggedInUser?.orgId;
 
   useEffect(() => {
     setCollapsed(true);
@@ -180,6 +181,12 @@ const SecuredLayout = ({ children }) => {
             key: 'data-source',
             icon: <Database size={18} />,
             href: '/data-sources',
+          },
+          {
+            label: 'Organisation',
+            key: 'organisation',
+            icon: <Building2 size={18} />,
+            href: `/organisations/${id}`,
           },
         ],
       },
