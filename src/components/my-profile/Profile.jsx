@@ -48,8 +48,7 @@ const Profile = () => {
     }
   }, [me, form]);
 
-  const handleOnSubmit = async (values) => {
-    console.log(values);
+  const onFinish = async (values) => {
     const { address2, phoneNumber, ...deletedValue } = values;
     const myValues = {
       ...deletedValue,
@@ -105,7 +104,7 @@ const Profile = () => {
           </Row>
         </div>
         <Space className="p-4">
-          <Form layout="vertical" form={form} onFinish={handleOnSubmit}>
+          <Form layout="vertical" form={form} onFinish={onFinish}>
             <Row gutter={24}>
               <Col xs={24} sm={12}>
                 <Form.Item

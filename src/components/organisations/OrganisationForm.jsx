@@ -1,43 +1,44 @@
-import React, { useState } from 'react';
-import {
-  Form,
-  Input,
-  Button,
-  Row,
-  Col,
-  Switch,
-  Upload,
-  Card,
-  Avatar,
-} from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Form, Input, Button, Row, Col, Upload, Divider, Select } from 'antd';
 import { Camera } from 'lucide-react';
+import {
+  getOrganisationById,
+  updateOrganisation,
+} from '@/services/organisations.http';
+import { openNotification } from '@/utils';
+import { useUniversities } from '@/hooks/useUniversities';
+import { populate } from 'dotenv';
 
-const OrganisationForm = (orgId) => {
+const OrganisationForm = ({ orgId }) => {
   const [form] = Form.useForm();
-  const [logoFile, setLogoFile] = useState(null);
-  const [fileList, setFileList] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
+  const [organisationData, setOrganisationData] = useState(null);
 
-  const initialValues = {
-    id: 1,
-    name: 'Kathmandu Engineering College',
-    address: 'Imadol, Lalitpur',
-    phone: '01-5555555',
-    email: 'info@ke.edu.np',
-    noreplyEmail: 'noreply@ke.edu.np',
-    noreplyPhone: '01-5555555',
-    website: 'https://www.ke.edu.np',
-    panNumber: '123456789',
-    vatNumber: '987654321',
-    isActive: true,
-    isArchived: false,
-    logo: 'ke-logo.png',
-    universityName: 'Tribhuvan University',
+  const { universities } = useUniversities();
+
+  const populateForm = async () => {
+    const response = await getOrganisationById(orgId);
+    setOrganisationData(response.data);
+    form.setFieldsValue(response.data);
   };
 
-  const onFinish = (values) => {
-    console.log('Received values:', values);
+  useEffect(() => {
+    populateForm();
+  }, [form]);
+
+  const onFinish = async (values) => {
+    console.log(values);
+    const myValues = {
+      ...values,
+    };
+    try {
+      await updateOrganisation(orgId, myValues);
+      openNotification('Organisation updated successfully');
+      populateForm();
+    } catch (error) {
+      console.error('Error updating organisation', error);
+      openNotification('Failed to update organisation', true);
+    }
     // Handle form submission here
   };
 
@@ -52,7 +53,12 @@ const OrganisationForm = (orgId) => {
 
   const handleRemove = () => {
     setPreviewImage(null);
-    form.setFieldsValue({ logo: null }); // Clear the form field if needed
+    form.setFieldsValue({ logo: null });
+  };
+
+  const getInitialLetter = () => {
+    const name = form.getFieldValue('name') || organisationData?.name || '';
+    return name.charAt(0).toUpperCase();
   };
 
   return (
@@ -80,9 +86,9 @@ const OrganisationForm = (orgId) => {
                   objectFit: 'cover',
                 }}
               />
-            ) : initialValues.avatarUrl ? (
+            ) : organisationData?.logo ? (
               <img
-                src={initialValues.avatarUrl}
+                src={organisationData?.logo}
                 alt="Logo"
                 style={{
                   width: '100%',
@@ -92,7 +98,7 @@ const OrganisationForm = (orgId) => {
               />
             ) : (
               <span style={{ fontSize: 32, color: '#fff' }}>
-                {initialValues.name.toUpperCase()[0]}
+                {() => getInitialLetter()}
               </span>
             )}
           </div>
@@ -125,12 +131,7 @@ const OrganisationForm = (orgId) => {
           )}
         </Row>
 
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={initialValues}
-          onFinish={onFinish}
-        >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
           <p className="text-xl font-bold mb-4 ">Basic Information</p>
           <Row gutter={16}>
             <Col span={12}>
@@ -146,13 +147,19 @@ const OrganisationForm = (orgId) => {
             </Col>
             <Col span={12}>
               <Form.Item
-                name="universityName"
-                label="University"
+                name="universityId"
+                label="Affiliated University"
                 rules={[
                   { required: true, message: 'Please enter university name' },
                 ]}
               >
-                <Input placeholder="Enter university name" />
+                <Select
+                  placeholder="Select Affiliated University"
+                  options={universities?.map((university) => ({
+                    label: university.name,
+                    value: university.id,
+                  }))}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -179,16 +186,22 @@ const OrganisationForm = (orgId) => {
           </Row>
 
           {/* Address Section */}
+          <Divider />
           <p className="text-xl font-bold mb-4 ">Address</p>
-          <Form.Item
-            name="address"
-            label="Full Address"
-            rules={[{ required: true, message: 'Please enter address' }]}
-          >
-            <Input.TextArea rows={3} placeholder="Enter address" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[{ required: true, message: 'Please enter address' }]}
+              >
+                <Input placeholder="Enter address" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           {/* Communication & Email Section */}
+          <Divider />
           <p className="text-xl font-bold mb-4 ">Communication</p>
           <Row gutter={16}>
             <Col span={12}>
@@ -203,13 +216,7 @@ const OrganisationForm = (orgId) => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                name="noreplyPhone"
-                label="No-Reply Phone"
-                rules={[
-                  { required: true, message: 'Please enter no-reply phone' },
-                ]}
-              >
+              <Form.Item name="noreplyPhone" label="No-Reply Phone">
                 <Input placeholder="Enter no-reply phone" />
               </Form.Item>
             </Col>
@@ -219,7 +226,7 @@ const OrganisationForm = (orgId) => {
             <Col span={12}>
               <Form.Item
                 name="email"
-                label="Primary Email"
+                label="Email"
                 rules={[
                   { required: true, message: 'Please enter email' },
                   { type: 'email', message: 'Please enter a valid email' },
@@ -233,7 +240,6 @@ const OrganisationForm = (orgId) => {
                 name="noreplyEmail"
                 label="No-Reply Email"
                 rules={[
-                  { required: true, message: 'Please enter no-reply email' },
                   { type: 'email', message: 'Please enter a valid email' },
                 ]}
               >
@@ -241,14 +247,13 @@ const OrganisationForm = (orgId) => {
               </Form.Item>
             </Col>
           </Row>
-
-          <Form.Item
-            name="website"
-            label="Website"
-            rules={[{ required: true, message: 'Please enter website URL' }]}
-          >
-            <Input placeholder="Enter website URL" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="website" label="Website">
+                <Input placeholder="Enter website URL" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Row>
             <Col xs={24} className="text-right mb-4">
               <Button
