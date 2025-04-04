@@ -431,7 +431,6 @@ const TaskList = ({
       default:
         return <File style={{ color: '#8c8c8c', fontSize: '18px' }} />; // Default for other files
     }
-    return 'Task';
   };
 
   const onFileChange = (info) => {
