@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation'; // If using Next.js app router
-import StaffForm from '@/components/staff/StaffForm';
-import { getStaffById, updateStaff } from '@/services/staff.http';
+import { useParams } from 'next/navigation'; // If using Next.js app routerß
+import { getStaffById, updateStaff } from '@/services/staffs.http';
 import { openNotification } from '@/utils';
 import { Alert, Card, Typography } from 'antd';
 import moment from 'moment';

@@ -7,7 +7,7 @@ import { useStaffs } from '@/hooks/useStaffs';
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 
-const EditStaff =() => {
+const EditStaff = () => {
   const screens = useBreakpoint();
   const {
     token: { colorBgContainer, borderRadiusLG },
@@ -15,12 +15,12 @@ const EditStaff =() => {
   const router = useRouter();
   const { id } = router.query;
 
-    const { staffs, isLoading, isError } = useStaffs();
-  
-    if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error loading staff data</div>;
-  
-    const staff = staffs?.find((s) => String(s.id) === String(id));
+  const { staffs, isLoading, isError } = useStaffs();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading staff data</div>;
+
+  const staff = staffs?.find((s) => String(s.id) === String(id));
 
   return (
     <>
@@ -41,18 +41,12 @@ const EditStaff =() => {
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <Link
-              href="/staffs"
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <Link href="/staffs" className="text-gray-500 hover:text-gray-700">
               Staffs
             </Link>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            Edit -
-            {staff
-              ? `${staff.fullName}`
-              : 'Staff Profile'}
+            Edit -{staff ? `${staff.fullName}` : 'Staff Profile'}
           </Breadcrumb.Item>
         </Breadcrumb>
         <div
@@ -68,7 +62,6 @@ const EditStaff =() => {
       </Content>
     </>
   );
-}
+};
 
-export default EditStaff
-
+export default EditStaff;
