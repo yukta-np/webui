@@ -1,4 +1,16 @@
 // app/students/page.jsx
+
+
+// Note: The following section is dependent on backend integration.
+// It is crucial to ensure that the backend services are fully operational
+// before attempting to execute this section of the code. The functionality
+// provided herein will not function as intended until the backend endpoints
+// are properly connected and responding to requests. This includes ensuring
+// that all necessary backend APIs are implemented and reachable. Please
+// coordinate with the backend development team to confirm the availability
+// of these services. Once confirmed, you may proceed with utilizing this
+// section to interact with the backend for desired operations.
+
 import React, { useState, useEffect, use } from 'react';
 import {
   Table,
