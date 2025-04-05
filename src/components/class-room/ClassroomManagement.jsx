@@ -288,7 +288,7 @@ const ClassroomManagement = () => {
                     capacity={capacity}
                     columnIndex={columnIndex}
                     benchIndex={benchIndex}
-                    seatAllocations={seatAllocations}
+                    seatAllocations={seatAllocations || []}
                     currentClassroom={currentClassroomData}
                   />
                 ))}
