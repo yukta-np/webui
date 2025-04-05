@@ -15,26 +15,59 @@ import {
 import { useAreas } from '@/hooks/useAreas';
 import { useSeatAllocations } from '@/hooks/useSeatAllocations';
 import { UserOutlined } from '@ant-design/icons';
+import { assignGuardian } from '@/services/settings.http';
 
 const { Content } = Layout;
 const { useBreakpoint } = Grid;
 const { Title, Text } = Typography;
 
-const Bench = ({ capacity, columnIndex, benchIndex }) => {
+const Bench = ({
+  capacity,
+  columnIndex,
+  benchIndex,
+  seatAllocations,
+  currentClassroom,
+}) => {
+  const getSeatOccupant = (seatPositionIndex) => {
+    if (!seatAllocations || !currentClassroom?.id) return null;
+
+    return seatAllocations.find(
+      (allocation) =>
+        allocation.areaId === currentClassroom.id &&
+        allocation.benchRowIndex === benchIndex && // No +1 needed (0-based)
+        allocation.benchColumnIndex === columnIndex && // No +1 needed (0-based)
+        allocation.seatPosition === seatPositionIndex + 1 // Keep +1 (seatPosition is 1-based)
+    );
+  };
+  console.log('Current bench check:', {
+    classroomId: currentClassroom.id,
+    componentIndices: {
+      column: columnIndex,
+      bench: benchIndex,
+    },
+    matchingAllocations: seatAllocations.filter(
+      (a) =>
+        a.areaId === currentClassroom.id &&
+        a.benchRowIndex === columnIndex &&
+        a.benchColumnIndex === benchIndex
+    ),
+    seatCapacity: capacity,
+  });
   const renderSeats = () => {
-    return Array.from({ length: capacity }).map((_, i) => {
-      const isOccupied = Math.random() < 0.7;
+    return Array.from({ length: capacity }).map((_, seatPositionIndex) => {
+      const occupant = getSeatOccupant(seatPositionIndex);
+      const isOccupied = !!occupant;
 
       return (
         <div
-          key={`seat-${columnIndex}-${benchIndex}-${i}`}
+          key={`seat-${columnIndex}-${benchIndex}-${seatPositionIndex}`}
           style={{
             position: 'relative',
             width: 40,
             height: 48,
             backgroundColor: isOccupied ? '#f0f5ff' : '#fafafa',
             border: '1px solid #f0f0f0',
-            borderLeft: i === 0 ? '1px solid #f0f0f0' : 'none',
+            borderLeft: seatPositionIndex === 0 ? '1px solid #f0f0f0' : 'none',
             borderRight: '1px solid #f0f0f0',
             boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
             display: 'flex',
@@ -43,7 +76,6 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
             alignItems: 'center',
           }}
         >
-          {/* Seat Number */}
           <Text
             type="secondary"
             style={{
@@ -54,19 +86,29 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
               color: '#bfbfbf',
             }}
           >
-            {i + 1}
+            {seatPositionIndex + 1}
           </Text>
 
-          {/* Occupant */}
           {isOccupied ? (
-            <Avatar
-              size={24}
-              icon={<UserOutlined />}
+            <div
               style={{
-                backgroundColor: '#1890ff',
-                marginBottom: 4,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
-            />
+            >
+              <Avatar
+                size={24}
+                icon={<UserOutlined />}
+                style={{ backgroundColor: '#1890ff', marginBottom: 2 }}
+              />
+              <Text
+                strong
+                style={{ fontSize: 10, lineHeight: '12px', color: '#1890ff' }}
+              >
+                {occupant.studentId}
+              </Text>
+            </div>
           ) : (
             <div
               style={{
@@ -74,7 +116,6 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
                 height: 16,
                 borderRadius: 2,
                 backgroundColor: '#f0f0f0',
-                marginBottom: 4,
               }}
             />
           )}
@@ -84,13 +125,7 @@ const Bench = ({ capacity, columnIndex, benchIndex }) => {
   };
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        marginBottom: 32,
-        paddingBottom: 12,
-      }}
-    >
+    <div style={{ position: 'relative', marginBottom: 32, paddingBottom: 12 }}>
       {/* Bench Backrest */}
       <div
         style={{
@@ -175,9 +210,15 @@ const ClassroomManagement = () => {
 
   const classroomAreas =
     areas?.filter((area) => area.category === 'classroom') || [];
+  console.log('classes', classroomAreas);
   const classrooms = Array.from(new Set(classroomAreas.map((a) => a.name)));
   const structure =
     classroomAreas.find((a) => a.name === currentClassroom)?.structure || [];
+  const currentClassroomData = classroomAreas.find(
+    (a) => a.name === currentClassroom
+  );
+
+  console.log('struct', structure);
 
   useEffect(() => {
     if (classrooms.length > 0 && !currentClassroom) {
@@ -232,8 +273,7 @@ const ClassroomManagement = () => {
           <Button type="primary">Add Classroom</Button>
         </Space>
       </div>
-
-      {isAreasLoading ? (
+      {isAreasLoading || isSeatLoading ? (
         <Skeleton active paragraph={{ rows: 6 }} />
       ) : (
         <Row gutter={[32, 32]} justify="center" style={{ padding: 16 }}>
@@ -248,6 +288,8 @@ const ClassroomManagement = () => {
                     capacity={capacity}
                     columnIndex={columnIndex}
                     benchIndex={benchIndex}
+                    seatAllocations={seatAllocations}
+                    currentClassroom={currentClassroomData}
                   />
                 ))}
               </div>
