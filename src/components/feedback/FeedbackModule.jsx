@@ -33,7 +33,7 @@ const FeedbackPortal = () => {
   const [history, setHistory] = useState([]);
   const [selectedHistory, setSelectedHistory] = useState(null);
 
-  const handleSubmit = async (values) => {
+  const onSubmit = async (values) => {
     setSubmitting(true);
     try {
       const submission = {
@@ -210,7 +210,7 @@ const FeedbackPortal = () => {
             <Spin spinning={submitting}>
               <Form
                 form={form}
-                onFinish={handleSubmit}
+                onFinish={onSubmit}
                 layout="vertical"
                 className="space-y-6"
               >

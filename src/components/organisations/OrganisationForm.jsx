@@ -43,7 +43,7 @@ const OrganisationForm = ({ orgId }) => {
     }
   };
 
-  const handleUpload = (file) => {
+  const onUpload = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewImage(e.target.result);
@@ -52,7 +52,7 @@ const OrganisationForm = ({ orgId }) => {
     return false; // Prevent automatic upload
   };
 
-  const handleRemove = () => {
+  const onRemove = () => {
     setPreviewImage(null);
     form.setFieldsValue({ logo: null });
   };
@@ -104,7 +104,7 @@ const OrganisationForm = ({ orgId }) => {
           <div className="ml-3 mt-8">
             <Upload
               accept="image/*"
-              beforeUpload={handleUpload}
+              beforeUpload={onUpload}
               showUploadList={false}
             >
               <Button className="p-1" size="small">
@@ -117,7 +117,7 @@ const OrganisationForm = ({ orgId }) => {
               type="text"
               danger
               size="small"
-              onClick={handleRemove}
+              onClick={onRemove}
               style={{
                 position: 'absolute',
                 right: -8,

@@ -54,12 +54,12 @@ const AcademicCalendarEditor = () => {
     return [...daysShift, ...calendarDays, ...emptyCellsAtEnd];
   };
 
-  const handleMonthChange = (offset) => {
+  const onMonthChange = (offset) => {
     // Get current date components
     const year = currentMonth.getYear();
     const currentMonthIndex = currentMonth.getMonth();
 
-    // Calculate new month and handle year overflow
+    // Calculate new month and on year overflow
     const newMonthIndex = currentMonthIndex + offset;
     const newDate = new NepaliDate(year, newMonthIndex, 1);
     const firstDayOfMonth = new NepaliDate(year, newMonthIndex, 1).getDay();
@@ -68,7 +68,7 @@ const AcademicCalendarEditor = () => {
     setFirstDayOfMonth(firstDayOfMonth);
   };
 
-  const handleAddEvent = (values) => {
+  const onAddEvent = (values) => {
     const dateKey = selectedDate.format('YYYY-MM-DD');
     setEvents((prev) => ({
       ...prev,
@@ -80,7 +80,7 @@ const AcademicCalendarEditor = () => {
     setIsModalVisible(false);
   };
 
-  const handleDeleteEvent = (dateKey, index) => {
+  const onDeleteEvent = (dateKey, index) => {
     setEvents((prev) => {
       const updated = { ...prev };
       if (!updated[dateKey]) return updated;
@@ -236,7 +236,7 @@ const AcademicCalendarEditor = () => {
                       <DeleteOutlined
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteEvent(day.date.format('YYYY-MM-DD'), i);
+                          onDeleteEvent(day.date.format('YYYY-MM-DD'), i);
                         }}
                         className="hover:text-red-600"
                       />
@@ -276,7 +276,7 @@ const AcademicCalendarEditor = () => {
             <Button
               shape="circle"
               icon={<LeftOutlined />}
-              onClick={() => handleMonthChange(-1)}
+              onClick={() => onMonthChange(-1)}
             />
             <h2 className="text-xl font-semibold text-gray-800">
               {currentMonth.format('MMMM YYYY')} (B.S.)
@@ -287,7 +287,7 @@ const AcademicCalendarEditor = () => {
             <Button
               shape="circle"
               icon={<RightOutlined />}
-              onClick={() => handleMonthChange(1)}
+              onClick={() => onMonthChange(1)}
             />
           </div>
           <Button
@@ -317,7 +317,7 @@ const AcademicCalendarEditor = () => {
           footer={null}
           destroyOnClose
         >
-          <Form form={form} onFinish={handleAddEvent} layout="vertical">
+          <Form form={form} onFinish={onAddEvent} layout="vertical">
             <Form.Item
               name="title"
               label="Event Title"

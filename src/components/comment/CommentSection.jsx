@@ -20,7 +20,7 @@ const CommentSection = ({ comments, taskId }) => {
     setComment(comments);
   }, [comments]);
 
-  const handleReactionClick = (commentId, reactionType) => {
+  const onReactionClick = (commentId, reactionType) => {
     setReactions((prevState) => ({
       ...prevState,
       [commentId]: reactionType,
@@ -52,13 +52,13 @@ const CommentSection = ({ comments, taskId }) => {
                 {reactions[c.id] === 'like' ? (
                   <ThumbsUp
                     style={{ fill: 'blue', color: 'blue', cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'like')}
+                    onClick={() => onReactionClick(c.id, 'like')}
                     size={22}
                   />
                 ) : (
                   <ThumbsUp
                     style={{ cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'like')}
+                    onClick={() => onReactionClick(c.id, 'like')}
                     size={20}
                   />
                 )}
@@ -66,13 +66,13 @@ const CommentSection = ({ comments, taskId }) => {
                 {reactions[c.id] === 'heart' ? (
                   <Heart
                     style={{ fill: 'red', color: 'red', cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'heart')}
+                    onClick={() => onReactionClick(c.id, 'heart')}
                     size={22}
                   />
                 ) : (
                   <Heart
                     style={{ cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'heart')}
+                    onClick={() => onReactionClick(c.id, 'heart')}
                     size={20}
                   />
                 )}
@@ -80,13 +80,13 @@ const CommentSection = ({ comments, taskId }) => {
                 {reactions[c.id] === 'smile' ? (
                   <Smile
                     style={{ fill: 'green', color: 'white', cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'smile')}
+                    onClick={() => onReactionClick(c.id, 'smile')}
                     size={22}
                   />
                 ) : (
                   <Smile
                     style={{ cursor: 'pointer' }}
-                    onClick={() => handleReactionClick(c.id, 'smile')}
+                    onClick={() => onReactionClick(c.id, 'smile')}
                     size={20}
                   />
                 )}

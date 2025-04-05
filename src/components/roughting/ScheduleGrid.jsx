@@ -34,7 +34,7 @@ const ScheduleGrid = () => {
     )
   );
 
-  const handleCheckboxChange = (day, timeSlot) => {
+  const onCheckboxChange = (day, timeSlot) => {
     setCheckedState((prev) => ({
       ...prev,
       [day]: { ...prev[day], [timeSlot]: !prev[day][timeSlot] },
@@ -136,7 +136,7 @@ const ScheduleGrid = () => {
                         type="checkbox"
                         className="sr-only"
                         checked={checkedState[day][time]}
-                        onChange={() => handleCheckboxChange(day, time)}
+                        onChange={() => onCheckboxChange(day, time)}
                       />
                       {checkedState[day][time] && (
                         <Check className="w-5 h-5 text-white" strokeWidth={3} />

@@ -226,13 +226,13 @@ export default function FileManager() {
       key: '2',
       label: 'Share',
       icon: <Share2 size={20} />,
-      onClick: () => console.log(`shall handle click on Share`),
+      onClick: () => console.log(`shall on click on Share`),
     },
     {
       key: '3',
       label: 'Info',
       icon: <Info size={20} />,
-      onClick: () => console.log(`shall handle click on Info`),
+      onClick: () => console.log(`shall on click on Info`),
     },
     {
       key: '4',

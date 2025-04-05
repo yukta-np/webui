@@ -468,7 +468,7 @@ const TaskList = ({
     );
   };
 
-  const handleEditorChange = (content) => {
+  const onEditorChange = (content) => {
     setEditorContent(content);
     form.setFieldsValue({ description: content });
   };
@@ -1266,7 +1266,7 @@ const TaskList = ({
                       <TabPane tab="Write" key="write">
                         <SunEditor
                           setOptions={editorOptions}
-                          onChange={handleEditorChange}
+                          onChange={onEditorChange}
                           placeholder="Enter your task description"
                           setContents={
                             action === Actions.edit

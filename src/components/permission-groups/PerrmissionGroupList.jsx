@@ -82,7 +82,7 @@ const PermissionGroupList = () => {
     }
   };
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+  const onSearch = (selectedKeys, confirm, dataIndex) => {
     const term = selectedKeys[0] || '';
     setSearchText(term);
     setSearchedColumn(dataIndex);
@@ -90,7 +90,7 @@ const PermissionGroupList = () => {
     fetchData({ term });
   };
 
-  const handleReset = (clearFilters) => {
+  const onReset = (clearFilters) => {
     clearFilters();
     setSearchText('');
     setTimeout(() => {
@@ -136,13 +136,13 @@ const PermissionGroupList = () => {
           onChange={(e) =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={() => onSearch(selectedKeys, confirm, dataIndex)}
           style={{ marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            onClick={() => onSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
             style={{ width: 90 }}
@@ -150,7 +150,7 @@ const PermissionGroupList = () => {
             Search
           </Button>
           <Button
-            onClick={() => handleReset(clearFilters)}
+            onClick={() => onReset(clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
