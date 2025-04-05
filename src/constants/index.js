@@ -42,6 +42,7 @@ export const constants = {
     studentUrl: `${URL}/students`,
     teachersUrl: `${URL}/teachers`,
     staffUrl: `${URL}/staffs`,
+    planTemplateUrl: `${URL}/plan-template`,
 
     routinesUrl: `${URL}/routines`,
     areasUrl: `${URL}/areas`,
