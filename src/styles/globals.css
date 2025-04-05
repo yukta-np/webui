@@ -2,47 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-/* table css start */
+/* Descriptions */
+:root {
+  --head-color: #f4f9ff;
+}
 
-/* Table header - clean and clear */
+/* Table css Starts */
 .ant-table-thead>tr>th {
-  background-color: #e2e8f0;
-  /* neutral-light blue-gray */
+  background-color: var(--head-color);
   color: #1f2937;
-  /* gray-800 */
   font-weight: 600;
   font-size: 14px;
   border-bottom: 1px solid #cbd5e1;
 }
 
-/* Row striping - light but visible */
 .ant-table-tbody>tr:nth-child(odd) {
   background-color: #ffffff;
 }
 
 .ant-table-tbody>tr:nth-child(even) {
-  background-color: #f1f5f9;
-  /* subtle light blue-gray */
+  background-color: #f8fdff;
 }
 
-/* Row hover - gentle highlight */
-.ant-table-tbody>tr:hover {
-  background-color: #dbeafe;
-  /* light sky-blue highlight */
-  transition: background-color 0.25s ease;
+.ant-table-tbody .ant-table-row.ant-table-row:hover .ant-table-cell,
+.ant-table-tbody .ant-table-row.ant-table-row:hover .ant-table-cell-row-hover {
+  background-color: #e5f7ff;
   cursor: pointer;
 }
 
-/* Slightly soften borders */
 .ant-table-container table {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  /* subtle shadow */
 }
 
-/* table css end */
+/* Table css ends */
+
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background-color: var(--head-color);
+}
 
 * {
   box-sizing: border-box;
