@@ -74,10 +74,7 @@ const Plans = () => {
     setIsProcessing(true);
     const myValues = {
       ...values,
-      numOfParent: 1,
-      durationInMonths: 1,
     };
-
     try {
       action === Actions.add
         ? await createPlan(myValues)
@@ -391,6 +388,23 @@ const Plans = () => {
             </Col>
             <Col span={12}>
               <Form.Item
+                name="numOfParent"
+                label="Number of Parents"
+                rules={[
+                  { required: true, message: 'Please input number of parents' },
+                ]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  min={1}
+                  placeholder="Enter number of parents"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
                 name="storageInGB"
                 label="Storage (in GB)"
                 rules={[
@@ -404,6 +418,19 @@ const Plans = () => {
                 />
               </Form.Item>
             </Col>
+            <Col span={12}>
+              <Form.Item
+                name="durationInMonths"
+                label="Duration (in months)"
+                rules={[{ required: true, message: 'Please input duration' }]}
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  min={1}
+                  placeholder="Enter duration in months"
+                />
+              </Form.Item>
+            </Col>
           </Row>
 
           <Form.Item
@@ -411,7 +438,11 @@ const Plans = () => {
             label="Price (NPR)"
             rules={[{ required: true, message: 'Please input the price!' }]}
           >
-            <InputNumber style={{ width: '100%' }} min={0} />
+            <InputNumber
+              style={{ width: '100%' }}
+              min={0}
+              placeholder="Enter price"
+            />
           </Form.Item>
         </Form>
         <Divider />
